@@ -1,0 +1,26 @@
+#pragma once
+
+namespace demo
+{
+enum InputActionIds
+{
+    INPUT_ACTION_ID_QUIT       = 1,
+    INPUT_ACTION_ID_ACCEPT     = 2,
+    INPUT_ACTION_ID_CANCEL     = 3,
+
+    INPUT_ACTION_ID_MOVE_UP    = 4,
+    INPUT_ACTION_ID_MOVE_DOWN  = 5,
+    INPUT_ACTION_ID_MOVE_RIGHT = 6,
+    INPUT_ACTION_ID_MOVE_LEFT  = 7,
+
+    INPUT_ACTION_ID_AIM_HORZ   = 8,
+    INPUT_ACTION_ID_AIM_VERT   = 9,
+    INPUT_ACTION_ID_FIRE       = 10,
+
+    INPUT_ACTION_ID_ZOOM_IN    = 11,
+    INPUT_ACTION_ID_ZOOM_OUT   = 12,
+
+    INPUT_ACTION_ID_ROTATE_CW  = 13,
+    INPUT_ACTION_ID_ROTATE_CCW = 14,
+};
+}

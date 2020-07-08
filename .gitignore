@@ -1,0 +1,8 @@
+.vscode/*
+assets/*
+build/*
+extlibs/*
+
+!assets/config/
+!assets/shaders/
+!extlibs/CMakeLists.txt

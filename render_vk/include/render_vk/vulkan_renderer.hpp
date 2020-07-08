@@ -1,0 +1,103 @@
+#pragma once
+
+#include "render/renderer.hpp"
+#include "render_vk/command_buffer.hpp"
+#include "render_vk/ubo_dynamic.hpp"
+#include "render_vk/uniform.hpp"
+#include "render_vk/vulkan_swapchain.hpp"
+#include "render_vk/vulkan.hpp"
+#include <vector>
+
+namespace render
+{
+class Model;
+}
+
+namespace render_vk
+{
+class ModelManager;
+
+class VulkanRenderer : public render::Renderer
+{
+    bool m_framebuffer_resized;
+    size_t m_current_frame;
+
+    VkInstance m_instance;
+    VkDevice m_device;
+    VkPhysicalDevice m_physical_device;
+
+    //  Queues
+    VkQueue m_graphics_queue;
+    VkQueue m_present_queue;
+
+    VkSurfaceKHR m_surface;
+    VulkanSwapchain m_swapchain;
+    VkRenderPass m_render_pass;
+
+    //  Pipeline objects
+    VkPipelineLayout m_pipeline_layout;
+    VkPipeline m_graphics_pipeline;
+
+    //  Command objects
+    VkCommandPool m_command_pool;
+    std::vector<VkCommandBuffer> m_command_buffers;
+
+    //  Shader objects
+    VkDescriptorSetLayout m_descriptor_set_layout;
+    std::vector<VkDescriptorSet> m_descriptor_sets;
+    VkDescriptorPool m_descriptor_pool;
+
+    //  Frame sync objects
+    std::vector<VkSemaphore> m_image_available_semaphores;
+    std::vector<VkSemaphore> m_render_finished_semaphores;
+    std::vector<VkFence> m_in_flight_fences;
+    std::vector<VkFence> m_images_in_flight;
+
+    //  Texture objects
+    VkImage m_texture_image;
+    VkImageView m_texture_image_view;
+    VkSampler m_texture_sampler;
+    VkDeviceMemory m_texture_image_memory;
+
+    //  Depth buffer objects
+    VkImage m_depth_image;
+    VkDeviceMemory m_depth_image_memory;
+    VkImageView m_depth_image_view;
+
+    std::unique_ptr<ModelManager> m_model_mgr;
+
+    std::vector<DrawModelCommand> m_draw_model_commands;
+
+    UniformBuffers m_uniform_buffers;
+    UboDataDynamic  m_ubo_data_dynamic;
+
+    void cleanup_swapchain();
+    void recreate_swapchain(GLFWwindow* glfw_window);
+    void update_uniform_buffer(uint32_t image_index);
+
+public:
+    VulkanRenderer();
+    ~VulkanRenderer();
+
+    virtual void begin_frame() override;
+    //  TODO: Change parameters to single MVP object (rename UniformBufferObject struct)
+    virtual void draw_frame(GLFWwindow* glfw_window) override;
+    virtual void draw_model(
+        const common::AssetId id,
+        const glm::mat4x4& model,
+        const glm::mat4x4& view,
+        const glm::mat4x4& proj
+    ) override;
+
+    virtual float get_aspect_ratio() const override;
+    virtual bool initialize(GLFWwindow* glfw_window) override;
+
+    virtual void load_model(
+        common::AssetId id,
+        const std::string& path
+    ) override;
+
+    virtual void resize(GLFWwindow* glfw_window) override;
+    virtual void shutdown() override;
+};
+}

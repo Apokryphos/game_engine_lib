@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 3.17)
+
+project(game_engine_build)
+
+add_subdirectory(extlibs)
+add_subdirectory(common)
+add_subdirectory(filesystem)
+add_subdirectory(ecs)
+add_subdirectory(platform)
+add_subdirectory(input)
+add_subdirectory(render)
+add_subdirectory(render_gl)
+add_subdirectory(render_vk)
+add_subdirectory(engine)
+add_subdirectory(systems)
+add_subdirectory(demo)
+add_subdirectory(assets)
