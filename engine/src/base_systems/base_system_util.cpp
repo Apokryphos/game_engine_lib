@@ -1,8 +1,8 @@
 #include "engine/system_manager.hpp"
-#include "engine/systems/base_system_util.hpp"
-#include "engine/systems/config_system.hpp"
-#include "engine/systems/debug_gui_system.hpp"
-#include "engine/systems/profile_system.hpp"
+#include "engine/base_systems/base_system_util.hpp"
+#include "engine/base_systems/config_system.hpp"
+#include "engine/base_systems/debug_gui_system.hpp"
+#include "engine/base_systems/profile_system.hpp"
 
 #include "imgui.h"
 

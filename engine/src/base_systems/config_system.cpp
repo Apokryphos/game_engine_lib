@@ -1,5 +1,5 @@
 #include "common/log.hpp"
-#include "engine/systems/config_system.hpp"
+#include "engine/base_systems/config_system.hpp"
 #include "filesystem/paths.hpp"
 #include "input/strings/input_strings.hpp"
 #include "input/strings/input_action_strings.hpp"

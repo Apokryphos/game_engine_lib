@@ -4,16 +4,16 @@ project(engine)
 
 set(SOURCE_FILES
     src/asset_manager.cpp
+    src/base_systems/base_system_util.cpp
+    src/base_systems/config_system.cpp
+    src/base_systems/debug_gui_system.cpp
+    src/base_systems/profile_system.cpp
     src/engine.cpp
     src/game.cpp
     src/imgui/imgui_base.cpp
     src/screens/screen.cpp
     src/screens/screen_manager.cpp
     src/system_manager.cpp
-    src/systems/base_system_util.cpp
-    src/systems/config_system.cpp
-    src/systems/debug_gui_system.cpp
-    src/systems/profile_system.cpp
     src/ui/ui_state.cpp
     src/ui/ui_state_manager.cpp
     src/time.cpp

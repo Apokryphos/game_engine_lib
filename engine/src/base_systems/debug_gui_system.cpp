@@ -1,4 +1,4 @@
-#include "engine/systems/debug_gui_system.hpp"
+#include "engine/base_systems/debug_gui_system.hpp"
 
 using namespace common;
 
