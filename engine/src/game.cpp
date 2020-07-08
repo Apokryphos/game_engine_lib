@@ -2,6 +2,7 @@
 #include "ecs/ecs_root.hpp"
 #include "engine/engine.hpp"
 #include "engine/game.hpp"
+#include "engine/imgui/imgui_base.hpp"
 #include "engine/screens/screen_manager.hpp"
 #include "engine/system_manager.hpp"
 #include "engine/systems/base_system_util.hpp"
@@ -31,10 +32,7 @@ Game::Game(const std::string& game_base_name)
   m_sys_mgr(nullptr) {
     m_sys_mgr = std::make_unique<SystemManager>(*m_ecs_root);
 
-    //  Add base systems
-    m_sys_mgr->add_system(std::make_unique<DebugGuiSystem>());
-    m_sys_mgr->add_system(std::make_unique<ConfigSystem>(game_base_name));
-    m_sys_mgr->add_system(std::make_unique<ProfileSystem>(game_base_name));
+    initialize_base_systems(*m_sys_mgr, game_base_name);
 }
 
 //  ----------------------------------------------------------------------------
@@ -133,5 +131,14 @@ void Game::update() {
     //  Update screen
     ScreenManager& screen_mgr = m_engine->get_screen_manager();
     screen_mgr.update(*this);
+
+    //  Start a new ImGui frame. This shoud be called as early as possible,
+    //  but ImGui GUI calls should be restricted to DebugGuiSystem.
+    const RenderApi render_api = m_engine->get_renderer().get_render_api();
+    imgui_new_frame(render_api);
+
+    //  Update debug GUI
+    DebugGuiSystem& debug_gui_system = get_debug_gui_system(*m_sys_mgr);
+    debug_gui_system.update(*this);
 }
 }

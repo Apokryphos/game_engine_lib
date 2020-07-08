@@ -4,9 +4,15 @@
 
 using namespace common;
 using namespace platform;
+using namespace render;
 
 namespace render_gl
 {
+//  ----------------------------------------------------------------------------
+GlRenderer::GlRenderer()
+: Renderer(RenderApi::OpenGl) {
+}
+
 //  ----------------------------------------------------------------------------
 void GlRenderer::begin_frame() {
     throw std::runtime_error("Not implemented.");

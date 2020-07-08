@@ -50,10 +50,13 @@ set(IMGUI_SOURCE_FILES
     imgui/imgui_draw.cpp
     imgui/imgui_widgets.cpp
     imgui/examples/imgui_impl_glfw.cpp
+    imgui/examples/imgui_impl_opengl3.cpp
     imgui/examples/imgui_impl_vulkan.cpp
 )
 add_library(imgui ${IMGUI_SOURCE_FILES})
 # Remove all Vulkan prototypes
 target_compile_definitions(imgui PUBLIC VK_NO_PROTOTYPES)
+# Use glad as OpenGL loader
+target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
 target_include_directories(imgui PUBLIC imgui)
-target_link_libraries(imgui volk)
+target_link_libraries(imgui glad volk)

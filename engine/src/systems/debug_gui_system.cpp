@@ -16,6 +16,7 @@ void DebugGuiSystem::add_gui(const SystemId system_id, DebugGuiFunc func) {
     }
 
     Entry entry{};
+    entry.visible = true;
     entry.func = func;
 
     m_entries[system_id] = entry;
@@ -24,7 +25,7 @@ void DebugGuiSystem::add_gui(const SystemId system_id, DebugGuiFunc func) {
 //  ----------------------------------------------------------------------------
 void DebugGuiSystem::update(Game& game) {
     for (const auto& pair : m_entries) {
-        const Entry& entry = pair.second;
+        const DebugGuiSystem::Entry& entry = pair.second;
 
         if (!entry.visible) {
             continue;

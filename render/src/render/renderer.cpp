@@ -3,7 +3,8 @@
 namespace render
 {
 //  ----------------------------------------------------------------------------
-Renderer::Renderer() {
+Renderer::Renderer(RenderApi render_api)
+: m_render_api(render_api) {
 }
 
 //  ----------------------------------------------------------------------------

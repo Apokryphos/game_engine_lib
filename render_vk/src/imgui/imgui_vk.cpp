@@ -111,11 +111,6 @@ void imgui_vulkan_recreate_swapchain(
 
 //  ----------------------------------------------------------------------------
 void imgui_vulkan_render_frame(VkCommandBuffer command_buffer) {
-    ImGui_ImplVulkan_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-
-    ImGui::NewFrame();
-    ImGui::ShowDemoWindow();
     ImGui::Render();
 
     auto draw_data = ImGui::GetDrawData();
@@ -132,6 +127,5 @@ void imgui_vulkan_cleanup_swapchain(VkDevice device) {
 //  ----------------------------------------------------------------------------
 void imgui_vulkan_shutdown(VkDevice device) {
     imgui_vulkan_cleanup_swapchain(device);
-    ImGui_ImplGlfw_Shutdown();
 }
 }

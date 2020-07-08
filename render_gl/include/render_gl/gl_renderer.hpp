@@ -7,6 +7,7 @@ namespace render_gl
 class GlRenderer : public render::Renderer
 {
 public:
+    GlRenderer();
     virtual void draw_frame(GLFWwindow* glfw_window) override;
     virtual void begin_frame() override;
     virtual void draw_model(

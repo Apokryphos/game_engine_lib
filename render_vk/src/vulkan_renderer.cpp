@@ -168,7 +168,8 @@ static void query_extensions() {
 
 //  ----------------------------------------------------------------------------
 VulkanRenderer::VulkanRenderer()
-: m_framebuffer_resized(false),
+: Renderer(RenderApi::Vulkan),
+  m_framebuffer_resized(false),
   m_current_frame(0) {
 }
 
