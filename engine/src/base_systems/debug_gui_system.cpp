@@ -19,7 +19,7 @@ void DebugGuiSystem::add_gui(const SystemId system_id, DebugGuiFunc func) {
     }
 
     Entry entry{};
-    entry.visible = true;
+    entry.visible = false;
     entry.func = func;
 
     m_entries[system_id] = entry;
