@@ -62,6 +62,7 @@ InputManager::InputManager(GLFWwindow* window)
     glfwSetCursorPosCallback(window, glfw_cursor_position_callback);
     glfwSetScrollCallback(window, glfw_scroll_callback);
 
+    //  Create joysticks
     m_gamepads.reserve(GAMEPAD_COUNT);
     for (int n = 0; n < GAMEPAD_COUNT; ++n) {
         auto gamepad = std::make_unique<Gamepad>(*this, n);
@@ -69,6 +70,13 @@ InputManager::InputManager(GLFWwindow* window)
     }
 
     initialize_input_strings();
+
+    //  Set initial mouse position since it's usually updated
+    //  through callbacks.
+    double mouse_x;
+    double mouse_y;
+    glfwGetCursorPos(window, &mouse_x, &mouse_y);
+    m_mouse.m_position = glm::vec2(mouse_x, mouse_y);
 }
 
 //  ----------------------------------------------------------------------------
