@@ -35,7 +35,7 @@ class Game
     void update();
 
 public:
-    Game();
+    Game(const std::string& game_base_name);
     ~Game();
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
@@ -50,7 +50,7 @@ public:
 
     bool initialize(
         const std::string& title,
-        const WindowOptions& window_options
+        WindowOptions window_options
     );
 
     void quit();

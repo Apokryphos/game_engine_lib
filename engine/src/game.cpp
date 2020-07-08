@@ -4,6 +4,9 @@
 #include "engine/game.hpp"
 #include "engine/screens/screen_manager.hpp"
 #include "engine/system_manager.hpp"
+#include "engine/systems/base_system_util.hpp"
+#include "engine/systems/config_system.hpp"
+#include "engine/systems/profile_system.hpp"
 #include "engine/time.hpp"
 #include "engine/ui/ui_state_manager.hpp"
 #include "input/input_manager.hpp"
@@ -20,12 +23,16 @@ using namespace render;
 namespace engine
 {
 //  ----------------------------------------------------------------------------
-Game::Game()
+Game::Game(const std::string& game_base_name)
 : m_quit(false),
   m_ecs_root(std::make_unique<EcsRoot>()),
   m_engine(std::make_unique<Engine>()),
   m_sys_mgr(nullptr) {
     m_sys_mgr = std::make_unique<SystemManager>(*m_ecs_root);
+
+    //  Add base systems
+    m_sys_mgr->add_system(std::make_unique<ConfigSystem>(game_base_name));
+    m_sys_mgr->add_system(std::make_unique<ProfileSystem>(game_base_name));
 }
 
 //  ----------------------------------------------------------------------------
@@ -53,10 +60,15 @@ SystemManager& Game::get_system_manager() {
 //  ----------------------------------------------------------------------------
 bool Game::initialize(
     const std::string& title,
-    const WindowOptions& window_options
+    WindowOptions window_options
 ) {
     log_debug("Initializing...");
 
+    //  Load window options from configuration
+    ConfigSystem& config_sys = get_config_system(*m_sys_mgr);
+    config_sys.load_window_options(window_options);
+
+    //  Initialize engine
     if (!m_engine->initialize(title, window_options)) {
         return false;
     }

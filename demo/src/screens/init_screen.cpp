@@ -129,7 +129,6 @@ static void init_input(Game& game) {
 //  ----------------------------------------------------------------------------
 static void init_systems(Game& game) {
     SystemManager& sys_mgr = game.get_system_manager();
-    sys_mgr.add_system(std::make_unique<ProfileSystem>("game_engine_demo"));
     sys_mgr.add_system(std::make_unique<DemoSystem>());
 
     get_profile_system(sys_mgr).load_profiles();
