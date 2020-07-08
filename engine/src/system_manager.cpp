@@ -16,7 +16,7 @@ SystemManager::SystemManager(EcsRoot& ecs_root)
 //  ----------------------------------------------------------------------------
 void SystemManager::add_system(std::unique_ptr<System> system) {
     if (system == nullptr) {
-        throw std::runtime_error("Cannot add null entity system to system manager.");
+        throw std::runtime_error("Cannot add null system to system manager.");
     }
 
     const auto& find = std::find_if(
