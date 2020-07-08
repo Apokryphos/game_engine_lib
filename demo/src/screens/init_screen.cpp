@@ -11,7 +11,6 @@
 #include "engine/system_manager.hpp"
 #include "engine/systems/config_system.hpp"
 #include "engine/systems/profile_system.hpp"
-#include "engine/systems/base_system_util.hpp"
 #include "input/gamepad.hpp"
 #include "input/input_manager.hpp"
 #include "render/renderer.hpp"
