@@ -6,7 +6,8 @@ namespace input
 {
 //  ----------------------------------------------------------------------------
 Mouse::Mouse(InputManager& input_mgr)
-: InputDevice(input_mgr, MOUSE_DEVICE_ID) {
+: InputDevice(input_mgr, MOUSE_DEVICE_ID),
+  m_position(0) {
 }
 
 //  ----------------------------------------------------------------------------
@@ -46,6 +47,7 @@ bool Mouse::is_pressed(InputActionId id) const {
 
 //  ----------------------------------------------------------------------------
 void Mouse::position_callback(double x, double y) {
+    m_position = glm::vec2(x, y);
 }
 
 //  ----------------------------------------------------------------------------

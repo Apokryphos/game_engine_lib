@@ -3,6 +3,7 @@
 #include "input/input_device.hpp"
 #include "input/input_state.hpp"
 #include "input/input_types.hpp"
+#include <glm/vec2.hpp>
 #include <map>
 
 namespace input
@@ -14,6 +15,7 @@ class Mouse : public InputDevice
     friend class InputManager;
 
     ButtonState m_state;
+    glm::vec2 m_position;
 
     void end_poll();
     void button_callback(int button, int action, int mods);
@@ -27,6 +29,10 @@ public:
     virtual const std::string& get_name() const override {
         static std::string name = "Mouse";
         return name;
+    }
+
+    glm::vec2 get_position() const {
+        return m_position;
     }
 
     bool is_button_down(const Button button) const {
