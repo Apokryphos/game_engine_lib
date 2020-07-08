@@ -9,13 +9,17 @@
 #include "engine/system_manager.hpp"
 #include "platform/window.hpp"
 #include "render/renderer.hpp"
+#include "systems/position_system.hpp"
+#include "systems/system_util.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+using namespace ecs;
 using namespace common;
 using namespace engine;
 using namespace platform;
 using namespace render;
+using namespace systems;
 
 namespace demo
 {
@@ -33,19 +37,6 @@ void DemoScreen::on_load(Game& game) {
     Engine& engine = game.get_engine();
     UiStateManager& ui_state_mgr = engine.get_ui_state_manager();
     ui_state_mgr.add_state(game, std::make_unique<DemoState>());
-
-    Random& random = game.get_random();
-    std::uniform_int_distribution<int> dist(-10, 10);
-
-    for (int n = 0; n < 100; ++n) {
-        glm::vec3 pos = {
-            dist(random.get_rng()),
-            dist(random.get_rng()),
-            0.0f
-        };
-
-        m_positions.push_back(pos);
-    }
 }
 
 //  ----------------------------------------------------------------------------
@@ -86,8 +77,17 @@ void DemoScreen::on_render(Game& game) {
     Window& window = engine.get_window();
     renderer.begin_frame();
 
-    for (const glm::vec3& pos : m_positions) {
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
+    //  Get drawable entities
+    const PositionSystem& pos_sys = get_position_system(sys_mgr);
+
+    std::vector<Entity> entities;
+    pos_sys.get_entities(entities);
+
+    //  Draw entities
+    for (const Entity entity : entities) {
+        const auto pos_cmpnt = pos_sys.get_component(entity);
+        const glm::vec3& position = pos_sys.get_position(pos_cmpnt);
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
         renderer.draw_model(1, model * world, view, proj);
     }
 

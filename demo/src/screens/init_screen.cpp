@@ -136,23 +136,44 @@ static void init_systems(Game& game) {
 }
 
 //  ----------------------------------------------------------------------------
-static void init_ecs(Game& game) {
+static void init_ecs_systems(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
     sys_mgr.add_system(std::make_unique<NameSystem>(ecs, 1000));
     sys_mgr.add_system(std::make_unique<PositionSystem>(ecs, 1000));
+}
 
-    Entity entity = ecs.create_entity();
+//  ----------------------------------------------------------------------------
+static void init_entities(Game& game) {
+    EcsRoot& ecs = game.get_ecs_root();
+    SystemManager& sys_mgr = game.get_system_manager();
 
-    NameSystem& name_sys = get_name_system(sys_mgr);
-    name_sys.add_component(entity);
-    const auto name_cmpnt = name_sys.get_component(entity);
-    name_sys.set_name(name_cmpnt, "Actor");
+    //  Position distribution
+    Random& random = game.get_random();
+    std::uniform_int_distribution<int> position_dist(-10, 10);
 
-    PositionSystem& pos_sys = get_position_system(sys_mgr);
-    pos_sys.add_component(entity);
-    const auto pos_cmpnt = pos_sys.get_component(entity);
-    pos_sys.set_position(pos_cmpnt, glm::vec3(0));
+    const int ENTITY_COUNT = 100;
+    for (int n = 0; n < ENTITY_COUNT; ++n) {
+        Entity entity = ecs.create_entity();
+
+        const std::string name = "entity_" + std::to_string(n);
+
+        NameSystem& name_sys = get_name_system(sys_mgr);
+        name_sys.add_component(entity);
+        const auto name_cmpnt = name_sys.get_component(entity);
+        name_sys.set_name(name_cmpnt, name);
+
+        const glm::vec3 position = {
+            position_dist(random.get_rng()),
+            position_dist(random.get_rng()),
+            0.0f
+        };
+
+        PositionSystem& pos_sys = get_position_system(sys_mgr);
+        pos_sys.add_component(entity);
+        const auto pos_cmpnt = pos_sys.get_component(entity);
+        pos_sys.set_position(pos_cmpnt, position);
+    }
 }
 
 //  ----------------------------------------------------------------------------
@@ -174,8 +195,11 @@ void InitScreen::on_load(Game& game) {
     //  Initialize systems
     init_systems(game);
 
-    //  Initialize ECS
-    init_ecs(game);
+    //  Initialize ECS systems
+    init_ecs_systems(game);
+
+    //  Initialize entities
+    init_entities(game);
 
     //  Load assets
     AssetManager& asset_mgr = engine.get_asset_manager();
