@@ -40,6 +40,12 @@ class InputManager
         int mods
     );
 
+    friend void glfw_scroll_callback(
+        GLFWwindow* window,
+        double xoffset,
+        double yoffset
+    );
+
     Keyboard m_keyboard;
     Mouse m_mouse;
     std::queue<InputEvent> m_events;
@@ -49,7 +55,8 @@ class InputManager
     void joy_callback(int jid, int event);
     void key_callback(int key, int scancode, int action, int mods);
     void mouse_button_callback(int button, int action, int mods);
-    void mouse_position_callback(double xpos, double ypos);
+    void mouse_position_callback(double x, double y);
+    void mouse_scroll_callback(double x_offset, double y_offset);
 
 public:
     InputManager(GLFWwindow* window);

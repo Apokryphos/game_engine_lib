@@ -43,17 +43,24 @@ void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int 
 }
 
 //  ----------------------------------------------------------------------------
+void glfw_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    s_input_mgr->mouse_scroll_callback(xoffset, yoffset);
+}
+
+//  ----------------------------------------------------------------------------
 InputManager::InputManager(GLFWwindow* window)
 : m_keyboard(*this),
   m_mouse(*this) {
     assert(s_input_mgr == nullptr);
     s_input_mgr = this;
 
+    //  GLFW callbacks
     assert(window != nullptr);
     glfwSetKeyCallback(window, glfw_key_callback);
     glfwSetJoystickCallback(glfw_joy_callback);
     glfwSetMouseButtonCallback(window, glfw_mouse_button_callback);
     glfwSetCursorPosCallback(window, glfw_cursor_position_callback);
+    glfwSetScrollCallback(window, glfw_scroll_callback);
 
     m_gamepads.reserve(GAMEPAD_COUNT);
     for (int n = 0; n < GAMEPAD_COUNT; ++n) {
@@ -143,8 +150,13 @@ void InputManager::mouse_button_callback(int button, int action, int mods) {
 }
 
 //  ----------------------------------------------------------------------------
-void InputManager::mouse_position_callback(double xpos, double ypos) {
-    m_mouse.position_callback(xpos, ypos);
+void InputManager::mouse_position_callback(double x, double y) {
+    m_mouse.position_callback(x, y);
+}
+
+//  ----------------------------------------------------------------------------
+void InputManager::mouse_scroll_callback(double x_offset, double y_offset) {
+    m_mouse.scroll_callback(x_offset, y_offset);
 }
 
 //  ----------------------------------------------------------------------------

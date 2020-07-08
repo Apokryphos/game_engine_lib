@@ -128,7 +128,13 @@ void Mouse::post_events() {
 }
 
 //  ----------------------------------------------------------------------------
+void Mouse::scroll_callback(double x_offset, double y_offset) {
+    m_scroll_delta = glm::vec2(x_offset, y_offset);
+}
+
+//  ----------------------------------------------------------------------------
 void Mouse::start_poll() {
     m_state.next();
+    m_scroll_delta = glm::vec2(0);
 }
 }
