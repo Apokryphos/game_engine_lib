@@ -10,8 +10,15 @@ namespace engine
 {
 //  ----------------------------------------------------------------------------
 static void config_system_debug_gui(Game& game) {
-    ImGui::Begin("ConfigSystem");
+    ImGui::Begin("config_system");
     ImGui::Text("Config!");
+    ImGui::End();
+}
+
+//  ----------------------------------------------------------------------------
+static void profile_system_debug_gui(Game& game) {
+    ImGui::Begin("profile_system");
+    ImGui::Text("Profiles.");
     ImGui::End();
 }
 
@@ -46,5 +53,7 @@ void initialize_base_systems(
 
     //  Profile system
     sys_mgr.add_system(std::make_unique<ProfileSystem>(game_base_name));
+    ProfileSystem& profile_sys = get_profile_system(sys_mgr);
+    debug_gui_sys.add_gui(SYSTEM_ID_PROFILE, profile_system_debug_gui);
 }
 }
