@@ -5,6 +5,23 @@ namespace ecs
 {
 //  ----------------------------------------------------------------------------
 void EcsRoot::add_system(EntitySystemBase* entity_system) {
+    if (entity_system == nullptr) {
+        throw std::runtime_error("Cannot add null entity system to ECS root.");
+    }
+
+    //  Prevent duplicates
+    const auto& find = std::find_if(
+        m_systems.begin(),
+        m_systems.end(),
+        [entity_system](const auto& sys) {
+            return (sys->get_id() == entity_system->get_id());
+        }
+    );
+
+    if (find != m_systems.end()) {
+        throw std::runtime_error("A system with the same ID was already added.");
+    }
+
     m_systems.push_back(entity_system);
 }
 

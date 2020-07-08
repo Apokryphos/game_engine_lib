@@ -15,6 +15,7 @@
 #include "input/input_manager.hpp"
 #include "render/renderer.hpp"
 #include "systems/name_system.hpp"
+#include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
 
 using namespace common;
@@ -137,17 +138,15 @@ static void init_systems(Game& game) {
 //  ----------------------------------------------------------------------------
 static void init_ecs(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
-    static std::unique_ptr<NameSystem> name_sys = std::make_unique<NameSystem>(ecs, 1000);
-    ecs.add_system(name_sys.get());
-
     SystemManager& sys_mgr = game.get_system_manager();
-    sys_mgr.add_system(std::move(name_sys));
+    sys_mgr.add_system(std::make_unique<NameSystem>(ecs, 1000));
+    sys_mgr.add_system(std::make_unique<PositionSystem>(ecs, 1000));
 
     Entity entity = ecs.create_entity();
-    NameSystem& ns = sys_mgr.get_system<NameSystem>(SYSTEM_ID_NAME);
-    ns.add_component(entity);
-    const auto name_cmpnt = ns.get_component(entity);
-    ns.set_name(name_cmpnt, "Actor");
+    NameSystem& name_sys = sys_mgr.get_system<NameSystem>(SYSTEM_ID_NAME);
+    name_sys.add_component(entity);
+    const auto name_cmpnt = name_sys.get_component(entity);
+    name_sys.set_name(name_cmpnt, "Actor");
 }
 
 //  ----------------------------------------------------------------------------
