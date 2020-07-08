@@ -6,6 +6,7 @@
 #include "engine/system_manager.hpp"
 #include "engine/systems/base_system_util.hpp"
 #include "engine/systems/config_system.hpp"
+#include "engine/systems/debug_gui_system.hpp"
 #include "engine/systems/profile_system.hpp"
 #include "engine/time.hpp"
 #include "engine/ui/ui_state_manager.hpp"
@@ -31,6 +32,7 @@ Game::Game(const std::string& game_base_name)
     m_sys_mgr = std::make_unique<SystemManager>(*m_ecs_root);
 
     //  Add base systems
+    m_sys_mgr->add_system(std::make_unique<DebugGuiSystem>());
     m_sys_mgr->add_system(std::make_unique<ConfigSystem>(game_base_name));
     m_sys_mgr->add_system(std::make_unique<ProfileSystem>(game_base_name));
 }
