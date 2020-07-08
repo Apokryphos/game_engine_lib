@@ -12,6 +12,8 @@ class SystemManager;
 namespace systems
 {
 class NameSystem;
+class PositionSystem;
 
 NameSystem& get_name_system(engine::SystemManager& sys_mgr);
+PositionSystem& get_position_system(engine::SystemManager& sys_mgr);
 }

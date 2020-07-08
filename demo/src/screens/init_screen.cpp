@@ -143,10 +143,16 @@ static void init_ecs(Game& game) {
     sys_mgr.add_system(std::make_unique<PositionSystem>(ecs, 1000));
 
     Entity entity = ecs.create_entity();
-    NameSystem& name_sys = sys_mgr.get_system<NameSystem>(SYSTEM_ID_NAME);
+
+    NameSystem& name_sys = get_name_system(sys_mgr);
     name_sys.add_component(entity);
     const auto name_cmpnt = name_sys.get_component(entity);
     name_sys.set_name(name_cmpnt, "Actor");
+
+    PositionSystem& pos_sys = get_position_system(sys_mgr);
+    pos_sys.add_component(entity);
+    const auto pos_cmpnt = pos_sys.get_component(entity);
+    pos_sys.set_position(pos_cmpnt, glm::vec3(0));
 }
 
 //  ----------------------------------------------------------------------------
