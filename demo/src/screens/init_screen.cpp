@@ -32,20 +32,20 @@ static void init_input_actions(InputManager& input_mgr) {
     log_debug("Initializing input actions...");
 
     InputActionSet& action_set = input_mgr.get_action_set();
-    action_set.add_action(INPUT_ACTION_ID_QUIT, InputType::Digital, InputEventType::Pressed);
-    action_set.add_action(INPUT_ACTION_ID_ACCEPT, InputType::Digital, InputEventType::Pressed);
-    action_set.add_action(INPUT_ACTION_ID_CANCEL, InputType::Digital, InputEventType::Delta);
-    action_set.add_action(INPUT_ACTION_ID_MOVE_UP, InputType::Analog, InputEventType::Down);
-    action_set.add_action(INPUT_ACTION_ID_MOVE_DOWN, InputType::Analog, InputEventType::Down);
-    action_set.add_action(INPUT_ACTION_ID_MOVE_RIGHT, InputType::Analog, InputEventType::Down);
-    action_set.add_action(INPUT_ACTION_ID_MOVE_LEFT, InputType::Analog, InputEventType::Down);
-    action_set.add_action(INPUT_ACTION_ID_AIM_HORZ, InputType::Analog, InputEventType::Delta);
-    action_set.add_action(INPUT_ACTION_ID_AIM_VERT, InputType::Analog, InputEventType::Delta);
-    action_set.add_action(INPUT_ACTION_ID_FIRE, InputType::Digital, InputEventType::Delta);
-    action_set.add_action(INPUT_ACTION_ID_ZOOM_IN, InputType::Analog, InputEventType::Down);
-    action_set.add_action(INPUT_ACTION_ID_ZOOM_OUT, InputType::Analog, InputEventType::Down);
-    action_set.add_action(INPUT_ACTION_ID_ROTATE_CW, InputType::Analog, InputEventType::Down);
-    action_set.add_action(INPUT_ACTION_ID_ROTATE_CCW, InputType::Analog, InputEventType::Down);
+    action_set.add_action(INPUT_ACTION_ID_QUIT, "Quit", InputType::Digital, InputEventType::Pressed);
+    action_set.add_action(INPUT_ACTION_ID_ACCEPT, "Accept", InputType::Digital, InputEventType::Pressed);
+    action_set.add_action(INPUT_ACTION_ID_CANCEL, "Cancel", InputType::Digital, InputEventType::Pressed);
+    action_set.add_action(INPUT_ACTION_ID_MOVE_UP, "Move Up", InputType::Analog, InputEventType::Down);
+    action_set.add_action(INPUT_ACTION_ID_MOVE_DOWN, "Move Down", InputType::Analog, InputEventType::Down);
+    action_set.add_action(INPUT_ACTION_ID_MOVE_RIGHT, "Move Right", InputType::Analog, InputEventType::Down);
+    action_set.add_action(INPUT_ACTION_ID_MOVE_LEFT, "Move Left", InputType::Analog, InputEventType::Down);
+    action_set.add_action(INPUT_ACTION_ID_AIM_HORZ, "Aim X", InputType::Analog, InputEventType::Delta);
+    action_set.add_action(INPUT_ACTION_ID_AIM_VERT, "Aim Y", InputType::Analog, InputEventType::Delta);
+    action_set.add_action(INPUT_ACTION_ID_FIRE, "Fire", InputType::Digital, InputEventType::Delta);
+    action_set.add_action(INPUT_ACTION_ID_ZOOM_IN, "Zoom In", InputType::Analog, InputEventType::Down);
+    action_set.add_action(INPUT_ACTION_ID_ZOOM_OUT, "Zoom Out", InputType::Analog, InputEventType::Down);
+    action_set.add_action(INPUT_ACTION_ID_ROTATE_CW, "Rotate Left", InputType::Analog, InputEventType::Down);
+    action_set.add_action(INPUT_ACTION_ID_ROTATE_CCW, "Rotate Right", InputType::Analog, InputEventType::Down);
 }
 
 //  ----------------------------------------------------------------------------
@@ -68,6 +68,16 @@ static void init_key_binds(InputManager& input_mgr) {
 }
 
 //  ----------------------------------------------------------------------------
+static void init_mouse_binds(InputManager& input_mgr) {
+    log_debug("Initializing mouse bindings...");
+
+    Mouse& mouse = input_mgr.get_mouse();
+    InputBindMap& bind_map = mouse.get_map();
+    bind_map.bind_mouse_button(INPUT_ACTION_ID_ACCEPT, GLFW_MOUSE_BUTTON_LEFT);
+    bind_map.bind_mouse_button(INPUT_ACTION_ID_CANCEL, GLFW_MOUSE_BUTTON_RIGHT);
+}
+
+//  ----------------------------------------------------------------------------
 static void init_gamepad_binds(InputManager& input_mgr) {
     log_debug("Initializing gamepad bindings...");
 
@@ -86,6 +96,31 @@ static void init_gamepad_binds(InputManager& input_mgr) {
     bind_map.bind_axis(INPUT_ACTION_ID_AIM_VERT, GLFW_GAMEPAD_AXIS_RIGHT_Y);
 
     bind_map.bind_axis(INPUT_ACTION_ID_FIRE, GLFW_GAMEPAD_AXIS_LEFT_TRIGGER);
+}
+
+//  ----------------------------------------------------------------------------
+static void init_input(Game& game) {
+    Engine& engine = game.get_engine();
+
+    //  Initialize default input binds
+    InputManager& input_mgr = engine.get_input_manager();
+    init_input_actions(input_mgr);
+    init_key_binds(input_mgr);
+    init_mouse_binds(input_mgr);
+    init_gamepad_binds(input_mgr);
+
+    //  Load other configuration after game initializes
+    ConfigSystem& config_sys = get_config_system(game.get_system_manager());
+    config_sys.load_input_bindings(
+        input_mgr.get_keyboard().get_map(),
+        input_mgr.get_mouse().get_map(),
+        input_mgr.get_gamepad(0).get_map()
+    );
+
+    //  Set input maps
+    input_mgr.get_keyboard().set_map(config_sys.get_keyboard_binds());
+    input_mgr.get_mouse().set_map(config_sys.get_mouse_binds());
+    input_mgr.set_gamepad_maps(config_sys.get_gamepad_binds());
 }
 
 //  ----------------------------------------------------------------------------
@@ -127,10 +162,7 @@ void InitScreen::on_load(Game& game) {
     Engine& engine = game.get_engine();
 
     //  Initialize input
-    InputManager& input_mgr = engine.get_input_manager();
-    init_input_actions(input_mgr);
-    init_key_binds(input_mgr);
-    init_gamepad_binds(input_mgr);
+    init_input(game);
 
     //  Initialize systems
     init_systems(game);

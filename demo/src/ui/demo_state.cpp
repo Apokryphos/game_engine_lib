@@ -16,23 +16,21 @@ using namespace input;
 
 namespace demo
 {
-static const bool LOG_EVENTS = false;
+static const bool LOG_EVENTS = true;
 
 //  ----------------------------------------------------------------------------
-void log_event(
-    const std::string& text,
-    const InputEvent& event,
-    const InputDevice& device
-) {
+void log_event(const InputEvent& event, const InputDevice& device) {
     if (!LOG_EVENTS) {
         return;
     }
 
     const InputActionId action_id = event.get_action_id();
 
+    const InputActionStringEntry* entry = get_input_action_string(action_id);
+
     log_info(
         "%s (%s) (Analog: %.2f) (Digital: %s) (Device %d: %s)",
-        text.c_str(),
+        entry->name.c_str(),
         to_string(event.get_type()).c_str(),
         event.get_analog_value(),
         event.get_digital_value() ? "ON" : "OFF",
@@ -52,60 +50,54 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
     SystemManager& sys_mgr = game.get_system_manager();
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
 
+    log_event(event, device);
+
     //  Check for events only on activate (press)
     switch (event.get_action_id()) {
+        default:
+            log_debug("DemoState::on_process_event ignored event.");
+            break;
+
         case INPUT_ACTION_ID_QUIT:
-            log_event("QUIT", event, device);
             game.quit();
             break;
 
         case INPUT_ACTION_ID_ACCEPT:
-            log_event("ACCEPT", event, device);
             break;
 
         case INPUT_ACTION_ID_CANCEL:
-            log_event("CANCEL", event, device);
             break;
 
         case INPUT_ACTION_ID_MOVE_DOWN:
-            log_event("MOVE DOWN", event, device);
             demo_sys.forward(0.1f);
             break;
 
         case INPUT_ACTION_ID_MOVE_UP:
-            log_event("MOVE UP", event, device);
             demo_sys.forward(-0.1f);
             break;
 
         case INPUT_ACTION_ID_MOVE_RIGHT:
-            log_event("MOVE RIGHT", event, device);
             demo_sys.strafe(0.1f);
             break;
 
         case INPUT_ACTION_ID_MOVE_LEFT:
-            log_event("MOVE LEFT", event, device);
             demo_sys.strafe(-0.1f);
             break;
 
         case INPUT_ACTION_ID_AIM_HORZ:
-            log_event("AIM X", event, device);
             break;
 
         case INPUT_ACTION_ID_AIM_VERT:
-            log_event("AIM Y", event, device);
             break;
 
         case INPUT_ACTION_ID_FIRE:
-            log_event("FIRE", event, device);
             break;
 
         case INPUT_ACTION_ID_ROTATE_CW:
-            log_event("ROTATE CW", event, device);
             demo_sys.rotate(glm::radians(event.get_analog_value() * -2.0f));
             break;
 
         case INPUT_ACTION_ID_ROTATE_CCW:
-            log_event("ROTATE CCW", event, device);
             demo_sys.rotate(glm::radians(event.get_analog_value() * 2.0f));
             break;
 

@@ -264,6 +264,14 @@ inline bool IniConfig::convert_value_string(
 }
 
 template <>
+inline std::string IniConfig::convert_value_string(
+    const std::string& value_str,
+    const std::string default_value
+) const {
+    return value_str;
+}
+
+template <>
 inline void IniConfig::set_value(
     const std::string& section,
     const std::string& var,

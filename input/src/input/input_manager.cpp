@@ -1,6 +1,7 @@
 #include "platform/glfw.hpp"
 #include "input/gamepad.hpp"
 #include "input/input_manager.hpp"
+#include "input/strings/input_strings.hpp"
 #include <cassert>
 #include <stdexcept>
 
@@ -10,6 +11,15 @@ namespace input
 static InputManager* s_input_mgr = nullptr;
 
 static const int GAMEPAD_COUNT = GLFW_JOYSTICK_LAST + 1;
+
+//  ----------------------------------------------------------------------------
+void glfw_cursor_position_callback(
+    GLFWwindow* window,
+    double xpos,
+    double ypos
+) {
+    s_input_mgr->mouse_position_callback(xpos, ypos);
+}
 
 //  ----------------------------------------------------------------------------
 void glfw_joy_callback(int jid, int event) {
@@ -28,20 +38,30 @@ void glfw_key_callback(
 }
 
 //  ----------------------------------------------------------------------------
+void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    s_input_mgr->mouse_button_callback(button, action, mods);
+}
+
+//  ----------------------------------------------------------------------------
 InputManager::InputManager(GLFWwindow* window)
-: m_keyboard(*this) {
+: m_keyboard(*this),
+  m_mouse(*this) {
     assert(s_input_mgr == nullptr);
     s_input_mgr = this;
 
     assert(window != nullptr);
     glfwSetKeyCallback(window, glfw_key_callback);
     glfwSetJoystickCallback(glfw_joy_callback);
+    glfwSetMouseButtonCallback(window, glfw_mouse_button_callback);
+    glfwSetCursorPosCallback(window, glfw_cursor_position_callback);
 
     m_gamepads.reserve(GAMEPAD_COUNT);
     for (int n = 0; n < GAMEPAD_COUNT; ++n) {
         auto gamepad = std::make_unique<Gamepad>(*this, n);
         m_gamepads.push_back(std::move(gamepad));
     }
+
+    initialize_input_strings();
 }
 
 //  ----------------------------------------------------------------------------
@@ -81,6 +101,12 @@ InputDevice& InputManager::get_device(InputDeviceId id) {
         default:
             throw std::runtime_error("Device not found.");
 
+        case KEYBOARD_DEVICE_ID:
+            return m_keyboard;
+
+        case MOUSE_DEVICE_ID:
+            return m_mouse;
+
         case GLFW_JOYSTICK_1:
         case GLFW_JOYSTICK_2:
         case GLFW_JOYSTICK_3:
@@ -98,15 +124,27 @@ InputDevice& InputManager::get_device(InputDeviceId id) {
         case GLFW_JOYSTICK_15:
         case GLFW_JOYSTICK_16:
             return *m_gamepads.at(id);
-
-        case KEYBOARD_DEVICE_ID:
-            return m_keyboard;
     }
 }
 
 //  ----------------------------------------------------------------------------
 Keyboard& InputManager::get_keyboard() {
     return m_keyboard;
+}
+
+//  ----------------------------------------------------------------------------
+Mouse& InputManager::get_mouse() {
+    return m_mouse;
+}
+
+//  ----------------------------------------------------------------------------
+void InputManager::mouse_button_callback(int button, int action, int mods) {
+    m_mouse.button_callback(button, action, mods);
+}
+
+//  ----------------------------------------------------------------------------
+void InputManager::mouse_position_callback(double xpos, double ypos) {
+    m_mouse.position_callback(xpos, ypos);
 }
 
 //  ----------------------------------------------------------------------------
@@ -129,6 +167,7 @@ void InputManager::key_callback(int key, int scancode, int action, int mods) {
 //  ----------------------------------------------------------------------------
 void InputManager::poll() {
     m_keyboard.start_poll();
+    m_mouse.start_poll();
 
     glfwPollEvents();
 
@@ -147,10 +186,18 @@ void InputManager::poll() {
     }
 
     m_keyboard.end_poll();
+    m_mouse.end_poll();
 }
 
 //  ----------------------------------------------------------------------------
 void InputManager::post_event(const InputEvent& event) {
     m_events.push(event);
+}
+
+//  ----------------------------------------------------------------------------
+void InputManager::set_gamepad_maps(const InputBindMap& map) {
+    for (auto& gamepad : m_gamepads) {
+        gamepad->set_map(map);
+    }
 }
 }

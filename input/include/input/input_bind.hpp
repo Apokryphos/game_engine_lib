@@ -112,6 +112,15 @@ public:
         };
     }
 
+    static inline InputBind make_mouse_button(InputActionId action_id, Button button) {
+        return {
+            action_id,
+            button,
+            InputSource::MouseButton,
+            AxisSign::None
+        };
+    }
+
     inline bool operator==(const InputBind& bind) {
         return (
             m_action_id == bind.m_action_id &&

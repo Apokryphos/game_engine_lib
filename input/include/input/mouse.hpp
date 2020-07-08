@@ -16,7 +16,8 @@ class Mouse : public InputDevice
     ButtonState m_state;
 
     void end_poll();
-    void mouse_callback(int key, int scancode, int action, int mods);
+    void button_callback(int button, int action, int mods);
+    void position_callback(double x, double y);
     void post_events();
     void start_poll();
 
@@ -28,22 +29,22 @@ public:
         return name;
     }
 
-    bool is_button_down(const Key key) const {
-        return m_state.is_down(key);
+    bool is_button_down(const Button button) const {
+        return m_state.is_down(button);
     }
 
     virtual bool is_pressed(InputActionId id) const override;
 
-    bool is_button_pressed(const Key key) const {
-        return m_state.is_pressed(key);
+    bool is_button_pressed(const Button button) const {
+        return m_state.is_pressed(button);
     }
 
-    bool is_button_released(const Key key) const {
-        return m_state.is_released(key);
+    bool is_button_released(const Button button) const {
+        return m_state.is_released(button);
     }
 
-    bool is_button_up(const Key key) const {
-        return m_state.is_up(key);
+    bool is_button_up(const Button button) const {
+        return m_state.is_up(button);
     }
 };
 }

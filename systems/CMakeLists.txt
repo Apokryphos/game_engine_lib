@@ -15,4 +15,5 @@ target_include_directories(systems PUBLIC include)
 target_link_libraries(systems
     engine
     filesystem
+    input
 )

@@ -32,6 +32,9 @@ public:
         const Axis axis,
         AxisSign sign = AxisSign::None
     ) {
+        if (axis_is_bound(axis, sign)) {
+            clear_axis(axis, sign);
+        }
         assert(!axis_is_bound(axis, sign));
 
         //  Triggers cannot use partial axis range
@@ -43,13 +46,30 @@ public:
     }
 
     void bind_button(const InputActionId action_id, const Button button) {
+        if (button_is_bound(button)) {
+            clear_button(button);
+        }
         assert(!button_is_bound(button));
+
         m_binds.push_back(InputBind::make_button(action_id, button));
     }
 
     void bind_key(const InputActionId action_id, const Key key) {
+        if (key_is_bound(key)) {
+            clear_key(key);
+        }
         assert(!key_is_bound(key));
+
         m_binds.push_back(InputBind::make_key(action_id, key));
+    }
+
+    void bind_mouse_button(const InputActionId action_id, const Button button) {
+        if (mouse_button_is_bound(button)) {
+            clear_mouse_button(button);
+        }
+        assert(!mouse_button_is_bound(button));
+
+        m_binds.push_back(InputBind::make_mouse_button(action_id, button));
     }
 
     bool button_is_bound(const Button button) const {
@@ -69,6 +89,57 @@ public:
 
     void clear() {
         m_binds.clear();
+    }
+
+    void clear_axis(const Axis axis, const AxisSign sign) {
+        const auto find = std::find_if(
+            m_binds.begin(),
+            m_binds.end(),
+            [axis, sign](const InputBind& bind) {
+                return bind.is_axis(axis, sign);
+            }
+        );
+
+        m_binds.erase(find);
+    }
+
+    void clear_button(const Button button) {
+        const auto find = std::find_if(
+            m_binds.begin(),
+            m_binds.end(),
+            [button](const InputBind& bind) {
+                return (
+                    bind.is_source(InputSource::Button) &&
+                    button == bind.get_input()
+                );
+            }
+        );
+
+        m_binds.erase(find);
+    }
+
+    void clear_key(const Key key) {
+        const auto find = std::find_if(
+            m_binds.begin(),
+            m_binds.end(),
+            [key](const InputBind& bind) {
+                return bind.is_key(key);
+            }
+        );
+
+        m_binds.erase(find);
+    }
+
+    void clear_mouse_button(const Key key) {
+        const auto find = std::find_if(
+            m_binds.begin(),
+            m_binds.end(),
+            [key](const InputBind& bind) {
+                return bind.is_mouse_button(key);
+            }
+        );
+
+        m_binds.erase(find);
     }
 
     //  Gets all binds for a specific action

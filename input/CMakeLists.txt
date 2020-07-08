@@ -7,6 +7,9 @@ set(SOURCE_FILES
     src/input/input_device.cpp
     src/input/input_manager.cpp
     src/input/keyboard.cpp
+    src/input/mouse.cpp
+    src/input/strings/input_action_strings.cpp
+    src/input/strings/input_strings.cpp
 )
 
 add_library(input ${SOURCE_FILES})
