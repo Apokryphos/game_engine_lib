@@ -1,10 +1,9 @@
 #include "common/log.hpp"
+#include "engine/systems/config_system.hpp"
 #include "filesystem/paths.hpp"
 #include "input/strings/input_strings.hpp"
 #include "input/strings/input_action_strings.hpp"
 #include "platform/window_options.hpp"
-#include "systems/config_system.hpp"
-#include "systems/system_ids.hpp"
 #include <fstream>
 
 namespace fs = std::filesystem;
@@ -14,7 +13,7 @@ using namespace filesystem;
 using namespace input;
 using namespace platform;
 
-namespace systems
+namespace engine
 {
 //  ----------------------------------------------------------------------------
 ConfigSystem::ConfigSystem(const std::string app_name)

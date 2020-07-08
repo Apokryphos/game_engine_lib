@@ -1,13 +1,12 @@
 #pragma once
 
-#include "common/system_id.hpp"
+#include "engine/systems/base_system_ids.hpp"
 
 namespace systems
 {
-static const common::SystemId SYSTEM_ID_UNASSIGNED = 0;
-static const common::SystemId SYSTEM_ID_CONFIG     = 1;
-static const common::SystemId SYSTEM_ID_PROFILE    = 2;
-static const common::SystemId SYSTEM_ID_NAME       = 3;
+const common::SystemId _ID = engine::BASE_SYSTEM_ID_LAST + 1;
 
-static const common::SystemId SYSTEM_ID_LAST = SYSTEM_ID_NAME;
+static inline const common::SystemId SYSTEM_ID_NAME = _ID + 1;
+
+static inline const common::SystemId SYSTEM_ID_LAST = SYSTEM_ID_NAME;
 }

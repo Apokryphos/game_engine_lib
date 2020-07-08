@@ -3,13 +3,12 @@
 #include "engine/game.hpp"
 #include "engine/screens/screen_manager.hpp"
 #include "engine/system_manager.hpp"
+#include "engine/systems/config_system.hpp"
 #include "platform/window_options.hpp"
-#include "systems/config_system.hpp"
 
 using namespace demo;
 using namespace engine;
 using namespace platform;
-using namespace systems;
 
 const std::string GAME_NAME = "game_engine_demo";
 const std::string GAME_WINDOW_TITLE = "demo";

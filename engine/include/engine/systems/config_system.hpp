@@ -2,13 +2,13 @@
 
 #include "common/ini_config.hpp"
 #include "common/system.hpp"
+#include "engine/systems/base_system_ids.hpp"
 #include "input/input_bind_map.hpp"
 #include "platform/window_options.hpp"
-#include "systems/system_ids.hpp"
 #include <filesystem>
 #include <string>
 
-namespace systems
+namespace engine
 {
 class ConfigSystem : public common::System
 {

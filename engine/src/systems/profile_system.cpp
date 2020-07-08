@@ -1,10 +1,9 @@
 #include "common/log.hpp"
-#include "systems/profile_system.hpp"
-#include "systems/system_ids.hpp"
+#include "engine/systems/profile_system.hpp"
 
 using namespace common;
 
-namespace systems
+namespace engine
 {
 using Profile = ProfileSystem::Profile;
 

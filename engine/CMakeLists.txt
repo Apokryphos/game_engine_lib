@@ -10,6 +10,9 @@ set(SOURCE_FILES
     src/screens/screen.cpp
     src/screens/screen_manager.cpp
     src/system_manager.cpp
+    src/systems/base_system_util.cpp
+    src/systems/config_system.cpp
+    src/systems/profile_system.cpp
     src/ui/ui_state.cpp
     src/ui/ui_state_manager.cpp
     src/time.cpp

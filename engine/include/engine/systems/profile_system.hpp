@@ -1,12 +1,12 @@
 #pragma once
 
 #include "common/system.hpp"
-#include "systems/system_ids.hpp"
+#include "engine/systems/base_system_ids.hpp"
 #include <cassert>
 #include <memory>
 #include <vector>
 
-namespace systems
+namespace engine
 {
 class ProfileSystem : public common::System
 {

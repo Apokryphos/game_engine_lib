@@ -9,12 +9,13 @@
 #include "engine/game.hpp"
 #include "engine/screens/screen_manager.hpp"
 #include "engine/system_manager.hpp"
+#include "engine/systems/config_system.hpp"
+#include "engine/systems/profile_system.hpp"
+#include "engine/systems/base_system_util.hpp"
 #include "input/gamepad.hpp"
 #include "input/input_manager.hpp"
 #include "render/renderer.hpp"
-#include "systems/config_system.hpp"
 #include "systems/name_system.hpp"
-#include "systems/profile_system.hpp"
 #include "systems/system_util.hpp"
 
 using namespace common;
@@ -49,7 +50,7 @@ static void init_input_actions(InputManager& input_mgr) {
 }
 
 //  ----------------------------------------------------------------------------
-static void init_key_binds(InputManager& input_mgr) {
+static void init_default_key_binds(InputManager& input_mgr) {
     log_debug("Initializing key bindings...");
 
     Keyboard& keyboard = input_mgr.get_keyboard();
@@ -68,7 +69,7 @@ static void init_key_binds(InputManager& input_mgr) {
 }
 
 //  ----------------------------------------------------------------------------
-static void init_mouse_binds(InputManager& input_mgr) {
+static void init_default_mouse_binds(InputManager& input_mgr) {
     log_debug("Initializing mouse bindings...");
 
     Mouse& mouse = input_mgr.get_mouse();
@@ -78,7 +79,7 @@ static void init_mouse_binds(InputManager& input_mgr) {
 }
 
 //  ----------------------------------------------------------------------------
-static void init_gamepad_binds(InputManager& input_mgr) {
+static void init_default_gamepad_binds(InputManager& input_mgr) {
     log_debug("Initializing gamepad bindings...");
 
     Gamepad& gamepad = input_mgr.get_gamepad(0);
@@ -102,14 +103,17 @@ static void init_gamepad_binds(InputManager& input_mgr) {
 static void init_input(Game& game) {
     Engine& engine = game.get_engine();
 
-    //  Initialize default input binds
     InputManager& input_mgr = engine.get_input_manager();
-    init_input_actions(input_mgr);
-    init_key_binds(input_mgr);
-    init_mouse_binds(input_mgr);
-    init_gamepad_binds(input_mgr);
 
-    //  Load other configuration after game initializes
+    //  Initialize all input actions used by this application
+    init_input_actions(input_mgr);
+
+    //  Initialize default input binds
+    init_default_key_binds(input_mgr);
+    init_default_mouse_binds(input_mgr);
+    init_default_gamepad_binds(input_mgr);
+
+    //  Load input bindings configuration after game initializes
     ConfigSystem& config_sys = get_config_system(game.get_system_manager());
     config_sys.load_input_bindings(
         input_mgr.get_keyboard().get_map(),
@@ -117,7 +121,7 @@ static void init_input(Game& game) {
         input_mgr.get_gamepad(0).get_map()
     );
 
-    //  Set input maps
+    //  Set input maps merged from defaults and configs
     input_mgr.get_keyboard().set_map(config_sys.get_keyboard_binds());
     input_mgr.get_mouse().set_map(config_sys.get_mouse_binds());
     input_mgr.set_gamepad_maps(config_sys.get_gamepad_binds());
