@@ -4,6 +4,7 @@
 #include "common/system.hpp"
 #include "input/input_bind_map.hpp"
 #include "platform/window_options.hpp"
+#include "systems/system_ids.hpp"
 #include <filesystem>
 #include <string>
 
@@ -28,6 +29,8 @@ public:
     const InputBindMap& get_gamepad_binds() const;
     const InputBindMap& get_keyboard_binds() const;
     const InputBindMap& get_mouse_binds() const;
+
+    static const common::SystemId Id = SYSTEM_ID_CONFIG;
 
     void load_input_bindings(
         const InputBindMap& default_keyboard_bind_map,

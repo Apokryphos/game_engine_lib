@@ -10,7 +10,7 @@ using Profile = ProfileSystem::Profile;
 
 //  ----------------------------------------------------------------------------
 ProfileSystem::ProfileSystem(const std::string& game_base_name)
-: System(SYSTEM_ID_PROFILE, "profile_system"),
+: System(ProfileSystem::Id, "profile_system"),
   m_active(nullptr) {
 }
 

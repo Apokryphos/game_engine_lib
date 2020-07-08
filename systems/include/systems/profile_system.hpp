@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/system.hpp"
+#include "systems/system_ids.hpp"
 #include <cassert>
 #include <memory>
 #include <vector>
@@ -34,6 +35,7 @@ public:
     Profile* create_profile(const std::string& name);
     Profile* get_active_profile();
     void get_profiles(std::vector<Profile*>& profiles);
+    static const common::SystemId Id = SYSTEM_ID_PROFILE;
     bool has_active_profile() const;
     void load_profiles();
     bool profile_exists(const std::string& name) const;

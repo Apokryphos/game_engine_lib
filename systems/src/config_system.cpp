@@ -18,7 +18,7 @@ namespace systems
 {
 //  ----------------------------------------------------------------------------
 ConfigSystem::ConfigSystem(const std::string app_name)
-: System(SYSTEM_ID_CONFIG, "config_system") {
+: System(ConfigSystem::Id, "config_system") {
     const fs::path base_path = get_game_base_path(app_name);
     m_config_path = base_path / "config.ini";
 }
