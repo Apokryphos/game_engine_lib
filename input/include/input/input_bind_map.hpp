@@ -72,6 +72,16 @@ public:
         m_binds.push_back(InputBind::make_mouse_button(action_id, button));
     }
 
+    void bind_mouse_wheel(const InputActionId action_id, const AxisSign sign) {
+        if (mouse_wheel_is_bound(sign)) {
+            clear_mouse_wheel(sign);
+        }
+        assert(!mouse_wheel_is_bound(sign));
+
+        m_binds.push_back(InputBind::make_mouse_wheel(action_id, sign));
+    }
+
+
     bool button_is_bound(const Button button) const {
         const auto find = std::find_if(
             m_binds.begin(),
@@ -142,6 +152,18 @@ public:
         m_binds.erase(find);
     }
 
+    void clear_mouse_wheel(const AxisSign sign) {
+        const auto find = std::find_if(
+            m_binds.begin(),
+            m_binds.end(),
+            [sign](const InputBind& bind) {
+                return bind.is_mouse_wheel(sign);
+            }
+        );
+
+        m_binds.erase(find);
+    }
+
     //  Gets all binds for a specific action
     const std::vector<InputBind>& get_binds() const {
         return m_binds;
@@ -202,6 +224,18 @@ public:
             m_binds.end(),
             [button](const InputBind& bind) {
                 return bind.is_mouse_button(button);
+            }
+        );
+
+        return find != m_binds.end();
+    }
+
+    bool mouse_wheel_is_bound(const AxisSign sign) const {
+        const auto find = std::find_if(
+            m_binds.begin(),
+            m_binds.end(),
+            [sign](const InputBind& bind) {
+                return bind.is_mouse_wheel(sign);
             }
         );
 

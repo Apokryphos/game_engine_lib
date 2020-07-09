@@ -77,6 +77,13 @@ public:
         );
     }
 
+    bool is_mouse_wheel(const AxisSign sign) const {
+        return (
+            m_source == InputSource::MouseWheel &&
+            m_sign == sign
+        );
+    }
+
     bool is_source(InputSource source) const {
         return m_source == source;
     }
@@ -118,6 +125,15 @@ public:
             button,
             InputSource::MouseButton,
             AxisSign::None
+        };
+    }
+
+    static inline InputBind make_mouse_wheel(InputActionId action_id, AxisSign sign) {
+        return {
+            action_id,
+            0,
+            InputSource::MouseWheel,
+            sign
         };
     }
 

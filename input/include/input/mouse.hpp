@@ -17,6 +17,7 @@ class Mouse : public InputDevice
     ButtonState m_state;
     glm::vec2 m_position;
     glm::vec2 m_scroll_delta;
+    glm::vec2 m_last_scroll_delta;
 
     void end_poll();
     void button_callback(int button, int action, int mods);
@@ -58,5 +59,61 @@ public:
     }
 
     virtual bool is_pressed(InputActionId id) const override;
+
+    bool is_wheel_down(const AxisSign sign) const {
+        switch (sign) {
+            default:
+            case AxisSign::None:
+                return m_scroll_delta.y != 0;
+
+            case AxisSign::Negative:
+                return m_scroll_delta.y < 0;
+
+            case AxisSign::Positive:
+                return m_scroll_delta.y > 0;
+        }
+    }
+
+    bool is_wheel_pressed(const AxisSign sign) const {
+        switch (sign) {
+            default:
+            case AxisSign::None:
+                return m_scroll_delta.y != m_last_scroll_delta.y;
+
+            case AxisSign::Negative:
+                return m_scroll_delta.y < 0 && m_last_scroll_delta.y <= 0;
+
+            case AxisSign::Positive:
+                return m_scroll_delta.y > 0 && m_last_scroll_delta.y >= 0;
+        }
+    }
+
+    bool is_wheel_released(const AxisSign sign) const {
+        switch (sign) {
+            default:
+            case AxisSign::None:
+                return m_scroll_delta.y == 0 && m_last_scroll_delta.y != 0;
+
+            case AxisSign::Negative:
+                return m_scroll_delta.y == 0 && m_last_scroll_delta.y < 0;
+
+            case AxisSign::Positive:
+                return m_scroll_delta.y == 0 && m_last_scroll_delta.y > 0;
+        }
+    }
+
+    bool is_wheel_up(const AxisSign sign) const {
+        switch (sign) {
+            default:
+            case AxisSign::None:
+                return m_scroll_delta.y == 0;
+
+            case AxisSign::Negative:
+                return m_scroll_delta.y >= 0;
+
+            case AxisSign::Positive:
+                return m_scroll_delta.y <= 0;
+        }
+    }
 };
 }

@@ -19,7 +19,7 @@ using namespace input;
 
 namespace demo
 {
-static const bool LOG_EVENTS = true;
+static const bool LOG_EVENTS = false;
 
 //  ----------------------------------------------------------------------------
 void log_event(const InputEvent& event, const InputDevice& device) {

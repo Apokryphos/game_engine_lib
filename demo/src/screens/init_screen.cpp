@@ -81,6 +81,8 @@ static void init_default_mouse_binds(InputManager& input_mgr) {
     InputBindMap& bind_map = mouse.get_map();
     bind_map.bind_mouse_button(INPUT_ACTION_ID_ACCEPT, GLFW_MOUSE_BUTTON_LEFT);
     bind_map.bind_mouse_button(INPUT_ACTION_ID_CANCEL, GLFW_MOUSE_BUTTON_RIGHT);
+    bind_map.bind_mouse_wheel(INPUT_ACTION_ID_ZOOM_IN, AxisSign::Negative);
+    bind_map.bind_mouse_wheel(INPUT_ACTION_ID_ZOOM_OUT, AxisSign::Positive);
 }
 
 //  ----------------------------------------------------------------------------
