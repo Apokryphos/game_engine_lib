@@ -2,16 +2,17 @@
 #include "engine/base_systems/base_system_util.hpp"
 #include "engine/base_systems/config_system.hpp"
 #include "engine/base_systems/debug_gui_system.hpp"
+#include "engine/base_systems/editor_system.hpp"
 #include "engine/base_systems/name_system.hpp"
 #include "engine/base_systems/profile_system.hpp"
 #include "engine/debug_gui/config_system_debug_panel.hpp"
 #include "engine/debug_gui/debug_gui_system_debug_panel.hpp"
 #include "engine/debug_gui/name_system_debug_panel.hpp"
 #include "engine/debug_gui/profile_system_debug_panel.hpp"
+#include "engine/editor/editor_panel.hpp"
+#include "engine/editor/name_system_editor_panel.hpp"
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
-
-#include "imgui.h"
 
 using namespace common;
 using namespace ecs;
@@ -26,6 +27,11 @@ ConfigSystem& get_config_system(SystemManager& sys_mgr) {
 //  ----------------------------------------------------------------------------
 DebugGuiSystem& get_debug_gui_system(SystemManager& sys_mgr) {
     return sys_mgr.get_system<DebugGuiSystem>(SYSTEM_ID_DEBUG_GUI);
+}
+
+//  ----------------------------------------------------------------------------
+EditorSystem& get_editor_system(SystemManager& sys_mgr) {
+    return sys_mgr.get_system<EditorSystem>(SYSTEM_ID_EDITOR);
 }
 
 //  ----------------------------------------------------------------------------
@@ -52,6 +58,9 @@ void initialize_base_systems(
         std::make_unique<DebugGuiSystemDebugPanel>(get_debug_gui_system(sys_mgr)
     ));
 
+    //  Editor GUI system
+    sys_mgr.add_system(std::make_unique<EditorSystem>());
+
     //  Configuration system
     sys_mgr.add_system(std::make_unique<ConfigSystem>(game_base_name));
     debug_gui_system.add_gui(
@@ -70,6 +79,12 @@ void initialize_base_systems(
     sys_mgr.add_system(std::make_unique<NameSystem>(ecs, 1000));
     debug_gui_system.add_gui(
         std::make_unique<NameSystemDebugPanel>(get_name_system(sys_mgr))
+    );
+
+    //  Editors
+    EditorSystem& editor_sys = get_editor_system(sys_mgr);
+    editor_sys.add_panel(
+        std::make_unique<NameSystemEditorPanel>(get_name_system(sys_mgr))
     );
 }
 }

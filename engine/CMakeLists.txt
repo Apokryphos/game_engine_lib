@@ -7,6 +7,7 @@ set(SOURCE_FILES
     src/base_systems/base_system_util.cpp
     src/base_systems/config_system.cpp
     src/base_systems/debug_gui_system.cpp
+    src/base_systems/editor_system.cpp
     src/base_systems/profile_system.cpp
     src/debug_gui/config_system_debug_panel.cpp
     src/debug_gui/debug_gui_system_debug_panel.cpp
@@ -14,6 +15,8 @@ set(SOURCE_FILES
     src/debug_gui/entity_debug_info.cpp
     src/debug_gui/name_system_debug_panel.cpp
     src/debug_gui/profile_system_debug_panel.cpp
+    src/editor/editor_panel.cpp
+    src/editor/name_system_editor_panel.cpp
     src/engine.cpp
     src/game.cpp
     src/imgui/imgui_base.cpp

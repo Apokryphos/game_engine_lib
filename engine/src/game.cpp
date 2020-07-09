@@ -8,6 +8,7 @@
 #include "engine/base_systems/base_system_util.hpp"
 #include "engine/base_systems/config_system.hpp"
 #include "engine/base_systems/debug_gui_system.hpp"
+#include "engine/base_systems/editor_system.hpp"
 #include "engine/base_systems/profile_system.hpp"
 #include "engine/time.hpp"
 #include "engine/ui/ui_state_manager.hpp"
@@ -140,5 +141,9 @@ void Game::update() {
     //  Update debug GUI
     DebugGuiSystem& debug_gui_system = get_debug_gui_system(*m_sys_mgr);
     debug_gui_system.update(*this);
+
+    //  Update editor GUI
+    EditorSystem& editor_system = get_editor_system(*m_sys_mgr);
+    editor_system.update(*this);
 }
 }

@@ -4,6 +4,7 @@
 #include "demo/ui/demo_state.hpp"
 #include "engine/base_systems/base_system_util.hpp"
 #include "engine/base_systems/debug_gui_system.hpp"
+#include "engine/base_systems/editor_system.hpp"
 #include "engine/engine.hpp"
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
@@ -63,6 +64,9 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
         case INPUT_ACTION_ID_TOGGLE_DEBUG_GUI: {
             DebugGuiSystem& debug_gui_sys = get_debug_gui_system(sys_mgr);
             debug_gui_sys.toggle_visible();
+
+            EditorSystem& editor_sys = get_editor_system(sys_mgr);
+            editor_sys.toggle_visible();
             break;
         }
 
