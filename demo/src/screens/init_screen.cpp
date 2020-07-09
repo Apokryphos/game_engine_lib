@@ -6,6 +6,7 @@
 #include "ecs/ecs_root.hpp"
 #include "engine/asset_manager.hpp"
 #include "engine/base_systems/config_system.hpp"
+#include "engine/base_systems/editor_system.hpp"
 #include "engine/base_systems/name_system.hpp"
 #include "engine/base_systems/profile_system.hpp"
 #include "engine/engine.hpp"
@@ -16,6 +17,7 @@
 #include "input/input_manager.hpp"
 #include "render/renderer.hpp"
 #include "systems/debug_gui/position_system_debug_panel.hpp"
+#include "systems/editor/position_system_editor_panel.hpp"
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
 
@@ -147,6 +149,12 @@ static void init_ecs_systems(Game& game) {
     sys_mgr.add_system(std::make_unique<PositionSystem>(ecs, 1000));
     debug_gui_system.add_gui(
         std::make_unique<PositionSystemDebugPanel>(get_position_system(sys_mgr))
+    );
+
+    //  Editors
+    EditorSystem& editor_sys = get_editor_system(sys_mgr);
+    editor_sys.add_panel(
+        std::make_unique<PositionSystemEditorPanel>(get_position_system(sys_mgr))
     );
 }
 

@@ -23,6 +23,9 @@ public:
     : EntitySystem(ecs_root, PositionSystem::Id, "position_system", max_components) {
     }
 
+    glm::vec3& get_position(const Component cmpnt) {
+        return get_component_data(cmpnt).position;
+    }
     const glm::vec3& get_position(const Component cmpnt) const {
         return get_component_data(cmpnt).position;
     }

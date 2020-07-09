@@ -4,6 +4,7 @@ project(systems)
 
 set(SOURCE_FILES
     src/debug_gui/position_system_debug_panel.cpp
+    src/editor/position_system_editor_panel.cpp
     src/system_util.cpp
 )
 

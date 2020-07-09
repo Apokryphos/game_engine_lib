@@ -128,5 +128,7 @@ void EditorSystem::update_system_manager_gui(Game& game) {
     );
 
     m_entity.set_entity(m_entity_infos.at(index).entity);
+
+    ImGui::Separator();
 }
 }
