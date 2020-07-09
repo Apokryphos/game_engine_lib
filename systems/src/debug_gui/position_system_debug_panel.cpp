@@ -47,5 +47,6 @@ void PositionSystemDebugPanel::on_update(Game& game) {
         static_cast<void*>(&const_cast<std::vector<EntityInfo>&>(entity_infos)),
         entity_infos.size()
     );
+    ImGui::PopItemWidth();
 }
 }

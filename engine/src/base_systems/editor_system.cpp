@@ -126,6 +126,7 @@ void EditorSystem::update_system_manager_gui(Game& game) {
         static_cast<void*>(&const_cast<std::vector<EntityInfo>&>(m_entity_infos)),
         m_entity_infos.size()
     );
+    ImGui::PopItemWidth();
 
     m_entity.set_entity(m_entity_infos.at(index).entity);
 
