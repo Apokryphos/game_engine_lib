@@ -5,6 +5,7 @@
 namespace engine
 {
 class ConfigSystem;
+class Game;
 class DebugGuiSystem;
 class ProfileSystem;
 class SystemManager;
@@ -14,7 +15,7 @@ DebugGuiSystem& get_debug_gui_system(SystemManager& sys_mgr);
 ProfileSystem& get_profile_system(SystemManager& sys_mgr);
 
 void initialize_base_systems(
-    SystemManager& sys_mgr,
+    Game& game,
     const std::string& game_base_name
 );
 }

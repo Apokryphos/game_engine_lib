@@ -13,8 +13,10 @@ class DebugGuiSystem : public common::System
 {
     using SystemId = common::SystemId;
 
+public:
     typedef std::function<void (Game&)> DebugGuiFunc;
 
+private:
     struct Entry
     {
         bool visible;

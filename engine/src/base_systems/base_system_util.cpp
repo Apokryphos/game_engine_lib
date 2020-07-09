@@ -1,27 +1,20 @@
-#include "engine/system_manager.hpp"
+#include "common/system.hpp"
 #include "engine/base_systems/base_system_util.hpp"
 #include "engine/base_systems/config_system.hpp"
 #include "engine/base_systems/debug_gui_system.hpp"
+#include "engine/base_systems/debug_gui_util.hpp"
 #include "engine/base_systems/profile_system.hpp"
+#include "engine/debug_gui/config_system_debug_gui.hpp"
+#include "engine/debug_gui/profile_system_debug_gui.hpp"
+#include "engine/game.hpp"
+#include "engine/system_manager.hpp"
 
 #include "imgui.h"
 
+using namespace common;
+
 namespace engine
 {
-//  ----------------------------------------------------------------------------
-static void config_system_debug_gui(Game& game) {
-    ImGui::Begin("config_system");
-    ImGui::Text("Config!");
-    ImGui::End();
-}
-
-//  ----------------------------------------------------------------------------
-static void profile_system_debug_gui(Game& game) {
-    ImGui::Begin("profile_system");
-    ImGui::Text("Profiles.");
-    ImGui::End();
-}
-
 //  ----------------------------------------------------------------------------
 ConfigSystem& get_config_system(SystemManager& sys_mgr) {
     return sys_mgr.get_system<ConfigSystem>(SYSTEM_ID_CONFIG);
@@ -39,21 +32,28 @@ ProfileSystem& get_profile_system(SystemManager& sys_mgr) {
 
 //  ----------------------------------------------------------------------------
 void initialize_base_systems(
-    SystemManager& sys_mgr,
+    Game& game,
     const std::string& game_base_name
 ) {
-    //  Debug GUI
+    SystemManager& sys_mgr = game.get_system_manager();
+
+    //  Debug GUI system
     sys_mgr.add_system(std::make_unique<DebugGuiSystem>());
-    DebugGuiSystem& debug_gui_sys = sys_mgr.get_system<DebugGuiSystem>(SYSTEM_ID_DEBUG_GUI);
 
     //  Configuration system
     sys_mgr.add_system(std::make_unique<ConfigSystem>(game_base_name));
-    ConfigSystem& config_sys = get_config_system(sys_mgr);
-    debug_gui_sys.add_gui(SYSTEM_ID_CONFIG, config_system_debug_gui);
+    add_debug_gui<ConfigSystem>(
+        game,
+        get_config_system(sys_mgr),
+        config_system_debug_gui
+    );
 
     //  Profile system
     sys_mgr.add_system(std::make_unique<ProfileSystem>(game_base_name));
-    ProfileSystem& profile_sys = get_profile_system(sys_mgr);
-    debug_gui_sys.add_gui(SYSTEM_ID_PROFILE, profile_system_debug_gui);
+    add_debug_gui<ProfileSystem>(
+        game,
+        get_profile_system(sys_mgr),
+        profile_system_debug_gui
+    );
 }
 }

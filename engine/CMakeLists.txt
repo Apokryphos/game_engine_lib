@@ -8,6 +8,8 @@ set(SOURCE_FILES
     src/base_systems/config_system.cpp
     src/base_systems/debug_gui_system.cpp
     src/base_systems/profile_system.cpp
+    src/debug_gui/config_system_debug_gui.cpp
+    src/debug_gui/profile_system_debug_gui.cpp
     src/engine.cpp
     src/game.cpp
     src/imgui/imgui_base.cpp

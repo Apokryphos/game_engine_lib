@@ -5,15 +5,17 @@
 #include "demo/systems/demo_system.hpp"
 #include "ecs/ecs_root.hpp"
 #include "engine/asset_manager.hpp"
+#include "engine/base_systems/debug_gui_util.hpp"
+#include "engine/base_systems/config_system.hpp"
+#include "engine/base_systems/profile_system.hpp"
 #include "engine/engine.hpp"
 #include "engine/game.hpp"
 #include "engine/screens/screen_manager.hpp"
 #include "engine/system_manager.hpp"
-#include "engine/base_systems/config_system.hpp"
-#include "engine/base_systems/profile_system.hpp"
 #include "input/gamepad.hpp"
 #include "input/input_manager.hpp"
 #include "render/renderer.hpp"
+#include "systems/debug_gui/name_system_debug_gui.hpp"
 #include "systems/name_system.hpp"
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
@@ -139,7 +141,10 @@ static void init_systems(Game& game) {
 static void init_ecs_systems(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
+
     sys_mgr.add_system(std::make_unique<NameSystem>(ecs, 1000));
+    add_debug_gui<NameSystem>(game, get_name_system(sys_mgr), name_system_debug_gui);
+
     sys_mgr.add_system(std::make_unique<PositionSystem>(ecs, 1000));
 }
 

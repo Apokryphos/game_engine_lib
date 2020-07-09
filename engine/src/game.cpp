@@ -32,7 +32,7 @@ Game::Game(const std::string& game_base_name)
   m_sys_mgr(nullptr) {
     m_sys_mgr = std::make_unique<SystemManager>(*m_ecs_root);
 
-    initialize_base_systems(*m_sys_mgr, game_base_name);
+    initialize_base_systems(*this, game_base_name);
 }
 
 //  ----------------------------------------------------------------------------
