@@ -35,6 +35,7 @@ static void init_input_actions(InputManager& input_mgr) {
     log_debug("Initializing input actions...");
 
     InputActionSet& action_set = input_mgr.get_action_set();
+    action_set.add_action(INPUT_ACTION_ID_TOGGLE_DEBUG_GUI, "Toggle Debug GUI", InputType::Digital, InputEventType::Pressed);
     action_set.add_action(INPUT_ACTION_ID_QUIT, "Quit", InputType::Digital, InputEventType::Pressed);
     action_set.add_action(INPUT_ACTION_ID_ACCEPT, "Accept", InputType::Digital, InputEventType::Pressed);
     action_set.add_action(INPUT_ACTION_ID_CANCEL, "Cancel", InputType::Digital, InputEventType::Pressed);
@@ -57,6 +58,7 @@ static void init_default_key_binds(InputManager& input_mgr) {
 
     Keyboard& keyboard = input_mgr.get_keyboard();
     InputBindMap& bind_map = keyboard.get_map();
+    bind_map.bind_key(INPUT_ACTION_ID_TOGGLE_DEBUG_GUI, GLFW_KEY_GRAVE_ACCENT);
     bind_map.bind_key(INPUT_ACTION_ID_QUIT, GLFW_KEY_ESCAPE);
     bind_map.bind_key(INPUT_ACTION_ID_ACCEPT, GLFW_KEY_ENTER);
     bind_map.bind_key(INPUT_ACTION_ID_CANCEL, GLFW_KEY_BACKSPACE);

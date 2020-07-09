@@ -9,7 +9,8 @@ namespace engine
 {
 //  ----------------------------------------------------------------------------
 DebugGuiSystem::DebugGuiSystem()
-: System(DebugGuiSystem::Id, "debug_gui_system") {
+: System(DebugGuiSystem::Id, "debug_gui_system"),
+  m_visible(false) {
 }
 
 //  ----------------------------------------------------------------------------
@@ -23,6 +24,11 @@ void DebugGuiSystem::add_gui(const SystemId system_id, DebugGuiFunc func) {
     entry.func = func;
 
     m_entries[system_id] = entry;
+}
+
+//  ----------------------------------------------------------------------------
+void DebugGuiSystem::toggle_visible() {
+    m_visible = !m_visible;
 }
 
 //  ----------------------------------------------------------------------------
@@ -48,6 +54,10 @@ void DebugGuiSystem::update_system_manager_gui(Game& game) {
 
 //  ----------------------------------------------------------------------------
 void DebugGuiSystem::update(Game& game) {
+    if (!m_visible) {
+        return;
+    }
+
     update_system_manager_gui(game);
 
     for (const auto& pair : m_entries) {

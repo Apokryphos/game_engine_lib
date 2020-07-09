@@ -2,6 +2,8 @@
 #include "demo/input/input_action_ids.hpp"
 #include "demo/systems/demo_system.hpp"
 #include "demo/ui/demo_state.hpp"
+#include "engine/base_systems/base_system_util.hpp"
+#include "engine/base_systems/debug_gui_system.hpp"
 #include "engine/engine.hpp"
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
@@ -57,6 +59,12 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
         default:
             log_debug("DemoState::on_process_event ignored event.");
             break;
+
+        case INPUT_ACTION_ID_TOGGLE_DEBUG_GUI: {
+            DebugGuiSystem& debug_gui_sys = get_debug_gui_system(sys_mgr);
+            debug_gui_sys.toggle_visible();
+            break;
+        }
 
         case INPUT_ACTION_ID_QUIT:
             game.quit();
