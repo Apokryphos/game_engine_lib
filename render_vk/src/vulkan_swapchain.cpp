@@ -27,11 +27,11 @@ static VkPresentModeKHR choose_swap_present_mode(
     const std::vector<VkPresentModeKHR>& available_present_modes
 ) {
     //  Check for preferred present mode
-    // for (const auto& present_mode : available_present_modes) {
-    //     if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
-    //         return present_mode;
-    //     }
-    // }
+    for (const auto& present_mode : available_present_modes) {
+        if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+            return present_mode;
+        }
+    }
 
     //  TODO: VK_PRESENT_MODE_MAILBOX_KHR is preferred but seems to cause
     //  display to black out on development system (Fedora 32 / AMD RX 5600).
