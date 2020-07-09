@@ -2,6 +2,7 @@
 #include "input/gamepad.hpp"
 #include "input/input_manager.hpp"
 #include "input/strings/input_strings.hpp"
+#include "imgui.h"
 #include <cassert>
 #include <stdexcept>
 
@@ -164,7 +165,10 @@ void InputManager::mouse_position_callback(double x, double y) {
 
 //  ----------------------------------------------------------------------------
 void InputManager::mouse_scroll_callback(double x_offset, double y_offset) {
-    m_mouse.scroll_callback(x_offset, y_offset);
+    auto& imgui_io = ImGui::GetIO();
+    if (!imgui_io.WantCaptureMouse) {
+        m_mouse.scroll_callback(x_offset, y_offset);
+    }
 }
 
 //  ----------------------------------------------------------------------------
@@ -181,7 +185,10 @@ void InputManager::joy_callback(int jid, int event) {
 
 //  ----------------------------------------------------------------------------
 void InputManager::key_callback(int key, int scancode, int action, int mods) {
-    m_keyboard.key_callback(key, scancode, action, mods);
+    auto& imgui_io = ImGui::GetIO();
+    if (!imgui_io.WantCaptureKeyboard) {
+        m_keyboard.key_callback(key, scancode, action, mods);
+    }
 }
 
 //  ----------------------------------------------------------------------------

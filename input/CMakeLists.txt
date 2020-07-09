@@ -18,5 +18,6 @@ target_include_directories(input PUBLIC include)
 
 target_link_libraries(input
     common
+    imgui
     platform
 )
