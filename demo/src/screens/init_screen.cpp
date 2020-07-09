@@ -181,8 +181,8 @@ static void init_entities(Game& game) {
         name_sys.set_name(name_cmpnt, name);
 
         const glm::vec3 position = {
-            position_dist(random.get_rng()),
-            position_dist(random.get_rng()),
+            position_dist(random.get_rng()) * 2,
+            position_dist(random.get_rng()) * 2,
             0.0f
         };
 
