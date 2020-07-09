@@ -122,6 +122,9 @@ void imgui_vulkan_cleanup_swapchain(VkDevice device) {
     ImGui_ImplVulkan_Shutdown();
     vkDestroyDescriptorPool(device, s_descriptor_pool, nullptr);
     s_descriptor_pool = VK_NULL_HANDLE;
+
+    //  End ImGui frame (empty frame)
+    ImGui::EndFrame();
 }
 
 //  ----------------------------------------------------------------------------
