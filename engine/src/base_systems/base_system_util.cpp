@@ -5,6 +5,7 @@
 #include "engine/base_systems/debug_gui_util.hpp"
 #include "engine/base_systems/profile_system.hpp"
 #include "engine/debug_gui/config_system_debug_gui.hpp"
+#include "engine/debug_gui/debug_gui_system_debug_gui.hpp"
 #include "engine/debug_gui/profile_system_debug_gui.hpp"
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
@@ -39,6 +40,11 @@ void initialize_base_systems(
 
     //  Debug GUI system
     sys_mgr.add_system(std::make_unique<DebugGuiSystem>());
+    add_debug_gui<DebugGuiSystem>(
+        game,
+        get_debug_gui_system(sys_mgr),
+        debug_gui_system_debug_gui
+    );
 
     //  Configuration system
     sys_mgr.add_system(std::make_unique<ConfigSystem>(game_base_name));
