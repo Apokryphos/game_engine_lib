@@ -26,6 +26,10 @@ public:
     Entity create_entity();
     void destroy_entity(const Entity entity);
 
+    const std::vector<Entity>& get_entities() const {
+        return m_entities;
+    }
+
     template <typename T>
     T& get_system(const SystemId id) {
         auto find = std::find_if(

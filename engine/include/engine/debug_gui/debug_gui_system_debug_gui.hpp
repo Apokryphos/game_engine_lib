@@ -1,9 +1,16 @@
 #pragma once
 
+#include "engine/base_systems/debug_gui_system.hpp"
+#include "engine/debug_gui/debug_gui.hpp"
+
 namespace engine
 {
-class Game;
-class DebugGuiSystem;
+class DebugGuiSystemDebugGui : public SystemDebugGui<DebugGuiSystem>
+{
+protected:
+    virtual void on_update(Game& game) override;
 
-void debug_gui_system_debug_gui(Game& game, DebugGuiSystem& debug_gui_sys);
+public:
+    DebugGuiSystemDebugGui(DebugGuiSystem& debug_gui_sys);
+};
 }

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "ecs/entity_system.hpp"
-#include "systems/system_ids.hpp"
+#include "engine/base_systems/base_system_ids.hpp"
 
-namespace systems
+namespace engine
 {
 struct NameComponentData
 {

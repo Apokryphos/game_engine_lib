@@ -2,10 +2,11 @@
 #include "engine/base_systems/base_system_util.hpp"
 #include "engine/base_systems/config_system.hpp"
 #include "engine/base_systems/debug_gui_system.hpp"
-#include "engine/base_systems/debug_gui_util.hpp"
+#include "engine/base_systems/name_system.hpp"
 #include "engine/base_systems/profile_system.hpp"
 #include "engine/debug_gui/config_system_debug_gui.hpp"
 #include "engine/debug_gui/debug_gui_system_debug_gui.hpp"
+#include "engine/debug_gui/name_system_debug_gui.hpp"
 #include "engine/debug_gui/profile_system_debug_gui.hpp"
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
@@ -13,6 +14,7 @@
 #include "imgui.h"
 
 using namespace common;
+using namespace ecs;
 
 namespace engine
 {
@@ -24,6 +26,11 @@ ConfigSystem& get_config_system(SystemManager& sys_mgr) {
 //  ----------------------------------------------------------------------------
 DebugGuiSystem& get_debug_gui_system(SystemManager& sys_mgr) {
     return sys_mgr.get_system<DebugGuiSystem>(SYSTEM_ID_DEBUG_GUI);
+}
+
+//  ----------------------------------------------------------------------------
+NameSystem& get_name_system(SystemManager& sys_mgr) {
+    return sys_mgr.get_system<NameSystem>(SYSTEM_ID_NAME);
 }
 
 //  ----------------------------------------------------------------------------
@@ -40,26 +47,29 @@ void initialize_base_systems(
 
     //  Debug GUI system
     sys_mgr.add_system(std::make_unique<DebugGuiSystem>());
-    add_debug_gui<DebugGuiSystem>(
-        game,
-        get_debug_gui_system(sys_mgr),
-        debug_gui_system_debug_gui
-    );
+    DebugGuiSystem& debug_gui_system = get_debug_gui_system(sys_mgr);
+    debug_gui_system.add_gui(
+        std::make_unique<DebugGuiSystemDebugGui>(get_debug_gui_system(sys_mgr)
+    ));
 
     //  Configuration system
     sys_mgr.add_system(std::make_unique<ConfigSystem>(game_base_name));
-    add_debug_gui<ConfigSystem>(
-        game,
-        get_config_system(sys_mgr),
-        config_system_debug_gui
+    debug_gui_system.add_gui(
+        std::make_unique<ConfigSystemDebugGui>(get_config_system(sys_mgr))
     );
 
     //  Profile system
     sys_mgr.add_system(std::make_unique<ProfileSystem>(game_base_name));
-    add_debug_gui<ProfileSystem>(
-        game,
-        get_profile_system(sys_mgr),
-        profile_system_debug_gui
+    debug_gui_system.add_gui(
+        std::make_unique<ProfileSystemDebugGui>(get_profile_system(sys_mgr))
+    );
+
+    EcsRoot& ecs = game.get_ecs_root();
+
+    //  Name system
+    sys_mgr.add_system(std::make_unique<NameSystem>(ecs, 1000));
+    debug_gui_system.add_gui(
+        std::make_unique<NameSystemDebugGui>(get_name_system(sys_mgr))
     );
 }
 }

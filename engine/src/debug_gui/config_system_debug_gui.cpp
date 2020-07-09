@@ -1,11 +1,16 @@
 #include "engine/game.hpp"
-#include "engine/base_systems/config_system.hpp"
+#include "engine/debug_gui/config_system_debug_gui.hpp"
 #include "imgui.h"
 
 namespace engine
 {
 //  ----------------------------------------------------------------------------
-void config_system_debug_gui(Game& game, ConfigSystem& config_sys) {
+ConfigSystemDebugGui::ConfigSystemDebugGui(ConfigSystem& config_sys)
+: SystemDebugGui(config_sys) {
+}
+
+//  ----------------------------------------------------------------------------
+void ConfigSystemDebugGui::on_update(Game& game) {
     ImGui::Text("Config!");
 }
 }

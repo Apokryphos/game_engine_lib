@@ -4,7 +4,6 @@ project(systems)
 
 set(SOURCE_FILES
     src/system_util.cpp
-    src/debug_gui/name_system_debug_gui.cpp
 )
 
 add_library(systems ${SOURCE_FILES})

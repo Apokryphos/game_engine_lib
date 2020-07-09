@@ -1,4 +1,6 @@
 #include "engine/base_systems/debug_gui_system.hpp"
+#include "engine/debug_gui/debug_gui.hpp"
+#include "engine/debug_gui/entity_debug_info.hpp"
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
 #include "imgui.h"
@@ -14,16 +16,37 @@ DebugGuiSystem::DebugGuiSystem()
 }
 
 //  ----------------------------------------------------------------------------
-void DebugGuiSystem::add_gui(const SystemId system_id, DebugGuiFunc func) {
-    if (m_entries.find(system_id) != m_entries.end()) {
-        throw std::runtime_error("Only one debug GUI function per system can be added.");
+void DebugGuiSystem::add_gui(std::unique_ptr<DebugGui> debug_gui) {
+    if (debug_gui == nullptr) {
+        throw std::runtime_error("Debug GUI cannot be null.");
     }
 
     Entry entry{};
-    entry.visible = false;
+    entry.title = debug_gui->get_window_title();
+    entry.debug_gui = debug_gui.get();
+
+    m_entries.push_back(entry);
+
+    debug_gui->set_debug_system(this);
+    m_debug_gui.push_back(std::move(debug_gui));
+}
+
+//  ----------------------------------------------------------------------------
+void DebugGuiSystem::add_gui(const std::string& title, DebugGuiFunc func) {
+    if (!func) {
+        throw std::runtime_error("Debug function cannot be null.");
+    }
+
+    Entry entry{};
+    entry.title = title;
     entry.func = func;
 
-    m_entries[system_id] = entry;
+    m_entries.push_back(entry);
+}
+
+//  ----------------------------------------------------------------------------
+const std::vector<EntityDebugInfo>& DebugGuiSystem::get_entity_debug_infos() const {
+    return m_entity_debug_infos;
 }
 
 //  ----------------------------------------------------------------------------
@@ -38,15 +61,9 @@ void DebugGuiSystem::update_system_manager_gui(Game& game) {
     SystemManager& sys_mgr = game.get_system_manager();
 
     //  Allow visibility of system debug GUI windows to be toggled
-    for (auto& pair : m_entries) {
-        const SystemId sys_id = pair.first;
-        DebugGuiSystem::Entry& entry = pair.second;
-
-        const System& sys = sys_mgr.get_system<System>(sys_id);
-        const std::string sys_name = sys.get_system_name();
-
+    for (Entry& entry : m_entries) {
         //  Checkbox to toggle Window visibility
-        ImGui::Checkbox(sys_name.c_str(), &entry.visible);
+        ImGui::Checkbox(entry.title.c_str(), &entry.visible);
     }
 
     ImGui::End();
@@ -58,13 +75,20 @@ void DebugGuiSystem::update(Game& game) {
         return;
     }
 
+    //  Build entity debug infos
+    m_entity_debug_infos.clear();
+    build_entity_debug_infos(game, m_entity_debug_infos);
+
     update_system_manager_gui(game);
 
-    for (const auto& pair : m_entries) {
-        const DebugGuiSystem::Entry& entry = pair.second;
-
+    //  Update debug GUIs
+    for (const Entry& entry : m_entries) {
         if (!entry.visible) {
             continue;
+        }
+
+        if (entry.debug_gui) {
+            entry.debug_gui->update(game);
         }
 
         if (entry.func) {
