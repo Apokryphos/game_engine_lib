@@ -11,6 +11,6 @@ protected:
     virtual void on_update(Game& game) override;
 
 public:
-    NameSystemDebugPanel(NameSystem& config_sys);
+    NameSystemDebugPanel(NameSystem& name_sys);
 };
 }

@@ -14,6 +14,6 @@ protected:
     virtual void on_update(Game& game) override;
 
 public:
-    ProfileSystemDebugPanel(ProfileSystem& config_sys);
+    ProfileSystemDebugPanel(ProfileSystem& profile_sys);
 };
 }

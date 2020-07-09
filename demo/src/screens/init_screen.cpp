@@ -15,6 +15,7 @@
 #include "input/gamepad.hpp"
 #include "input/input_manager.hpp"
 #include "render/renderer.hpp"
+#include "systems/debug_gui/position_system_debug_panel.hpp"
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
 
@@ -141,8 +142,12 @@ static void init_systems(Game& game) {
 static void init_ecs_systems(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
+    DebugGuiSystem& debug_gui_system = get_debug_gui_system(sys_mgr);
 
     sys_mgr.add_system(std::make_unique<PositionSystem>(ecs, 1000));
+    debug_gui_system.add_gui(
+        std::make_unique<PositionSystemDebugPanel>(get_position_system(sys_mgr))
+    );
 }
 
 //  ----------------------------------------------------------------------------

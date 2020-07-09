@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.17)
 project(systems)
 
 set(SOURCE_FILES
+    src/debug_gui/position_system_debug_panel.cpp
     src/system_util.cpp
 )
 
