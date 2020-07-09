@@ -1,5 +1,5 @@
 #include "engine/game.hpp"
-#include "engine/debug_gui/entity_debug_info.hpp"
+#include "engine/debug_gui/entity_info.hpp"
 #include "engine/debug_gui/name_system_debug_panel.hpp"
 #include "engine/base_systems/name_system.hpp"
 #include "imgui.h"
@@ -13,9 +13,9 @@ NameSystemDebugPanel::NameSystemDebugPanel(NameSystem& name_sys)
 
 //  ----------------------------------------------------------------------------
 void NameSystemDebugPanel::on_update(Game& game) {
-    const auto& entity_debug_infos = get_entity_debug_infos();
+    const auto& entity_infos = get_entity_infos();
 
-    if (entity_debug_infos.empty()) {
+    if (entity_infos.empty()) {
         return;
     }
 
@@ -25,13 +25,13 @@ void NameSystemDebugPanel::on_update(Game& game) {
         int index,
         const char** out_text
     ) {
-        auto& infos = *static_cast<std::vector<EntityDebugInfo>*>(vector);
+        auto& infos = *static_cast<std::vector<EntityInfo>*>(vector);
 
         if (index < 0 || index >= static_cast<int>(infos.size())) {
             return false;
         }
 
-        const EntityDebugInfo& info = infos.at(index);
+        const EntityInfo& info = infos.at(index);
         *out_text = info.name.c_str();
         return true;
     };
@@ -44,8 +44,8 @@ void NameSystemDebugPanel::on_update(Game& game) {
         "Entities",
         &index,
         entity_getter,
-        static_cast<void*>(&const_cast<std::vector<EntityDebugInfo>&>(entity_debug_infos)),
-        entity_debug_infos.size()
+        static_cast<void*>(&const_cast<std::vector<EntityInfo>&>(entity_infos)),
+        entity_infos.size()
     );
 }
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/debug_gui/entity_debug_info.hpp"
+#include "engine/debug_gui/entity_info.hpp"
 #include "engine/debug_gui/system_debug_panel.hpp"
 #include "engine/base_systems/debug_gui_system.hpp"
 #include <string>
@@ -15,21 +15,21 @@ class DebugGuiSystem;
 template <typename T>
 class EntitySystemDebugPanel : public SystemDebugPanel<T>
 {
-    std::vector<EntityDebugInfo> m_entity_debug_infos;
+    std::vector<EntityInfo> m_entity_infos;
 
 protected:
-    const std::vector<EntityDebugInfo>& get_entity_debug_infos() const {
-        return m_entity_debug_infos;
+    const std::vector<EntityInfo>& get_entity_infos() const {
+        return m_entity_infos;
     }
 
-    //  DebugGuiSystem builds a list of EntityDebugInfo objects for every
+    //  DebugGuiSystem builds a list of EntityInfo objects for every
     //  entity in the ECS. Here, a filtered list containing only entities
     //  in this specific system is built.
-    void build_entity_debug_infos() {
-        get_system_entity_debug_info(
+    void build_entity_infos() {
+        get_system_entity_info(
             this->get_system(),
-            this->get_debug_gui_system().get_entity_debug_infos(),
-            m_entity_debug_infos
+            this->get_debug_gui_system().get_entity_infos(),
+            m_entity_infos
         );
     }
 
@@ -39,7 +39,7 @@ public:
     }
 
     virtual void update(Game& game) override {
-        build_entity_debug_infos();
+        build_entity_infos();
         DebugPanel::update(game);
     }
 };

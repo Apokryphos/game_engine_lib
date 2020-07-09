@@ -1,6 +1,6 @@
 #include "ecs/ecs_root.hpp"
 #include "engine/base_systems/base_system_util.hpp"
-#include "engine/debug_gui/entity_debug_info.hpp"
+#include "engine/debug_gui/entity_info.hpp"
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
 #include "engine/base_systems/name_system.hpp"
@@ -10,22 +10,22 @@ using namespace ecs;
 namespace engine
 {
 //  ----------------------------------------------------------------------------
-void get_system_entity_debug_info(
+void get_system_entity_info(
     const EntitySystemBase& system,
-    const std::vector<EntityDebugInfo>& entity_debug_infos,
-    std::vector<EntityDebugInfo>& system_entity_debug_infos
+    const std::vector<EntityInfo>& entity_infos,
+    std::vector<EntityInfo>& system_entity_infos
 ) {
-    for (const EntityDebugInfo debug_info : entity_debug_infos) {
-        if (system.has_component(debug_info.entity)) {
-            system_entity_debug_infos.push_back(debug_info);
+    for (const EntityInfo info : entity_infos) {
+        if (system.has_component(info.entity)) {
+            system_entity_infos.push_back(info);
         }
     }
 }
 
 //  ----------------------------------------------------------------------------
-void build_entity_debug_infos(
+void build_entity_infos(
     Game& game,
-    std::vector<EntityDebugInfo>& entity_debug_infos
+    std::vector<EntityInfo>& entity_infos
 ) {
     const EcsRoot& ecs_root = game.get_ecs_root();
     const std::vector<Entity>& entities = ecs_root.get_entities();
@@ -33,9 +33,9 @@ void build_entity_debug_infos(
     SystemManager& sys_mgr = game.get_system_manager();
     const NameSystem& name_sys = sys_mgr.get_system<NameSystem>(SYSTEM_ID_NAME);
 
-    entity_debug_infos.reserve(entities.size());
+    entity_infos.reserve(entities.size());
     for (const Entity entity : entities) {
-        EntityDebugInfo info{};
+        EntityInfo info{};
         info.entity = entity;
 
         if (name_sys.has_component(entity)) {
@@ -45,7 +45,7 @@ void build_entity_debug_infos(
             info.name = "entity_" + std::to_string(entity.id);
         }
 
-        entity_debug_infos.push_back(info);
+        entity_infos.push_back(info);
     }
 }
 }

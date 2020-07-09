@@ -1,6 +1,6 @@
 #include "engine/base_systems/debug_gui_system.hpp"
 #include "engine/debug_gui/debug_panel.hpp"
-#include "engine/debug_gui/entity_debug_info.hpp"
+#include "engine/debug_gui/entity_info.hpp"
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
 #include "imgui.h"
@@ -45,8 +45,8 @@ void DebugGuiSystem::add_gui(const std::string& title, DebugGuiFunc func) {
 }
 
 //  ----------------------------------------------------------------------------
-const std::vector<EntityDebugInfo>& DebugGuiSystem::get_entity_debug_infos() const {
-    return m_entity_debug_infos;
+const std::vector<EntityInfo>& DebugGuiSystem::get_entity_infos() const {
+    return m_entity_infos;
 }
 
 //  ----------------------------------------------------------------------------
@@ -76,8 +76,8 @@ void DebugGuiSystem::update(Game& game) {
     }
 
     //  Build entity debug infos
-    m_entity_debug_infos.clear();
-    build_entity_debug_infos(game, m_entity_debug_infos);
+    m_entity_infos.clear();
+    build_entity_infos(game, m_entity_infos);
 
     update_system_manager_gui(game);
 

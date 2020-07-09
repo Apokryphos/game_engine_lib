@@ -2,7 +2,7 @@
 
 #include "common/system.hpp"
 #include "engine/base_systems/base_system_ids.hpp"
-#include "engine/debug_gui/entity_debug_info.hpp"
+#include "engine/debug_gui/entity_info.hpp"
 #include <vector>
 
 namespace engine
@@ -28,7 +28,7 @@ private:
 
     bool m_visible;
     std::vector<Entry> m_entries;
-    std::vector<EntityDebugInfo> m_entity_debug_infos;
+    std::vector<EntityInfo> m_entity_infos;
     std::vector<std::unique_ptr<DebugPanel>> m_panels;
 
     void update_system_manager_gui(Game& game);
@@ -40,7 +40,7 @@ public:
     //  Adds a debug GUI function
     void add_gui(const std::string& title, DebugGuiFunc func);
     static const common::SystemId Id = SYSTEM_ID_DEBUG_GUI;
-    const std::vector<EntityDebugInfo>& get_entity_debug_infos() const;
+    const std::vector<EntityInfo>& get_entity_infos() const;
     void toggle_visible();
     void update(Game& game);
 };

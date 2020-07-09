@@ -12,7 +12,7 @@ set(SOURCE_FILES
     src/debug_gui/config_system_debug_panel.cpp
     src/debug_gui/debug_gui_system_debug_panel.cpp
     src/debug_gui/debug_panel.cpp
-    src/debug_gui/entity_debug_info.cpp
+    src/debug_gui/entity_info.cpp
     src/debug_gui/name_system_debug_panel.cpp
     src/debug_gui/profile_system_debug_panel.cpp
     src/editor/editor_panel.cpp

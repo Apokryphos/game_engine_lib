@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ecs/entity.hpp"
-#include "engine/debug_gui/entity_debug_info.hpp"
+#include "engine/debug_gui/entity_info.hpp"
 #include "engine/base_systems/debug_gui_system.hpp"
 #include <string>
 #include <vector>

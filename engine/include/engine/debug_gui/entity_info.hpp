@@ -12,22 +12,22 @@ namespace engine
 {
 class Game;
 
-struct EntityDebugInfo
+struct EntityInfo
 {
     ecs::Entity entity;
     std::string name;
 };
 
 //  Builds a vector of debug infos for every entity
-void build_entity_debug_infos(
+void build_entity_infos(
     Game& game,
-    std::vector<EntityDebugInfo>& entity_debug_infos
+    std::vector<EntityInfo>& entity_infos
 );
 
 //  Gets a filtered vector of debug info for entities in a system
-void get_system_entity_debug_info(
+void get_system_entity_info(
     const ecs::EntitySystemBase& system,
-    const std::vector<EntityDebugInfo>& entity_debug_infos,
-    std::vector<EntityDebugInfo>& system_entity_debug_infos
+    const std::vector<EntityInfo>& entity_infos,
+    std::vector<EntityInfo>& system_entity_infos
 );
 }
