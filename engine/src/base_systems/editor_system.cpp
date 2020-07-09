@@ -89,10 +89,11 @@ void EditorSystem::update(Game& game) {
 
 //  ----------------------------------------------------------------------------
 void EditorSystem::update_system_manager_gui(Game& game) {
-    EcsRoot& ecs_root = game.get_ecs_root();
-    m_entities = ecs_root.get_entities();
+    //  Build entity debug infos
+    m_entity_infos.clear();
+    build_entity_infos(game, m_entity_infos);
 
-    if (m_entities.empty()) {
+    if (m_entity_infos.empty()) {
         ImGui::Text("No entities.");
         return;
     }
@@ -103,14 +104,14 @@ void EditorSystem::update_system_manager_gui(Game& game) {
         int index,
         const char** out_text
     ) {
-        auto& infos = *static_cast<std::vector<Entity>*>(vector);
+        auto& infos = *static_cast<std::vector<EntityInfo>*>(vector);
 
         if (index < 0 || index >= static_cast<int>(infos.size())) {
             return false;
         }
 
-        const Entity& entity = infos.at(index);
-        *out_text = std::to_string(entity.id).c_str();
+        const EntityInfo& info = infos.at(index);
+        *out_text = info.name.c_str();
         return true;
     };
 
@@ -122,10 +123,10 @@ void EditorSystem::update_system_manager_gui(Game& game) {
         "Entities",
         &index,
         entity_getter,
-        static_cast<void*>(&const_cast<std::vector<Entity>&>(m_entities)),
-        m_entities.size()
+        static_cast<void*>(&const_cast<std::vector<EntityInfo>&>(m_entity_infos)),
+        m_entity_infos.size()
     );
 
-    m_entity.set_entity(m_entities.at(index));
+    m_entity.set_entity(m_entity_infos.at(index).entity);
 }
 }

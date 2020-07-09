@@ -3,6 +3,7 @@
 #include "common/system.hpp"
 #include "ecs/entity_handle.hpp"
 #include "engine/base_systems/base_system_ids.hpp"
+#include "engine/debug_gui/entity_info.hpp"
 #include <vector>
 
 namespace engine
@@ -28,7 +29,7 @@ private:
 
     bool m_visible;
     ecs::EntityHandle m_entity;
-    std::vector<ecs::Entity> m_entities;
+    std::vector<EntityInfo> m_entity_infos;
     std::vector<Entry> m_entries;
     std::vector<std::unique_ptr<EditorPanel>> m_panels;
 
