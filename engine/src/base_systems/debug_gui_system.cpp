@@ -1,5 +1,5 @@
 #include "engine/base_systems/debug_gui_system.hpp"
-#include "engine/debug_gui/debug_gui.hpp"
+#include "engine/debug_gui/debug_panel.hpp"
 #include "engine/debug_gui/entity_debug_info.hpp"
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
@@ -16,19 +16,19 @@ DebugGuiSystem::DebugGuiSystem()
 }
 
 //  ----------------------------------------------------------------------------
-void DebugGuiSystem::add_gui(std::unique_ptr<DebugGui> debug_gui) {
-    if (debug_gui == nullptr) {
-        throw std::runtime_error("Debug GUI cannot be null.");
+void DebugGuiSystem::add_gui(std::unique_ptr<DebugPanel> panel) {
+    if (panel == nullptr) {
+        throw std::runtime_error("Debug panel cannot be null.");
     }
 
     Entry entry{};
-    entry.title = debug_gui->get_window_title();
-    entry.debug_gui = debug_gui.get();
+    entry.title = panel->get_window_title();
+    entry.panel = panel.get();
 
     m_entries.push_back(entry);
 
-    debug_gui->set_debug_system(this);
-    m_debug_gui.push_back(std::move(debug_gui));
+    panel->set_debug_system(this);
+    m_panels.push_back(std::move(panel));
 }
 
 //  ----------------------------------------------------------------------------
@@ -81,14 +81,14 @@ void DebugGuiSystem::update(Game& game) {
 
     update_system_manager_gui(game);
 
-    //  Update debug GUIs
+    //  Update debug panels
     for (const Entry& entry : m_entries) {
         if (!entry.visible) {
             continue;
         }
 
-        if (entry.debug_gui) {
-            entry.debug_gui->update(game);
+        if (entry.panel) {
+            entry.panel->update(game);
         }
 
         if (entry.func) {

@@ -4,10 +4,10 @@
 #include "engine/base_systems/debug_gui_system.hpp"
 #include "engine/base_systems/name_system.hpp"
 #include "engine/base_systems/profile_system.hpp"
-#include "engine/debug_gui/config_system_debug_gui.hpp"
-#include "engine/debug_gui/debug_gui_system_debug_gui.hpp"
-#include "engine/debug_gui/name_system_debug_gui.hpp"
-#include "engine/debug_gui/profile_system_debug_gui.hpp"
+#include "engine/debug_gui/config_system_debug_panel.hpp"
+#include "engine/debug_gui/debug_gui_system_debug_panel.hpp"
+#include "engine/debug_gui/name_system_debug_panel.hpp"
+#include "engine/debug_gui/profile_system_debug_panel.hpp"
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
 
@@ -49,19 +49,19 @@ void initialize_base_systems(
     sys_mgr.add_system(std::make_unique<DebugGuiSystem>());
     DebugGuiSystem& debug_gui_system = get_debug_gui_system(sys_mgr);
     debug_gui_system.add_gui(
-        std::make_unique<DebugGuiSystemDebugGui>(get_debug_gui_system(sys_mgr)
+        std::make_unique<DebugGuiSystemDebugPanel>(get_debug_gui_system(sys_mgr)
     ));
 
     //  Configuration system
     sys_mgr.add_system(std::make_unique<ConfigSystem>(game_base_name));
     debug_gui_system.add_gui(
-        std::make_unique<ConfigSystemDebugGui>(get_config_system(sys_mgr))
+        std::make_unique<ConfigSystemDebugPanel>(get_config_system(sys_mgr))
     );
 
     //  Profile system
     sys_mgr.add_system(std::make_unique<ProfileSystem>(game_base_name));
     debug_gui_system.add_gui(
-        std::make_unique<ProfileSystemDebugGui>(get_profile_system(sys_mgr))
+        std::make_unique<ProfileSystemDebugPanel>(get_profile_system(sys_mgr))
     );
 
     EcsRoot& ecs = game.get_ecs_root();
@@ -69,7 +69,7 @@ void initialize_base_systems(
     //  Name system
     sys_mgr.add_system(std::make_unique<NameSystem>(ecs, 1000));
     debug_gui_system.add_gui(
-        std::make_unique<NameSystemDebugGui>(get_name_system(sys_mgr))
+        std::make_unique<NameSystemDebugPanel>(get_name_system(sys_mgr))
     );
 }
 }

@@ -1,18 +1,18 @@
 #include "engine/game.hpp"
 #include "engine/debug_gui/entity_debug_info.hpp"
-#include "engine/debug_gui/name_system_debug_gui.hpp"
+#include "engine/debug_gui/name_system_debug_panel.hpp"
 #include "engine/base_systems/name_system.hpp"
 #include "imgui.h"
 
 namespace engine
 {
 //  ----------------------------------------------------------------------------
-NameSystemDebugGui::NameSystemDebugGui(NameSystem& name_sys)
-: EntitySystemDebugGui(name_sys) {
+NameSystemDebugPanel::NameSystemDebugPanel(NameSystem& name_sys)
+: EntitySystemDebugPanel(name_sys) {
 }
 
 //  ----------------------------------------------------------------------------
-void NameSystemDebugGui::on_update(Game& game) {
+void NameSystemDebugPanel::on_update(Game& game) {
     const auto& entity_debug_infos = get_entity_debug_infos();
 
     if (entity_debug_infos.empty()) {
