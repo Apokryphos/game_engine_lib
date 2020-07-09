@@ -43,7 +43,7 @@ void DemoSystem::strafe(float amount) {
 
 //  ----------------------------------------------------------------------------
 void DemoSystem::zoom(float amount) {
-    m_fov = std::clamp(m_fov + amount, 1.0f, 90.0f);
+    m_fov = std::clamp(m_fov + amount, 1.0f, 120.0f);
 }
 
 //  ----------------------------------------------------------------------------

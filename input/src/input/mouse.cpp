@@ -73,7 +73,7 @@ void Mouse::post_events() {
                 switch (event_type) {
                     case InputEventType::Down: {
                         if (is_wheel_down(sign)) {
-                            InputEvent event(get_id(), action_id, InputEventType::Down, 1);
+                            InputEvent event(get_id(), action_id, InputEventType::Down, InputSource::MouseWheel, 1);
                             InputDevice::post_event(event);
                         }
                     }
@@ -81,7 +81,7 @@ void Mouse::post_events() {
 
                     case InputEventType::Pressed: {
                         if (is_wheel_pressed(sign)) {
-                            InputEvent event(get_id(), action_id, InputEventType::Pressed, 1);
+                            InputEvent event(get_id(), action_id, InputEventType::Pressed, InputSource::MouseWheel, 1);
                             InputDevice::post_event(event);
                         }
                     }
@@ -89,7 +89,7 @@ void Mouse::post_events() {
 
                     case InputEventType::Released: {
                         if (is_wheel_released(sign)) {
-                            InputEvent event(get_id(), action_id, InputEventType::Released, 0);
+                            InputEvent event(get_id(), action_id, InputEventType::Released, InputSource::MouseWheel, 0);
                             InputDevice::post_event(event);
                         }
                     }
@@ -97,7 +97,7 @@ void Mouse::post_events() {
 
                     case InputEventType::Up: {
                         if (is_wheel_up(sign)) {
-                            InputEvent event(get_id(), action_id, InputEventType::Up, 0);
+                            InputEvent event(get_id(), action_id, InputEventType::Up, InputSource::MouseWheel, 0);
                             InputDevice::post_event(event);
                         }
                     }
@@ -113,7 +113,7 @@ void Mouse::post_events() {
                 switch (event_type) {
                     case InputEventType::Down: {
                         if (is_button_down(button)) {
-                            InputEvent event(get_id(), action_id, InputEventType::Down, 1);
+                            InputEvent event(get_id(), action_id, InputEventType::Down, InputSource::MouseButton, 1);
                             InputDevice::post_event(event);
                         }
                     }
@@ -121,7 +121,7 @@ void Mouse::post_events() {
 
                     case InputEventType::Pressed: {
                         if (is_button_pressed(button)) {
-                            InputEvent event(get_id(), action_id, InputEventType::Pressed, 1);
+                            InputEvent event(get_id(), action_id, InputEventType::Pressed, InputSource::MouseButton, 1);
                             InputDevice::post_event(event);
                         }
                     }
@@ -129,7 +129,7 @@ void Mouse::post_events() {
 
                     case InputEventType::Released: {
                         if (is_button_released(button)) {
-                            InputEvent event(get_id(), action_id, InputEventType::Released, 0);
+                            InputEvent event(get_id(), action_id, InputEventType::Released, InputSource::MouseButton, 0);
                             InputDevice::post_event(event);
                         }
                     }
@@ -137,7 +137,7 @@ void Mouse::post_events() {
 
                     case InputEventType::Up: {
                         if (is_button_up(button)) {
-                            InputEvent event(get_id(), action_id, InputEventType::Up, 0);
+                            InputEvent event(get_id(), action_id, InputEventType::Up, InputSource::MouseButton, 0);
                             InputDevice::post_event(event);
                         }
                     }
@@ -156,7 +156,7 @@ void Mouse::post_events() {
                         }
 
                         if (value != 0) {
-                            InputEvent event(get_id(), action_id, event_type, value);
+                            InputEvent event(get_id(), action_id, event_type, InputSource::MouseButton, value);
                             InputDevice::post_event(event);
                         }
                     }
@@ -164,7 +164,7 @@ void Mouse::post_events() {
 
                     case InputEventType::Poll: {
                         const int value = is_button_down(button) ? 1 : 0;
-                        InputEvent event(get_id(), action_id, InputEventType::Poll, value);
+                        InputEvent event(get_id(), action_id, InputEventType::Poll, InputSource::MouseButton, value);
                         InputDevice::post_event(event);
                     }
                     break;

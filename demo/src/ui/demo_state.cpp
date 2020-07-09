@@ -8,6 +8,7 @@
 #include "engine/engine.hpp"
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
+#include "engine/time.hpp"
 #include "input/input_device.hpp"
 #include "input/input_event.hpp"
 #include "input/input_manager.hpp"
@@ -44,6 +45,8 @@ void log_event(const InputEvent& event, const InputDevice& device) {
 
 //  ----------------------------------------------------------------------------
 void DemoState::on_process_event(Game& game, const InputEvent& event) {
+    const float elapsed_seconds = get_elapsed_seconds();
+
     Engine& engine = game.get_engine();
     InputManager& input_mgr = engine.get_input_manager();
     InputDevice& device = input_mgr.get_device(event.get_device_id());
@@ -54,6 +57,15 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
 
     log_event(event, device);
+
+    const float move_speed = 10.0f;
+
+    const float rotate_speed = 90.0f;
+
+    const float zoom_speed =
+        (event.get_source() == InputSource::MouseWheel) ?
+        5000.0f :
+        100.0f;
 
     //  Check for events only on activate (press)
     switch (event.get_action_id()) {
@@ -81,19 +93,19 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
             break;
 
         case INPUT_ACTION_ID_MOVE_DOWN:
-            demo_sys.forward(0.1f);
+            demo_sys.forward(elapsed_seconds * move_speed * event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_MOVE_UP:
-            demo_sys.forward(-0.1f);
+            demo_sys.forward(elapsed_seconds * -move_speed * event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_MOVE_RIGHT:
-            demo_sys.strafe(0.1f);
+            demo_sys.strafe(elapsed_seconds * move_speed * event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_MOVE_LEFT:
-            demo_sys.strafe(-0.1f);
+            demo_sys.strafe(elapsed_seconds *-move_speed * event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_AIM_HORZ:
@@ -106,19 +118,19 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
             break;
 
         case INPUT_ACTION_ID_ROTATE_CW:
-            demo_sys.rotate(glm::radians(event.get_analog_value() * -2.0f));
+            demo_sys.rotate(elapsed_seconds * -glm::radians(rotate_speed) * event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_ROTATE_CCW:
-            demo_sys.rotate(glm::radians(event.get_analog_value() * 2.0f));
+            demo_sys.rotate(elapsed_seconds * glm::radians(rotate_speed) * event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_ZOOM_IN:
-            demo_sys.zoom(-1.0f);
+            demo_sys.zoom(elapsed_seconds * -zoom_speed * event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_ZOOM_OUT:
-            demo_sys.zoom(1.0f);
+            demo_sys.zoom(elapsed_seconds * zoom_speed * event.get_analog_value());
             break;
     }
 }

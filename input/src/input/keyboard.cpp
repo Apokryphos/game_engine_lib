@@ -63,7 +63,7 @@ void Keyboard::post_events() {
         switch (event_type) {
             case InputEventType::Down: {
                 if (is_key_down(key)) {
-                    InputEvent event(get_id(), action_id, InputEventType::Down, 1);
+                    InputEvent event(get_id(), action_id, InputEventType::Down, InputSource::Key, 1);
                     InputDevice::post_event(event);
                 }
             }
@@ -71,7 +71,7 @@ void Keyboard::post_events() {
 
             case InputEventType::Pressed: {
                 if (is_key_pressed(key)) {
-                    InputEvent event(get_id(), action_id, InputEventType::Pressed, 1);
+                    InputEvent event(get_id(), action_id, InputEventType::Pressed, InputSource::Key, 1);
                     InputDevice::post_event(event);
                 }
             }
@@ -79,7 +79,7 @@ void Keyboard::post_events() {
 
             case InputEventType::Released: {
                 if (is_key_released(key)) {
-                    InputEvent event(get_id(), action_id, InputEventType::Released, 0);
+                    InputEvent event(get_id(), action_id, InputEventType::Released, InputSource::Key, 0);
                     InputDevice::post_event(event);
                 }
             }
@@ -87,7 +87,7 @@ void Keyboard::post_events() {
 
             case InputEventType::Up: {
                 if (is_key_up(key)) {
-                    InputEvent event(get_id(), action_id, InputEventType::Up, 0);
+                    InputEvent event(get_id(), action_id, InputEventType::Up, InputSource::Key, 0);
                     InputDevice::post_event(event);
                 }
             }
@@ -106,7 +106,7 @@ void Keyboard::post_events() {
                 }
 
                 if (value != 0) {
-                    InputEvent event(get_id(), action_id, event_type, value);
+                    InputEvent event(get_id(), action_id, event_type, InputSource::Key, value);
                     InputDevice::post_event(event);
                 }
             }
@@ -114,7 +114,7 @@ void Keyboard::post_events() {
 
             case InputEventType::Poll: {
                 const int value = is_key_down(key) ? 1 : 0;
-                InputEvent event(get_id(), action_id, InputEventType::Poll, value);
+                InputEvent event(get_id(), action_id, InputEventType::Poll, InputSource::Key, value);
                 InputDevice::post_event(event);
             }
             break;

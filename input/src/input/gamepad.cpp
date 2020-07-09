@@ -96,6 +96,7 @@ void Gamepad::post_events() {
                                 get_id(),
                                 action_id,
                                 InputEventType::Down,
+                                InputSource::Axis,
                                 m_state.get_axis_value(axis, sign, type, AXIS_DEADZONE)
                             );
 
@@ -110,6 +111,7 @@ void Gamepad::post_events() {
                                 get_id(),
                                 action_id,
                                 InputEventType::Pressed,
+                                InputSource::Axis,
                                 get_axis_max(sign)
                             );
                             InputDevice::post_event(event);
@@ -123,6 +125,7 @@ void Gamepad::post_events() {
                                 get_id(),
                                 action_id,
                                 InputEventType::Released,
+                                InputSource::Axis,
                                 0
                             );
                             InputDevice::post_event(event);
@@ -136,6 +139,7 @@ void Gamepad::post_events() {
                                 get_id(),
                                 action_id,
                                 InputEventType::Up,
+                                InputSource::Axis,
                                 0
                             );
                             InputDevice::post_event(event);
@@ -156,6 +160,7 @@ void Gamepad::post_events() {
                                 get_id(),
                                 action_id,
                                 value == 0 ? InputEventType::Released : InputEventType::Pressed,
+                                InputSource::Axis,
                                 value
                             );
 
@@ -177,6 +182,7 @@ void Gamepad::post_events() {
                             get_id(),
                             action_id,
                             InputEventType::Poll,
+                            InputSource::Axis,
                             value
                         );
                         InputDevice::post_event(event);
@@ -194,7 +200,7 @@ void Gamepad::post_events() {
                 switch (event_type) {
                     case InputEventType::Down: {
                         if (is_button_down(button)) {
-                            InputEvent event(get_id(), action_id, InputEventType::Down, 1);
+                            InputEvent event(get_id(), action_id, InputEventType::Down, InputSource::Button, 1);
                             InputDevice::post_event(event);
                         }
                     }
@@ -202,7 +208,7 @@ void Gamepad::post_events() {
 
                     case InputEventType::Pressed: {
                         if (is_button_pressed(button)) {
-                            InputEvent event(get_id(), action_id, InputEventType::Pressed, 1);
+                            InputEvent event(get_id(), action_id, InputEventType::Pressed, InputSource::Button, 1);
                             InputDevice::post_event(event);
                         }
                     }
@@ -210,7 +216,7 @@ void Gamepad::post_events() {
 
                     case InputEventType::Released: {
                         if (is_button_released(button)) {
-                            InputEvent event(get_id(), action_id, InputEventType::Released, 0);
+                            InputEvent event(get_id(), action_id, InputEventType::Released, InputSource::Button, 0);
                             InputDevice::post_event(event);
                         }
                     }
@@ -218,7 +224,7 @@ void Gamepad::post_events() {
 
                     case InputEventType::Up: {
                         if (is_button_up(button)) {
-                            InputEvent event(get_id(), action_id, InputEventType::Up, 0);
+                            InputEvent event(get_id(), action_id, InputEventType::Up, InputSource::Button, 0);
                             InputDevice::post_event(event);
                         }
                     }
@@ -237,7 +243,7 @@ void Gamepad::post_events() {
                         }
 
                         if (value != 0) {
-                            InputEvent event(get_id(), action_id, event_type, value);
+                            InputEvent event(get_id(), action_id, event_type, InputSource::Button, value);
                             InputDevice::post_event(event);
                         }
                     }
@@ -245,7 +251,7 @@ void Gamepad::post_events() {
 
                     case InputEventType::Poll: {
                         const int value = is_button_down(button) ? 1 : 0;
-                        InputEvent event(get_id(), action_id, InputEventType::Poll, value);
+                        InputEvent event(get_id(), action_id, InputEventType::Poll, InputSource::Button, value);
                         InputDevice::post_event(event);
                     }
                     break;
