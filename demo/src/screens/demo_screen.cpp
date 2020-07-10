@@ -72,7 +72,7 @@ void DemoScreen::on_render(Game& game) {
         glm::radians(fov),
         aspect_ratio,
         0.1f,
-        20.0f
+        50.0f
     );
 
     Window& window = engine.get_window();
