@@ -66,10 +66,8 @@ void DemoScreen::on_render(Game& game) {
     Renderer& renderer = engine.get_renderer();
     const float aspect_ratio = renderer.get_aspect_ratio();
 
-    const float fov = demo_sys.get_fov();
-
     glm::mat4 proj = glm::perspective(
-        glm::radians(fov),
+        glm::radians(90.0f),
         aspect_ratio,
         0.1f,
         50.0f
