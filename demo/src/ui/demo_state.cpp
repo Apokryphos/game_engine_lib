@@ -59,30 +59,21 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
 
     const InputActionId action_id = event.get_action_id();
 
+    log_event(event, device);
+
     SystemManager& sys_mgr = game.get_system_manager();
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
 
-    //  Get active camera
+    //  Check if there's an active camera
     CameraSystem& camera_sys = get_camera_system(sys_mgr);
     if (!camera_sys.has_active_camera()) {
         return;
     }
 
     const Entity camera = camera_sys.get_active_camera();
-    const auto camera_cmpnt = camera_sys.get_component(camera);
 
     MoveSystem& move_sys = get_move_system(sys_mgr);
     const auto move_cmpnt = move_sys.get_component(camera);
-
-    PositionSystem& pos_sys = get_position_system(sys_mgr);
-    const auto pos_cmpnt = pos_sys.get_component(camera);
-    glm::vec3 camera_pos = pos_sys.get_position(pos_cmpnt);
-
-    log_event(event, device);
-
-    const float move_speed = 10.0f;
-
-    const float rotate_speed = 90.0f;
 
     const float zoom_speed =
         (event.get_source() == InputSource::MouseWheel) ?
@@ -155,7 +146,5 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
             demo_sys.zoom(elapsed_seconds * zoom_speed * event.get_analog_value());
             break;
     }
-
-    pos_sys.set_position(pos_cmpnt, camera_pos);
 }
 }
