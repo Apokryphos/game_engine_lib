@@ -71,14 +71,15 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
     }
 
     const Entity camera = camera_sys.get_active_camera();
+    const auto camera_cmpnt = camera_sys.get_component(camera);
 
     MoveSystem& move_sys = get_move_system(sys_mgr);
     const auto move_cmpnt = move_sys.get_component(camera);
 
-    const float zoom_speed =
-        (event.get_source() == InputSource::MouseWheel) ?
-        5000.0f :
-        100.0f;
+    // const float zoom_amount =
+    //     (event.get_source() == InputSource::MouseWheel) ?
+    //     event.get_analog_value() :
+    //     event.get_analog_value();
 
     //  Check for events only on activate (press)
     switch (event.get_action_id()) {
@@ -139,11 +140,11 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
             break;
 
         case INPUT_ACTION_ID_ZOOM_IN:
-            demo_sys.zoom(elapsed_seconds * -zoom_speed * event.get_analog_value());
+            camera_sys.zoom_in(camera_cmpnt, event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_ZOOM_OUT:
-            demo_sys.zoom(elapsed_seconds * zoom_speed * event.get_analog_value());
+            camera_sys.zoom_out(camera_cmpnt, event.get_analog_value());
             break;
     }
 }

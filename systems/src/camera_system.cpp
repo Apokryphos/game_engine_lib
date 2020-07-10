@@ -4,6 +4,7 @@
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
 #include "engine/game.hpp"
+#include "engine/time.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
@@ -14,7 +15,14 @@ using namespace engine;
 namespace systems
 {
 //  ----------------------------------------------------------------------------
+void CameraSystem::initialize_component_data(size_t index, CameraComponentData& data) {
+    data.zoom_speed = 10.0f;
+}
+
+//  ----------------------------------------------------------------------------
 void CameraSystem::update(Game& game) {
+    const float elapsed_seconds = get_elapsed_seconds();
+
     SystemManager& sys_mgr = game.get_system_manager();
     MoveSystem& move_sys = get_move_system(sys_mgr);
     PositionSystem& pos_sys = get_position_system(sys_mgr);
@@ -32,7 +40,13 @@ void CameraSystem::update(Game& game) {
         glm::vec3 camera_pos = pos_sys.get_position(camera_pos_cmpnt);
 
         auto& data = get_component_data(cmpnt_index);
-        // data.rotate = camera_dir;
+
+        //  Update zoom
+        data.distance = std::clamp(
+            data.distance + data.zoom_direction * data.zoom_speed * elapsed_seconds,
+            0.1f,
+            10.0f
+        );
 
         //  Get target position (entity or vec3)
         glm::vec3 target_pos;
@@ -65,6 +79,8 @@ void CameraSystem::update(Game& game) {
         } else {
             throw std::runtime_error("Not implemented.");
         }
+
+        data.zoom_direction = 0;
     }
 }
 }

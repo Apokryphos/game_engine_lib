@@ -28,8 +28,10 @@ struct CameraComponentData
     CameraMode mode;
     //  Distance between camera and target
     float distance;
-    //  Rotation (orbit)
-    float rotate;
+    //  Direction to change zoom each frame
+    float zoom_direction;
+    //  Zoom speed
+    float zoom_speed;
     //  Target position
     glm::vec3 target;
     //  Target entity
@@ -42,7 +44,8 @@ struct CameraComponentData
         ar(
             mode,
             distance,
-            rotate,
+            zoom_direction,
+            zoom_speed,
             target,
             target_entity
         );
@@ -52,6 +55,11 @@ struct CameraComponentData
 class CameraSystem : public ecs::EntitySystem<CameraComponentData>
 {
     ecs::EntityHandle m_active_camera;
+
+    virtual void initialize_component_data(
+        size_t index,
+        CameraComponentData& data
+    ) override;
 
 public:
     CameraSystem(ecs::EcsRoot& ecs_root, unsigned int max_components)
@@ -107,5 +115,15 @@ public:
     }
 
     void update(engine::Game& game);
+
+    void zoom_in(const Component cmpnt, float amount) {
+        auto& data = get_component_data(cmpnt);
+        data.zoom_direction = std::clamp(-amount, -1.0f, 1.0f);
+    }
+
+    void zoom_out(const Component cmpnt, float amount) {
+        auto& data = get_component_data(cmpnt);
+        data.zoom_direction = std::clamp(amount, -1.0f, 1.0f);
+    }
 };
 }
