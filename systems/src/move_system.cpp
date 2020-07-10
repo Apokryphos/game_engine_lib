@@ -46,7 +46,7 @@ void MoveSystem::update(engine::Game& game) {
         glm::vec3 position = pos_sys.get_position(pos_cmpnt);
 
         //  Update position
-        glm::vec3 delta = glm::rotateZ(data.move, data.direction) * data.turn_speed * elapsed_seconds;
+        glm::vec3 delta = glm::rotateZ(data.move, data.direction) * data.move_speed * elapsed_seconds;
         pos_sys.set_position(pos_cmpnt, position + delta);
 
         //  Reset for next frame
