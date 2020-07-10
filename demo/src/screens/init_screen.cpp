@@ -45,8 +45,8 @@ static void init_input_actions(InputManager& input_mgr) {
     action_set.add_action(INPUT_ACTION_ID_QUIT, "Quit", InputType::Digital, InputEventType::Pressed);
     action_set.add_action(INPUT_ACTION_ID_ACCEPT, "Accept", InputType::Digital, InputEventType::Pressed);
     action_set.add_action(INPUT_ACTION_ID_CANCEL, "Cancel", InputType::Digital, InputEventType::Pressed);
-    action_set.add_action(INPUT_ACTION_ID_MOVE_UP, "Move Up", InputType::Analog, InputEventType::Down);
-    action_set.add_action(INPUT_ACTION_ID_MOVE_DOWN, "Move Down", InputType::Analog, InputEventType::Down);
+    action_set.add_action(INPUT_ACTION_ID_MOVE_FORWARD, "Move Forward", InputType::Analog, InputEventType::Down);
+    action_set.add_action(INPUT_ACTION_ID_MOVE_BACKWARD, "Move Backward", InputType::Analog, InputEventType::Down);
     action_set.add_action(INPUT_ACTION_ID_MOVE_RIGHT, "Move Right", InputType::Analog, InputEventType::Down);
     action_set.add_action(INPUT_ACTION_ID_MOVE_LEFT, "Move Left", InputType::Analog, InputEventType::Down);
     action_set.add_action(INPUT_ACTION_ID_AIM_HORZ, "Aim X", InputType::Analog, InputEventType::Delta);
@@ -68,8 +68,8 @@ static void init_default_key_binds(InputManager& input_mgr) {
     bind_map.bind_key(INPUT_ACTION_ID_QUIT, GLFW_KEY_ESCAPE);
     bind_map.bind_key(INPUT_ACTION_ID_ACCEPT, GLFW_KEY_ENTER);
     bind_map.bind_key(INPUT_ACTION_ID_CANCEL, GLFW_KEY_BACKSPACE);
-    bind_map.bind_key(INPUT_ACTION_ID_MOVE_UP, GLFW_KEY_UP);
-    bind_map.bind_key(INPUT_ACTION_ID_MOVE_DOWN, GLFW_KEY_DOWN);
+    bind_map.bind_key(INPUT_ACTION_ID_MOVE_FORWARD, GLFW_KEY_UP);
+    bind_map.bind_key(INPUT_ACTION_ID_MOVE_BACKWARD, GLFW_KEY_DOWN);
     bind_map.bind_key(INPUT_ACTION_ID_MOVE_RIGHT, GLFW_KEY_RIGHT);
     bind_map.bind_key(INPUT_ACTION_ID_MOVE_LEFT, GLFW_KEY_LEFT);
     bind_map.bind_key(INPUT_ACTION_ID_ROTATE_CW, GLFW_KEY_END);
@@ -102,6 +102,8 @@ static void init_default_gamepad_binds(InputManager& input_mgr) {
     bind_map.bind_button(INPUT_ACTION_ID_MOVE_RIGHT, GLFW_GAMEPAD_BUTTON_DPAD_RIGHT);
     bind_map.bind_button(INPUT_ACTION_ID_MOVE_LEFT, GLFW_GAMEPAD_BUTTON_DPAD_LEFT);
 
+    bind_map.bind_axis(INPUT_ACTION_ID_MOVE_FORWARD, GLFW_GAMEPAD_AXIS_LEFT_Y, AxisSign::Negative);
+    bind_map.bind_axis(INPUT_ACTION_ID_MOVE_BACKWARD, GLFW_GAMEPAD_AXIS_LEFT_Y, AxisSign::Positive);
     bind_map.bind_axis(INPUT_ACTION_ID_MOVE_RIGHT, GLFW_GAMEPAD_AXIS_LEFT_X, AxisSign::Positive);
     bind_map.bind_axis(INPUT_ACTION_ID_MOVE_LEFT, GLFW_GAMEPAD_AXIS_LEFT_X, AxisSign::Negative);
 

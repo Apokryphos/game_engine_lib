@@ -105,20 +105,20 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
         case INPUT_ACTION_ID_CANCEL:
             break;
 
-        case INPUT_ACTION_ID_MOVE_DOWN:
-            move_sys.move_backward(move_cmpnt, event.get_analog_value());
+        case INPUT_ACTION_ID_MOVE_BACKWARD:
+            move_sys.move_backward(move_cmpnt, std::abs(event.get_analog_value()));
             break;
 
-        case INPUT_ACTION_ID_MOVE_UP:
-            move_sys.move_forward(move_cmpnt, event.get_analog_value());
+        case INPUT_ACTION_ID_MOVE_FORWARD:
+            move_sys.move_forward(move_cmpnt, std::abs(event.get_analog_value()));
             break;
 
         case INPUT_ACTION_ID_MOVE_RIGHT:
-            move_sys.move_right(move_cmpnt, event.get_analog_value());
+            move_sys.move_right(move_cmpnt, std::abs(event.get_analog_value()));
             break;
 
         case INPUT_ACTION_ID_MOVE_LEFT:
-            move_sys.move_left(move_cmpnt, event.get_analog_value());
+            move_sys.move_left(move_cmpnt, std::abs(event.get_analog_value()));
             break;
 
         case INPUT_ACTION_ID_AIM_HORZ:
