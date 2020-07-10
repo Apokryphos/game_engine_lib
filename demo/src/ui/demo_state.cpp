@@ -67,7 +67,9 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
         return;
     }
 
+
     const Entity camera = camera_sys.get_active_camera();
+    const auto camera_cmpnt = camera_sys.get_component(camera);
 
     PositionSystem& pos_sys = get_position_system(sys_mgr);
     const auto pos_cmpnt = pos_sys.get_component(camera);
@@ -139,11 +141,19 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
             break;
 
         case INPUT_ACTION_ID_ROTATE_CW:
-            demo_sys.rotate(elapsed_seconds * -glm::radians(rotate_speed) * event.get_analog_value());
+            camera_sys.turn(
+                camera_cmpnt,
+                elapsed_seconds * -glm::radians(rotate_speed) * event.get_analog_value()
+            );
+            // demo_sys.rotate(elapsed_seconds * -glm::radians(rotate_speed) * event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_ROTATE_CCW:
-            demo_sys.rotate(elapsed_seconds * glm::radians(rotate_speed) * event.get_analog_value());
+            camera_sys.turn(
+                camera_cmpnt,
+                elapsed_seconds * glm::radians(rotate_speed) * event.get_analog_value()
+            );
+            // demo_sys.rotate(elapsed_seconds * glm::radians(rotate_speed) * event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_ZOOM_IN:

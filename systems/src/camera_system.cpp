@@ -5,6 +5,7 @@
 #include "engine/game.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 using namespace ecs;
 using namespace engine;
@@ -46,7 +47,21 @@ void CameraSystem::update(Game& game) {
                 glm::vec3(0.0f, 0.0f, 1.0f)
             );
         } else if (data.mode == CameraMode::Orbit) {
-            throw std::runtime_error("Not implemented.");
+            glm::vec3 eye = glm::rotateZ(
+                glm::vec3(1.0f, 0.0f, 1.0f),
+                data.rotate
+            );
+
+            eye = glm::normalize(eye);
+
+            eye = camera_pos + (eye * data.distance);
+            // eye.y += data.height;
+
+            data.view = glm::lookAt(
+                eye,
+                camera_pos,
+                glm::vec3(0.0f, 0.0f, 1.0f)
+            );
         } else {
             throw std::runtime_error("Not implemented.");
         }

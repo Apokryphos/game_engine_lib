@@ -189,6 +189,7 @@ static void init_entities(Game& game) {
     );
     const auto cam_cmpnt = cam_sys.get_component(camera);
     cam_sys.activate(cam_cmpnt);
+    cam_sys.set_mode(cam_cmpnt, CameraMode::Orbit);
 
     //  Position distribution
     Random& random = game.get_random();

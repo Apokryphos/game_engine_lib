@@ -28,6 +28,8 @@ struct CameraComponentData
     CameraMode mode;
     //  Distance between camera and target
     float distance;
+    //  Rotation (orbit)
+    float rotate;
     //  Target position
     glm::vec3 target;
     //  Target entity
@@ -40,6 +42,7 @@ struct CameraComponentData
         ar(
             mode,
             distance,
+            rotate,
             target,
             target_entity
         );
@@ -83,7 +86,12 @@ public:
     static const common::SystemId Id = SYSTEM_ID_CAMERA;
 
     void set_mode(const Component cmpnt, CameraMode mode) {
+        auto& data = get_component_data(cmpnt);
         get_component_data(cmpnt).mode = mode;
+
+        if (mode == CameraMode::Orbit) {
+            data.distance = 3.0f;
+        }
     }
 
     void set_target(const Component cmpnt, const glm::vec3& target) {
@@ -96,6 +104,10 @@ public:
         } else {
             get_component_data(cmpnt).target_entity.reset();
         }
+    }
+
+    void turn(const Component cmpnt, const float amount) {
+        get_component_data(cmpnt).rotate += amount;
     }
 
     void update(engine::Game& game);
