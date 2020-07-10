@@ -58,10 +58,6 @@ void DemoScreen::on_render(Game& game) {
     const auto camera_cmpnt = camera_sys.get_component(camera);
     glm::mat4 view = camera_sys.get_view_matrix(camera_cmpnt);
 
-    DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
-
-    glm::mat4 world = glm::mat4(1);
-
     Engine& engine = game.get_engine();
     Renderer& renderer = engine.get_renderer();
     const float aspect_ratio = renderer.get_aspect_ratio();
@@ -76,20 +72,21 @@ void DemoScreen::on_render(Game& game) {
     Window& window = engine.get_window();
     renderer.begin_frame();
 
-    //  Get drawable entities
-    const ModelSystem& model_sys = get_model_system(sys_mgr);
+    glm::mat4 world = glm::mat4(1);
 
-    std::vector<Entity> entities;
-    model_sys.get_entities(entities);
-
-    const PositionSystem& pos_sys = get_position_system(sys_mgr);
+    //  Build draw order
+    DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
+    std::vector<DemoSystem::DrawOrder> draw_order;
+    demo_sys.build_draw_order(game, draw_order);
 
     //  Draw entities
-    for (const Entity entity : entities) {
-        const auto pos_cmpnt = pos_sys.get_component(entity);
-        const glm::vec3& position = pos_sys.get_position(pos_cmpnt);
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
-        renderer.draw_model(1, model * world, view, proj);
+    for (const auto& draw_order : draw_order) {
+        renderer.draw_model(
+            draw_order.model_id,
+            draw_order.model * world,
+            view,
+            proj
+        );
     }
 
     renderer.draw_frame(window.get_glfw_window());
@@ -105,7 +102,7 @@ void DemoScreen::on_update(Game& game) {
     CameraSystem& camera_sys = get_camera_system(sys_mgr);
     camera_sys.update(game);
 
-    DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
-    demo_sys.update(game);
+    // DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
+    // demo_sys.update(game);
 }
 }
