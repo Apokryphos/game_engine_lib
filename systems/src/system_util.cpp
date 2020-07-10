@@ -43,14 +43,14 @@ void add_model_component(
 void add_move_component(
     const Entity entity,
     MoveSystem& move_sys,
-    float speed
+    float move_speed
 ) {
     if (!move_sys.has_component(entity)) {
         move_sys.add_component(entity);
     }
 
     const auto move_cmpnt = move_sys.get_component(entity);
-    move_sys.set_speed(move_cmpnt, speed);
+    move_sys.set_move_speed(move_cmpnt, move_speed);
 }
 
 //  ----------------------------------------------------------------------------

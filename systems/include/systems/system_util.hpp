@@ -32,7 +32,7 @@ void add_model_component(
 void add_move_component(
     const ecs::Entity entity,
     MoveSystem& move_sys,
-    float speed
+    float move_speed
 );
 
 void add_position_component(

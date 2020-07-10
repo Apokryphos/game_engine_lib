@@ -73,8 +73,12 @@ public:
         data.move.x = std::clamp(amount, -1.0f, 1.0f);
     }
 
-    void set_speed(const Component cmpnt, float move_speed) {
+    void set_move_speed(const Component cmpnt, float move_speed) {
         get_component_data(cmpnt).move_speed = move_speed;
+    }
+
+    void set_turn_speed(const Component cmpnt, float turn_speed) {
+        get_component_data(cmpnt).turn_speed = turn_speed;
     }
 
     void turn_left(const Component cmpnt, float amount) {
