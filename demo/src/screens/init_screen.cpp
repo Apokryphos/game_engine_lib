@@ -187,7 +187,7 @@ static void init_entities(Game& game) {
     Entity camera = ecs.create_entity();
     CameraSystem& cam_sys = get_camera_system(sys_mgr);
     add_name_component(camera, name_sys, "camera");
-    add_move_component(camera, get_move_system(sys_mgr), 5.0f);
+    add_move_component(camera, get_move_system(sys_mgr), 10.0f);
     add_position_component(camera, pos_sys, glm::vec3(1.0f, 1.0f, 1.0f));
     add_camera_component(
         camera,
