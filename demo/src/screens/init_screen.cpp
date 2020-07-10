@@ -19,8 +19,10 @@
 #include "systems/camera_system.hpp"
 #include "systems/debug_gui/position_system_debug_panel.hpp"
 #include "systems/editor/camera_system_editor_panel.hpp"
+#include "systems/editor/move_system_editor_panel.hpp"
 #include "systems/editor/position_system_editor_panel.hpp"
 #include "systems/model_system.hpp"
+#include "systems/move_system.hpp"
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
 
@@ -158,11 +160,15 @@ static void init_ecs_systems(Game& game) {
 
     sys_mgr.add_system(std::make_unique<CameraSystem>(ecs, 1000));
     sys_mgr.add_system(std::make_unique<ModelSystem>(ecs, 1000));
+    sys_mgr.add_system(std::make_unique<MoveSystem>(ecs, 1000));
 
     //  Editors
     EditorSystem& editor_sys = get_editor_system(sys_mgr);
     editor_sys.add_panel(
         std::make_unique<CameraSystemEditorPanel>(get_camera_system(sys_mgr))
+    );
+    editor_sys.add_panel(
+        std::make_unique<MoveSystemEditorPanel>(get_move_system(sys_mgr))
     );
     editor_sys.add_panel(
         std::make_unique<PositionSystemEditorPanel>(get_position_system(sys_mgr))
@@ -181,6 +187,7 @@ static void init_entities(Game& game) {
     Entity camera = ecs.create_entity();
     CameraSystem& cam_sys = get_camera_system(sys_mgr);
     add_name_component(camera, name_sys, "camera");
+    add_move_component(camera, get_move_system(sys_mgr), 5.0f);
     add_position_component(camera, pos_sys, glm::vec3(1.0f, 1.0f, 1.0f));
     add_camera_component(
         camera,

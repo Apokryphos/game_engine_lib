@@ -13,6 +13,7 @@
 #include "input/input_event.hpp"
 #include "input/input_manager.hpp"
 #include "systems/camera_system.hpp"
+#include "systems/move_system.hpp"
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
 #include <glm/glm.hpp>
@@ -67,9 +68,11 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
         return;
     }
 
-
     const Entity camera = camera_sys.get_active_camera();
     const auto camera_cmpnt = camera_sys.get_component(camera);
+
+    MoveSystem& move_sys = get_move_system(sys_mgr);
+    const auto move_cmpnt = move_sys.get_component(camera);
 
     PositionSystem& pos_sys = get_position_system(sys_mgr);
     const auto pos_cmpnt = pos_sys.get_component(camera);
@@ -112,23 +115,19 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
             break;
 
         case INPUT_ACTION_ID_MOVE_DOWN:
-            camera_pos.y += elapsed_seconds * move_speed * event.get_analog_value();
-            // demo_sys.forward(elapsed_seconds * move_speed * event.get_analog_value());
+            move_sys.move_backward(move_cmpnt, event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_MOVE_UP:
-            camera_pos.y -= elapsed_seconds * move_speed * event.get_analog_value();
-            // demo_sys.forward(elapsed_seconds * -move_speed * event.get_analog_value());
+            move_sys.move_forward(move_cmpnt, event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_MOVE_RIGHT:
-            camera_pos.x += elapsed_seconds * move_speed * event.get_analog_value();
-            // demo_sys.strafe(elapsed_seconds * move_speed * event.get_analog_value());
+            move_sys.move_right(move_cmpnt, event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_MOVE_LEFT:
-            camera_pos.x -= elapsed_seconds * move_speed * event.get_analog_value();
-            // demo_sys.strafe(elapsed_seconds *-move_speed * event.get_analog_value());
+            move_sys.move_left(move_cmpnt, event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_AIM_HORZ:
@@ -141,19 +140,11 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
             break;
 
         case INPUT_ACTION_ID_ROTATE_CW:
-            camera_sys.turn(
-                camera_cmpnt,
-                elapsed_seconds * -glm::radians(rotate_speed) * event.get_analog_value()
-            );
-            // demo_sys.rotate(elapsed_seconds * -glm::radians(rotate_speed) * event.get_analog_value());
+            move_sys.turn_right(move_cmpnt, event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_ROTATE_CCW:
-            camera_sys.turn(
-                camera_cmpnt,
-                elapsed_seconds * glm::radians(rotate_speed) * event.get_analog_value()
-            );
-            // demo_sys.rotate(elapsed_seconds * glm::radians(rotate_speed) * event.get_analog_value());
+            move_sys.turn_left(move_cmpnt, event.get_analog_value());
             break;
 
         case INPUT_ACTION_ID_ZOOM_IN:

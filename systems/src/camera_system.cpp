@@ -1,5 +1,6 @@
 #include "ecs/ecs_root.hpp"
 #include "systems/camera_system.hpp"
+#include "systems/move_system.hpp"
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
 #include "engine/game.hpp"
@@ -15,17 +16,23 @@ namespace systems
 //  ----------------------------------------------------------------------------
 void CameraSystem::update(Game& game) {
     SystemManager& sys_mgr = game.get_system_manager();
+    MoveSystem& move_sys = get_move_system(sys_mgr);
     PositionSystem& pos_sys = get_position_system(sys_mgr);
 
     const auto cmpnt_count = get_component_count();
     for (auto cmpnt_index = 0; cmpnt_index < cmpnt_count; ++cmpnt_index) {
         const Entity camera = get_entity_by_component_index(cmpnt_index);
 
+        //  Get camera direction (rotation)
+        const auto camera_move_cmpnt = move_sys.get_component(camera);
+        glm::vec3 facing = move_sys.get_facing(camera_move_cmpnt);
+
         //  Get camera position
         const auto camera_pos_cmpnt = pos_sys.get_component(camera);
         glm::vec3 camera_pos = pos_sys.get_position(camera_pos_cmpnt);
 
         auto& data = get_component_data(cmpnt_index);
+        // data.rotate = camera_dir;
 
         //  Get target position (entity or vec3)
         glm::vec3 target_pos;
@@ -47,15 +54,8 @@ void CameraSystem::update(Game& game) {
                 glm::vec3(0.0f, 0.0f, 1.0f)
             );
         } else if (data.mode == CameraMode::Orbit) {
-            glm::vec3 eye = glm::rotateZ(
-                glm::vec3(1.0f, 0.0f, 1.0f),
-                data.rotate
-            );
-
-            eye = glm::normalize(eye);
-
-            eye = camera_pos + (eye * data.distance);
-            // eye.y += data.height;
+            glm::vec3 eye = camera_pos - facing * data.distance;
+            eye.z += data.distance;
 
             data.view = glm::lookAt(
                 eye,

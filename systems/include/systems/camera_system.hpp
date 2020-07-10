@@ -106,10 +106,6 @@ public:
         }
     }
 
-    void turn(const Component cmpnt, const float amount) {
-        get_component_data(cmpnt).rotate += amount;
-    }
-
     void update(engine::Game& game);
 };
 }

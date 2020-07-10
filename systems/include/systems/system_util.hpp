@@ -15,6 +15,7 @@ namespace systems
 class CameraSystem;
 class PositionSystem;
 class ModelSystem;
+class MoveSystem;
 
 void add_camera_component(
     const ecs::Entity entity,
@@ -28,6 +29,12 @@ void add_model_component(
     uint32_t model_id
 );
 
+void add_move_component(
+    const ecs::Entity entity,
+    MoveSystem& move_sys,
+    float speed
+);
+
 void add_position_component(
     const ecs::Entity entity,
     PositionSystem& pos_sys,
@@ -36,5 +43,6 @@ void add_position_component(
 
 CameraSystem& get_camera_system(engine::SystemManager& sys_mgr);
 ModelSystem& get_model_system(engine::SystemManager& sys_mgr);
+MoveSystem& get_move_system(engine::SystemManager& sys_mgr);
 PositionSystem& get_position_system(engine::SystemManager& sys_mgr);
 }

@@ -11,6 +11,7 @@
 #include "render/renderer.hpp"
 #include "systems/camera_system.hpp"
 #include "systems/model_system.hpp"
+#include "systems/move_system.hpp"
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
 #include <glm/glm.hpp>
@@ -59,13 +60,7 @@ void DemoScreen::on_render(Game& game) {
 
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
 
-    glm::mat4 rotate = glm::rotate(
-        glm::mat4(1.0f),
-        demo_sys.get_rotate(),
-        glm::vec3(0.0f, 0.0f, 1.0f)
-    );
-
-    glm::mat4 world = rotate;
+    glm::mat4 world = glm::mat4(1);
 
     Engine& engine = game.get_engine();
     Renderer& renderer = engine.get_renderer();
@@ -105,6 +100,9 @@ void DemoScreen::on_render(Game& game) {
 //  ----------------------------------------------------------------------------
 void DemoScreen::on_update(Game& game) {
     SystemManager& sys_mgr = game.get_system_manager();
+
+    MoveSystem& move_sys = get_move_system(sys_mgr);
+    move_sys.update(game);
 
     CameraSystem& camera_sys = get_camera_system(sys_mgr);
     camera_sys.update(game);
