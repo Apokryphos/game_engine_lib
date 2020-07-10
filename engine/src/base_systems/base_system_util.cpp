@@ -20,6 +20,20 @@ using namespace ecs;
 namespace engine
 {
 //  ----------------------------------------------------------------------------
+void add_name_component(
+    const Entity entity,
+    NameSystem& name_sys,
+    const std::string& name
+) {
+    if (!name_sys.has_component(entity)) {
+        name_sys.add_component(entity);
+    }
+
+    const auto name_cmpnt = name_sys.get_component(entity);
+    name_sys.set_name(name_cmpnt, name);
+}
+
+//  ----------------------------------------------------------------------------
 ConfigSystem& get_config_system(SystemManager& sys_mgr) {
     return sys_mgr.get_system<ConfigSystem>(SYSTEM_ID_CONFIG);
 }

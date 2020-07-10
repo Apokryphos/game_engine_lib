@@ -9,6 +9,7 @@
 #include "engine/system_manager.hpp"
 #include "platform/window.hpp"
 #include "render/renderer.hpp"
+#include "systems/camera_system.hpp"
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
 #include <glm/glm.hpp>
@@ -44,6 +45,17 @@ void DemoScreen::on_render(Game& game) {
     // const float elapsed_seconds = get_total_elapsed_seconds();
 
     SystemManager& sys_mgr = game.get_system_manager();
+
+    //  Get active camera
+    CameraSystem& camera_sys = get_camera_system(sys_mgr);
+    if (!camera_sys.has_active_camera()) {
+        return;
+    }
+
+    const Entity camera = camera_sys.get_active_camera();
+    const auto camera_cmpnt = camera_sys.get_component(camera);
+    glm::mat4 view = camera_sys.get_view_matrix(camera_cmpnt);
+
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
 
     glm::mat4 rotate = glm::rotate(
@@ -53,13 +65,6 @@ void DemoScreen::on_render(Game& game) {
     );
 
     glm::mat4 world = rotate;
-
-    const glm::vec3 camera_pos = demo_sys.get_position();
-    glm::mat4 view = glm::lookAt(
-        camera_pos,
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(0.0f, 0.0f, 1.0f)
-    );
 
     Engine& engine = game.get_engine();
     Renderer& renderer = engine.get_renderer();
@@ -97,6 +102,10 @@ void DemoScreen::on_render(Game& game) {
 //  ----------------------------------------------------------------------------
 void DemoScreen::on_update(Game& game) {
     SystemManager& sys_mgr = game.get_system_manager();
+
+    CameraSystem& camera_sys = get_camera_system(sys_mgr);
+    camera_sys.update(game);
+
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
     demo_sys.update(game);
 }

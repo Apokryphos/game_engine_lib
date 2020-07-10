@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ecs/entity.hpp"
 #include <string>
 
 namespace engine
@@ -11,6 +12,12 @@ class EditorSystem;
 class NameSystem;
 class ProfileSystem;
 class SystemManager;
+
+void add_name_component(
+    const ecs::Entity entity,
+    NameSystem& name_sys,
+    const std::string& name
+);
 
 ConfigSystem& get_config_system(SystemManager& sys_mgr);
 DebugGuiSystem& get_debug_gui_system(SystemManager& sys_mgr);

@@ -16,7 +16,9 @@
 #include "input/gamepad.hpp"
 #include "input/input_manager.hpp"
 #include "render/renderer.hpp"
+#include "systems/camera_system.hpp"
 #include "systems/debug_gui/position_system_debug_panel.hpp"
+#include "systems/editor/camera_system_editor_panel.hpp"
 #include "systems/editor/position_system_editor_panel.hpp"
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
@@ -153,8 +155,13 @@ static void init_ecs_systems(Game& game) {
         std::make_unique<PositionSystemDebugPanel>(get_position_system(sys_mgr))
     );
 
+    sys_mgr.add_system(std::make_unique<CameraSystem>(ecs, 1000));
+
     //  Editors
     EditorSystem& editor_sys = get_editor_system(sys_mgr);
+    editor_sys.add_panel(
+        std::make_unique<CameraSystemEditorPanel>(get_camera_system(sys_mgr))
+    );
     editor_sys.add_panel(
         std::make_unique<PositionSystemEditorPanel>(get_position_system(sys_mgr))
     );
@@ -164,6 +171,22 @@ static void init_ecs_systems(Game& game) {
 static void init_entities(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
+
+    NameSystem& name_sys = get_name_system(sys_mgr);
+    PositionSystem& pos_sys = get_position_system(sys_mgr);
+
+    //  Camera
+    Entity camera = ecs.create_entity();
+    CameraSystem& cam_sys = get_camera_system(sys_mgr);
+    add_name_component(camera, name_sys, "camera");
+    add_position_component(camera, pos_sys, glm::vec3(1.0f, 1.0f, 1.0f));
+    add_camera_component(
+        camera,
+        cam_sys,
+        glm::vec3(0)
+    );
+    const auto cam_cmpnt = cam_sys.get_component(camera);
+    cam_sys.activate(cam_cmpnt);
 
     //  Position distribution
     Random& random = game.get_random();
@@ -175,7 +198,6 @@ static void init_entities(Game& game) {
 
         const std::string name = "entity_" + std::to_string(n);
 
-        NameSystem& name_sys = get_name_system(sys_mgr);
         name_sys.add_component(entity);
         const auto name_cmpnt = name_sys.get_component(entity);
         name_sys.set_name(name_cmpnt, name);
