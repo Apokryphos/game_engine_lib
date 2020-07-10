@@ -19,6 +19,7 @@
 #include "systems/camera_system.hpp"
 #include "systems/debug_gui/position_system_debug_panel.hpp"
 #include "systems/editor/camera_system_editor_panel.hpp"
+#include "systems/editor/model_system_editor_panel.hpp"
 #include "systems/editor/move_system_editor_panel.hpp"
 #include "systems/editor/position_system_editor_panel.hpp"
 #include "systems/model_system.hpp"
@@ -168,6 +169,9 @@ static void init_ecs_systems(Game& game) {
     EditorSystem& editor_sys = get_editor_system(sys_mgr);
     editor_sys.add_panel(
         std::make_unique<CameraSystemEditorPanel>(get_camera_system(sys_mgr))
+    );
+    editor_sys.add_panel(
+        std::make_unique<ModelSystemEditorPanel>(get_model_system(sys_mgr))
     );
     editor_sys.add_panel(
         std::make_unique<MoveSystemEditorPanel>(get_move_system(sys_mgr))
