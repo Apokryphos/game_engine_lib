@@ -10,6 +10,7 @@
 #include "platform/window.hpp"
 #include "render/renderer.hpp"
 #include "systems/camera_system.hpp"
+#include "systems/model_system.hpp"
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
 #include <glm/glm.hpp>
@@ -83,10 +84,12 @@ void DemoScreen::on_render(Game& game) {
     renderer.begin_frame();
 
     //  Get drawable entities
-    const PositionSystem& pos_sys = get_position_system(sys_mgr);
+    const ModelSystem& model_sys = get_model_system(sys_mgr);
 
     std::vector<Entity> entities;
-    pos_sys.get_entities(entities);
+    model_sys.get_entities(entities);
+
+    const PositionSystem& pos_sys = get_position_system(sys_mgr);
 
     //  Draw entities
     for (const Entity entity : entities) {

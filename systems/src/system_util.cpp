@@ -1,5 +1,6 @@
 #include "engine/system_manager.hpp"
 #include "systems/camera_system.hpp"
+#include "systems/model_system.hpp"
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
 #include <glm/vec3.hpp>
@@ -24,6 +25,20 @@ void add_camera_component(
 }
 
 //  ----------------------------------------------------------------------------
+void add_model_component(
+    const ecs::Entity entity,
+    ModelSystem& model_sys,
+    uint32_t model_id
+) {
+    if (!model_sys.has_component(entity)) {
+        model_sys.add_component(entity);
+    }
+
+    const auto model_cmpnt = model_sys.get_component(entity);
+    model_sys.set_id(model_cmpnt, model_id);
+}
+
+//  ----------------------------------------------------------------------------
 void add_position_component(
     const Entity entity,
     PositionSystem& pos_sys,
@@ -40,6 +55,11 @@ void add_position_component(
 //  ----------------------------------------------------------------------------
 CameraSystem& get_camera_system(SystemManager& sys_mgr) {
     return sys_mgr.get_system<CameraSystem>(SYSTEM_ID_CAMERA);
+}
+
+//  ----------------------------------------------------------------------------
+ModelSystem& get_model_system(SystemManager& sys_mgr) {
+    return sys_mgr.get_system<ModelSystem>(SYSTEM_ID_MODEL);
 }
 
 //  ----------------------------------------------------------------------------

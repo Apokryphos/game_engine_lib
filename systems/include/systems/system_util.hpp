@@ -14,11 +14,18 @@ namespace systems
 {
 class CameraSystem;
 class PositionSystem;
+class ModelSystem;
 
 void add_camera_component(
     const ecs::Entity entity,
     CameraSystem& cam_sys,
     const glm::vec3 target
+);
+
+void add_model_component(
+    const ecs::Entity entity,
+    ModelSystem& model_sys,
+    uint32_t model_id
 );
 
 void add_position_component(
@@ -28,5 +35,6 @@ void add_position_component(
 );
 
 CameraSystem& get_camera_system(engine::SystemManager& sys_mgr);
+ModelSystem& get_model_system(engine::SystemManager& sys_mgr);
 PositionSystem& get_position_system(engine::SystemManager& sys_mgr);
 }

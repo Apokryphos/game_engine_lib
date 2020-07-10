@@ -20,6 +20,7 @@
 #include "systems/debug_gui/position_system_debug_panel.hpp"
 #include "systems/editor/camera_system_editor_panel.hpp"
 #include "systems/editor/position_system_editor_panel.hpp"
+#include "systems/model_system.hpp"
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
 
@@ -156,6 +157,7 @@ static void init_ecs_systems(Game& game) {
     );
 
     sys_mgr.add_system(std::make_unique<CameraSystem>(ecs, 1000));
+    sys_mgr.add_system(std::make_unique<ModelSystem>(ecs, 1000));
 
     //  Editors
     EditorSystem& editor_sys = get_editor_system(sys_mgr);
@@ -209,9 +211,10 @@ static void init_entities(Game& game) {
         };
 
         PositionSystem& pos_sys = get_position_system(sys_mgr);
-        pos_sys.add_component(entity);
-        const auto pos_cmpnt = pos_sys.get_component(entity);
-        pos_sys.set_position(pos_cmpnt, position);
+        add_position_component(entity, pos_sys, position);
+
+        ModelSystem& model_sys = get_model_system(sys_mgr);
+        add_model_component(entity, model_sys, 1);
     }
 }
 
