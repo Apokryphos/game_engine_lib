@@ -104,6 +104,7 @@ void Mouse::post_events() {
                     break;
                 }
             }
+            break;
 
             case InputSource::MouseButton: {
                 const InputAction& action = action_set.get_action(action_id);
@@ -170,6 +171,7 @@ void Mouse::post_events() {
                     break;
                 }
             }
+            break;
         }
     }
 }
