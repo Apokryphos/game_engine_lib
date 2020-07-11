@@ -6,6 +6,7 @@ set(SOURCE_FILES
     src/buffer.cpp
     src/command_buffer.cpp
     src/command_pool.cpp
+    src/debug_gui/vulkan_debug_panel.cpp
     src/depth.cpp
     src/descriptor_pool.cpp
     src/descriptor_sets.cpp

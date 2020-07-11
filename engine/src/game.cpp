@@ -15,6 +15,8 @@
 #include "input/input_manager.hpp"
 #include "platform/window.hpp"
 #include "render/renderer.hpp"
+#include "render_vk/vulkan_renderer.hpp"
+#include "render_vk/debug_gui/vulkan_debug_panel.hpp"
 #include <cassert>
 
 using namespace common;
@@ -22,6 +24,7 @@ using namespace ecs;
 using namespace input;
 using namespace platform;
 using namespace render;
+using namespace render_vk;
 
 namespace engine
 {
@@ -72,6 +75,17 @@ bool Game::initialize(
     //  Initialize engine
     if (!m_engine->initialize(title, window_options)) {
         return false;
+    }
+
+    //  Add Vulkan renderer debug GUI panel
+    Renderer& renderer = m_engine->get_renderer();
+    if (renderer.get_render_api() == RenderApi::Vulkan) {
+        get_debug_gui_system(*m_sys_mgr).add_gui(
+            "vulkan",
+            make_vulkan_debug_panel_function(
+                dynamic_cast<VulkanRenderer&>(renderer).get_instance()
+            )
+        );
     }
 
     return true;

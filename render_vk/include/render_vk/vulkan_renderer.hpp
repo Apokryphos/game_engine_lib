@@ -92,6 +92,10 @@ public:
     virtual float get_aspect_ratio() const override;
     virtual bool initialize(GLFWwindow* glfw_window) override;
 
+    VkInstance get_instance() {
+        return m_instance;
+    }
+
     virtual void load_model(
         common::AssetId id,
         const std::string& path
