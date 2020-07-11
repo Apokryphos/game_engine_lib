@@ -26,6 +26,7 @@ protected:
     //  entity in the ECS. Here, a filtered list containing only entities
     //  in this specific system is built.
     void build_entity_infos() {
+        m_entity_infos.clear();
         get_system_entity_info(
             this->get_system(),
             this->get_debug_gui_system().get_entity_infos(),

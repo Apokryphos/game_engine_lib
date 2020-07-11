@@ -15,6 +15,7 @@ void get_system_entity_info(
     const std::vector<EntityInfo>& entity_infos,
     std::vector<EntityInfo>& system_entity_infos
 ) {
+    system_entity_infos.clear();
     for (const EntityInfo info : entity_infos) {
         if (system.has_component(info.entity)) {
             system_entity_infos.push_back(info);
@@ -27,6 +28,8 @@ void build_entity_infos(
     Game& game,
     std::vector<EntityInfo>& entity_infos
 ) {
+    entity_infos.clear();
+
     const EcsRoot& ecs_root = game.get_ecs_root();
     const std::vector<Entity>& entities = ecs_root.get_entities();
 
