@@ -10,12 +10,6 @@ DebugPanel::DebugPanel(const std::string& window_title)
 
 //  ----------------------------------------------------------------------------
 void DebugPanel::update(Game& game) {
-    if (!ImGui::Begin(m_window_title.c_str())) {
-        ImGui::End();
-    }
-
     on_update(game);
-
-    ImGui::End();
 }
 }

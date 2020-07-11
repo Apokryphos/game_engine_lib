@@ -203,11 +203,7 @@ std::function<void (engine::Game&)> make_vulkan_debug_panel_function(
 ) {
     //  render_vk doesn't link to engine library so Game instance is unavailable
     return [instance](engine::Game& game) {
-        if (ImGui::Begin("vulkan_debug")) {
-            vulkan_debug_panel(instance);
-        }
-
-        ImGui::End();
+        vulkan_debug_panel(instance);
     };
 }
 }

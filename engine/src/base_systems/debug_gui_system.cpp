@@ -87,13 +87,17 @@ void DebugGuiSystem::update(Game& game) {
             continue;
         }
 
-        if (entry.panel) {
-            entry.panel->update(game);
+        if (ImGui::Begin(entry.title.c_str())) {
+            if (entry.panel) {
+                entry.panel->update(game);
+            }
+
+            if (entry.func) {
+                entry.func(game);
+            }
         }
 
-        if (entry.func) {
-            entry.func(game);
-        }
+        ImGui::End();
     }
 }
 }
