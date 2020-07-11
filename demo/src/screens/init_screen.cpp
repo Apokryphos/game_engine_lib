@@ -1,5 +1,6 @@
 #include "common/log.hpp"
 #include "demo/input/input_action_ids.hpp"
+#include "demo/prefabs/entity_prefabs.hpp"
 #include "demo/screens/demo_screen.hpp"
 #include "demo/screens/init_screen.hpp"
 #include "demo/systems/demo_system.hpp"
@@ -191,18 +192,7 @@ static void init_entities(Game& game) {
 
     //  Camera
     Entity camera = ecs.create_entity();
-    CameraSystem& cam_sys = get_camera_system(sys_mgr);
-    add_name_component(camera, name_sys, "camera");
-    add_move_component(camera, get_move_system(sys_mgr), 10.0f);
-    add_position_component(camera, pos_sys, glm::vec3(1.0f, 1.0f, 1.0f));
-    add_camera_component(
-        camera,
-        cam_sys,
-        glm::vec3(0)
-    );
-    const auto cam_cmpnt = cam_sys.get_component(camera);
-    cam_sys.activate(cam_cmpnt);
-    cam_sys.set_mode(cam_cmpnt, CameraMode::Orbit);
+    make_camera(game, camera, "camera", glm::vec3(1.0f), 10.0f);
 
     //  Position distribution
     Random& random = game.get_random();
