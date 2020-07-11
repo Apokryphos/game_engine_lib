@@ -43,7 +43,5 @@ public:
     virtual void update(Game& game, const ecs::Entity entity);
 };
 
-bool begin_panel(const std::string& text);
 bool button(const std::string& text);
-void end_panel();
 }

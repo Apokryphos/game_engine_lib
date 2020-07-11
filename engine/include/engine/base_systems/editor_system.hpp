@@ -33,7 +33,7 @@ private:
     std::vector<Entry> m_entries;
     std::vector<std::unique_ptr<EditorPanel>> m_panels;
 
-    void update_system_manager_gui(Game& game);
+    void update_entity_listbox(Game& game);
 
 public:
     EditorSystem();

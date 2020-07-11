@@ -59,7 +59,7 @@ void EditorSystem::update(Game& game) {
         return;
     }
 
-    update_system_manager_gui(game);
+    update_entity_listbox(game);
 
     if (!m_entity.has_entity()) {
         ImGui::Text("No entity selected.");
@@ -75,12 +75,17 @@ void EditorSystem::update(Game& game) {
             continue;
         }
 
-        if (entry.panel) {
-            entry.panel->update(game, entity);
-        }
+        if (ImGui::CollapsingHeader(
+            entry.title.c_str(),
+            ImGuiTreeNodeFlags_DefaultOpen)
+        ) {
+            if (entry.panel) {
+                entry.panel->update(game, entity);
+            }
 
-        if (entry.func) {
-            entry.func(game, entity);
+            if (entry.func) {
+                entry.func(game, entity);
+            }
         }
     }
 
@@ -88,7 +93,7 @@ void EditorSystem::update(Game& game) {
 }
 
 //  ----------------------------------------------------------------------------
-void EditorSystem::update_system_manager_gui(Game& game) {
+void EditorSystem::update_entity_listbox(Game& game) {
     //  Build entity debug infos
     m_entity_infos.clear();
     build_entity_infos(game, m_entity_infos);

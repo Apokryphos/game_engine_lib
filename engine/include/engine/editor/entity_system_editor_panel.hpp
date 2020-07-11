@@ -20,11 +20,6 @@ public:
     }
 
     virtual void update(Game& game, const ecs::Entity entity) override {
-        if (!begin_panel(this->get_panel_title())) {
-            end_panel();
-            return;
-        }
-
         if (!this->get_system().has_component(entity)) {
             if (button("Add Component")) {
                 this->get_system().add_component(entity);
@@ -32,8 +27,6 @@ public:
         } else {
             this->on_update(game, entity);
         }
-
-        end_panel();
     }
 };
 }
