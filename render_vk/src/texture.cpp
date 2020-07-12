@@ -1,6 +1,7 @@
 #include "common/log.hpp"
 #include "render_vk/buffer.hpp"
 #include "render_vk/command_buffer.hpp"
+#include "render_vk/debug_utils.hpp"
 #include "render_vk/depth.hpp"
 #include "render_vk/image_view.hpp"
 #include "render_vk/vulkan.hpp"
@@ -267,6 +268,13 @@ void create_texture_image(
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
         texture_image,
         texture_image_memory
+    );
+
+    set_debug_name(
+        device,
+        VK_OBJECT_TYPE_IMAGE,
+        texture_image,
+        filename.c_str()
     );
 
     //  Prepare texture for staging buffer copy

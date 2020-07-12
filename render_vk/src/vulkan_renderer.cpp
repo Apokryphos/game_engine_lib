@@ -2,6 +2,7 @@
 #include "platform/glfw_init.hpp"
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/command_pool.hpp"
+#include "render_vk/debug_utils.hpp"
 #include "render_vk/depth.hpp"
 #include "render_vk/descriptor_pool.hpp"
 #include "render_vk/descriptor_sets.hpp"
@@ -11,6 +12,7 @@
 #include "render_vk/graphics_pipeline.hpp"
 #include "render_vk/imgui/imgui_vk.hpp"
 #include "render_vk/index_buffer.hpp"
+#include "render_vk/instance.hpp"
 #include "render_vk/queue_family.hpp"
 #include "render_vk/mesh.hpp"
 #include "render_vk/model_manager.hpp"
@@ -36,43 +38,6 @@ namespace render_vk
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
 //  ----------------------------------------------------------------------------
-bool static check_validation_layers_support(
-    const std::vector<const char*>& validation_layers
-) {
-    //  Get number of available validation layers
-    uint32_t layer_count;
-    vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
-
-    //  Get available validation layers
-    std::vector<VkLayerProperties> available_layers(layer_count);
-    vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
-
-    //  List available validation layers
-    log_debug("%d Vulkan layers available.", layer_count);
-    for (const auto& layer_properties : available_layers) {
-        log_debug("\t%s", layer_properties.layerName);
-    }
-
-    //  Verify that all requested validation layers exist
-    for (const char* layer_name : validation_layers) {
-        bool layer_found = false;
-
-        for (const auto& layer_properties : available_layers) {
-            if (strcmp(layer_name, layer_properties.layerName) == 0) {
-                layer_found = true;
-                break;
-            }
-        }
-
-        if (!layer_found) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-//  ----------------------------------------------------------------------------
 static void create_sync_objects(
     VkDevice device,
     const VulkanSwapchain& swapchain,
@@ -90,64 +55,6 @@ static void create_sync_objects(
         in_flight_fences,
         images_in_flight
     );
-}
-
-//  ----------------------------------------------------------------------------
-static bool create_instance(
-    VkInstance& instance,
-    const std::vector<const char*>& validation_layers
-) {
-    VkApplicationInfo app_info{};
-    app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    app_info.pApplicationName = "render_vk";
-    app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    app_info.pEngineName = "No Engine";
-    app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    app_info.apiVersion = VK_API_VERSION_1_0;
-
-    uint32_t count;
-    const char** extensions = glfwGetRequiredInstanceExtensions(&count);
-    if (extensions == NULL) {
-        log_error("Vulkan is not supported.");
-        return false;
-    }
-
-    VkInstanceCreateInfo create_info{};
-    create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    create_info.pApplicationInfo = &app_info;
-    create_info.enabledExtensionCount = count;
-    create_info.ppEnabledExtensionNames = extensions;
-    create_info.enabledLayerCount = 0;
-
-    //  Validation layers
-    #ifdef DEBUG
-    const bool enable_validation_layers = true;
-    #else
-    const bool enable_validation_layers = false;
-    #endif
-
-    if (enable_validation_layers) {
-        log_debug("Initializing Vulkan validation layers.");
-        if (!check_validation_layers_support(validation_layers)) {
-            log_error("Vulkan validation layers unavailable.");
-            return false;
-        }
-
-        create_info.enabledLayerCount = validation_layers.size();
-        create_info.ppEnabledLayerNames = validation_layers.data();
-    } else {
-        create_info.enabledLayerCount = 0;
-    }
-
-    //  Vulkan instance
-    if (vkCreateInstance(&create_info, nullptr, &instance) != VK_SUCCESS) {
-        log_error("Failed to create Vulkan instance.");
-        return false;
-    }
-
-    log_debug("Created Vulkan instance.");
-
-    return true;
 }
 
 //  ----------------------------------------------------------------------------
@@ -227,6 +134,8 @@ void VulkanRenderer::cleanup_swapchain() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
+    begin_debug_marker(m_graphics_queue, "Draw Frame", DEBUG_MARKER_COLOR_GREEN);
+
     vkWaitForFences(
         m_device,
         1,
@@ -303,6 +212,8 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
     ) != VK_SUCCESS) {
         throw std::runtime_error("Failed to submit draw command buffer.");
     }
+
+    end_debug_marker(m_graphics_queue);
 
     //  Presentation
     VkPresentInfoKHR present_info{};

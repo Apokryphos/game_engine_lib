@@ -7,6 +7,7 @@ set(SOURCE_FILES
     src/command_buffer.cpp
     src/command_pool.cpp
     src/debug_gui/vulkan_debug_panel.cpp
+    src/debug_utils.cpp
     src/depth.cpp
     src/descriptor_pool.cpp
     src/descriptor_sets.cpp
@@ -15,6 +16,7 @@ set(SOURCE_FILES
     src/image_view.cpp
     src/imgui/imgui_vk.cpp
     src/index_buffer.cpp
+    src/instance.cpp
     src/graphics_pipeline.cpp
     src/frame_sync.cpp
     src/mesh.cpp

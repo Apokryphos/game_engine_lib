@@ -1,4 +1,5 @@
 #include "common/log.hpp"
+#include "render_vk/debug_utils.hpp"
 #include "render_vk/queue_family.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
 #include "render_vk/vulkan.hpp"
@@ -172,6 +173,8 @@ bool create_logical_device(
         log_error("Failed to create logical device.");
         return false;
     }
+
+    init_vulkan_debug_utils(device);
 
     vkGetDeviceQueue(device, indices.graphics_family.value(), 0, &graphics_queue);
     vkGetDeviceQueue(device, indices.present_family.value(), 0, &present_queue);

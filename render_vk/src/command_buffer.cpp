@@ -1,5 +1,6 @@
 #include "common/log.hpp"
 #include "render_vk/command_buffer.hpp"
+#include "render_vk/debug_utils.hpp"
 #include "render_vk/imgui/imgui_vk.hpp"
 #include "render_vk/uniform.hpp"
 #include "render_vk/vulkan.hpp"
@@ -132,6 +133,7 @@ void record_command_buffer(
 
     //  Draw each model
     size_t model_index = 0;
+    begin_debug_marker(command_buffer, "Draw Model", DEBUG_MARKER_COLOR_ORANGE);
     for (const DrawModelCommand cmd : draw_model_commands) {
         //  Bind vertex buffer
         vkCmdBindPipeline(
@@ -179,6 +181,7 @@ void record_command_buffer(
         //  Draw
         vkCmdDrawIndexed(command_buffer, static_cast<uint32_t>(cmd.index_count), 1, 0, 0, 0);
     }
+    end_debug_marker(command_buffer);
 
     //  ImGui
     imgui_vulkan_render_frame(command_buffer);
