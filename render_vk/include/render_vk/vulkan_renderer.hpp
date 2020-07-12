@@ -2,6 +2,7 @@
 
 #include "render/renderer.hpp"
 #include "render_vk/command_buffer.hpp"
+#include "render_vk/texture.hpp"
 #include "render_vk/ubo_dynamic.hpp"
 #include "render_vk/uniform.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
@@ -54,10 +55,7 @@ class VulkanRenderer : public render::Renderer
     std::vector<VkFence> m_images_in_flight;
 
     //  Texture objects
-    VkImage m_texture_image;
-    VkImageView m_texture_image_view;
-    VkSampler m_texture_sampler;
-    VkDeviceMemory m_texture_image_memory;
+    Texture m_texture;
 
     //  Depth buffer objects
     VkImage m_depth_image;

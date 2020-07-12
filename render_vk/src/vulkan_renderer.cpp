@@ -398,18 +398,14 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
         return false;
     }
 
-    create_texture_image(
+    create_texture(
         m_physical_device,
         m_device,
         m_graphics_queue,
         m_command_pool,
-        m_texture_image,
-        m_texture_image_memory
+        "assets/textures/model.png",
+        m_texture
     );
-
-    create_texture_image_view(m_device, m_texture_image, m_texture_image_view);
-
-    create_texture_sampler(m_device, m_texture_sampler);
 
     create_descriptor_pool(
         m_device,
@@ -429,8 +425,8 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
         m_swapchain,
         m_descriptor_set_layout,
         m_descriptor_pool,
-        m_texture_image_view,
-        m_texture_sampler,
+        m_texture.view,
+        m_texture.sampler,
         m_uniform_buffers.dynamic,
         m_descriptor_sets
     );
@@ -554,8 +550,8 @@ void VulkanRenderer::recreate_swapchain(GLFWwindow* glfw_window) {
         m_swapchain,
         m_descriptor_set_layout,
         m_descriptor_pool,
-        m_texture_image_view,
-        m_texture_sampler,
+        m_texture.view,
+        m_texture.sampler,
         m_uniform_buffers.dynamic,
         m_descriptor_sets
     );
@@ -594,15 +590,7 @@ void VulkanRenderer::shutdown() {
 
     cleanup_swapchain();
 
-    //  Destroy texture sampler
-    vkDestroySampler(m_device, m_texture_sampler, nullptr);
-
-    //  Destroy texture image view
-    vkDestroyImageView(m_device, m_texture_image_view, nullptr);
-
-    //  Destroy texture
-    vkDestroyImage(m_device, m_texture_image, nullptr);
-    vkFreeMemory(m_device, m_texture_image_memory, nullptr);
+    destroy_texture(m_device, m_texture);
 
     vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layout, nullptr);
 

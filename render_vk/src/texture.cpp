@@ -4,6 +4,7 @@
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/depth.hpp"
 #include "render_vk/image_view.hpp"
+#include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
 #include <lodepng.h>
 #include <stdexcept>
@@ -217,11 +218,10 @@ void create_texture_image(
     VkDevice device,
     VkQueue transfer_queue,
     VkCommandPool command_pool,
+    const std::string& filename,
     VkImage& texture_image,
     VkDeviceMemory& texture_image_memory
 ) {
-    const std::string filename = "assets/textures/model.png";
-
     //  Decode PNG file
     unsigned width;
     unsigned height;
@@ -358,5 +358,42 @@ void create_texture_sampler(
     if (vkCreateSampler(device, &sampler_info, nullptr, &texture_sampler) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create texture sampler.");
     }
+}
+
+//  ----------------------------------------------------------------------------
+void create_texture(
+    VkPhysicalDevice physical_device,
+    VkDevice device,
+    VkQueue graphics_queue,
+    VkCommandPool command_pool,
+    const std::string& filename,
+    Texture& texture
+) {
+    create_texture_image(
+        physical_device,
+        device,
+        graphics_queue,
+        command_pool,
+        filename,
+        texture.image,
+        texture.image_memory
+    );
+
+    create_texture_image_view(device, texture.image, texture.view);
+
+    create_texture_sampler(device, texture.sampler);
+}
+
+//  ----------------------------------------------------------------------------
+void destroy_texture(VkDevice device, const Texture& texture) {
+    //  Destroy texture sampler
+    vkDestroySampler(device, texture.sampler, nullptr);
+
+    //  Destroy texture image view
+    vkDestroyImageView(device, texture.view, nullptr);
+
+    //  Destroy texture
+    vkDestroyImage(device, texture.image, nullptr);
+    vkFreeMemory(device, texture.image_memory, nullptr);
 }
 }
