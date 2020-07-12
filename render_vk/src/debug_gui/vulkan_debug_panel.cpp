@@ -12,14 +12,20 @@ struct VulkanQueueFamilyInfo
 
 struct VulkanPhysicalDeviceInfo
 {
-    std::string name;
     VkPhysicalDevice device;
+    VkPhysicalDeviceProperties properties;
     std::vector<VulkanQueueFamilyInfo> queue_families;
+
+    //  Device extensions
+    std::vector<VkExtensionProperties> extensions;
 };
 
 struct VulkanInfo
 {
     std::vector<VulkanPhysicalDeviceInfo> devices;
+
+    //  Interface extensions
+    std::vector<VkExtensionProperties> extensions;
 };
 
 //  ----------------------------------------------------------------------------
@@ -28,6 +34,19 @@ static void init_vulkan_device_info(
     VulkanPhysicalDeviceInfo& info
 ) {
     const VkPhysicalDevice device = info.device;
+
+    //  Get device extension count
+    uint32_t extension_count;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
+
+    //  Get device extensions
+    info.extensions.resize(extension_count);
+    vkEnumerateDeviceExtensionProperties(
+        device,
+        nullptr,
+        &extension_count,
+        info.extensions.data()
+    );
 
     //  Query device queue family count
     uint32_t queue_family_count = 0;
@@ -47,6 +66,23 @@ static void init_vulkan_device_info(
 
 //  ----------------------------------------------------------------------------
 static void init_vulkan_info(VkInstance instance, VulkanInfo& info) {
+    //  Get instance extension count
+    uint32_t extension_count;
+    vkEnumerateInstanceExtensionProperties(
+        nullptr,
+        &extension_count,
+        nullptr
+    );
+
+    //  Get instance extensions
+    info.extensions.resize(extension_count);
+    vkEnumerateInstanceExtensionProperties(
+        nullptr,
+        &extension_count,
+        info.extensions.data()
+    );
+
+    //  Get available physical device count
     uint32_t device_count;
     vkEnumeratePhysicalDevices(instance, &device_count, NULL);
 
@@ -67,7 +103,7 @@ static void init_vulkan_info(VkInstance instance, VulkanInfo& info) {
 
         VulkanPhysicalDeviceInfo device_info{};
         device_info.device = device;
-        device_info.name = device_properties.deviceName;
+        device_info.properties = device_properties;
 
         init_vulkan_device_info(instance, device_info);
 
@@ -88,7 +124,7 @@ static void device_listbox(VulkanInfo& info, int& index) {
             return false;
         }
 
-        *out_text = devices.at(index).name.c_str();
+        *out_text = devices.at(index).properties.deviceName;
         return true;
     };
 
@@ -104,6 +140,52 @@ static void device_listbox(VulkanInfo& info, int& index) {
     );
     ImGui::PopItemWidth();
 }
+
+//  ----------------------------------------------------------------------------
+static bool extensions_listbox(
+    const char* label,
+    const std::vector<VkExtensionProperties>& extensions,
+    int& index
+) {
+    auto item_getter = [](
+        void* vector,
+        int index,
+        const char** out_text
+    ) {
+        auto& extensions = *static_cast<std::vector<VkExtensionProperties>*>(vector);
+
+        if (index < 0 || index >= static_cast<int>(extensions.size())) {
+            return false;
+        }
+
+        const auto& ext = extensions.at(index);
+
+        static std::string ext_name;
+        ext_name =
+            std::string(ext.extensionName) +
+            " (" +
+            std::to_string(ext.specVersion) +
+            ")";
+
+        *out_text = ext_name.c_str();
+        return true;
+    };
+
+    //  Listbox
+    ImGui::PushItemWidth(-1);
+    ImGui::Text(label);
+    bool result = ImGui::ListBox(
+        label,
+        &index,
+        item_getter,
+        static_cast<void*>(&const_cast<std::vector<VkExtensionProperties>&>(extensions)),
+        extensions.size()
+    );
+    ImGui::PopItemWidth();
+
+    return result;
+}
+
 
 //  ----------------------------------------------------------------------------
 static bool queue_families_listbox(const VulkanPhysicalDeviceInfo& info, int& index) {
@@ -179,14 +261,40 @@ void vulkan_debug_panel(VkInstance instance) {
         return;
     }
 
+    //  Instance extensions listbox
+    static int instance_ext_index = 0;
+    extensions_listbox("Instance Extensions", info.extensions, instance_ext_index);
+
+    ImGui::Separator();
+
     //  Physical devices listbox
     static int device_index = 0;
     device_listbox(info, device_index);
 
+    //  Select device info using listbox index
+    const VulkanPhysicalDeviceInfo& device_info = info.devices.at(device_index);
+
+    //  Vulkan API version
+    ImGui::Text(
+        "API Version: %d.%d.%d",
+        VK_VERSION_MAJOR(device_info.properties.apiVersion),
+        VK_VERSION_MINOR(device_info.properties.apiVersion),
+        VK_VERSION_PATCH(device_info.properties.apiVersion)
+    );
+
+    ImGui::Separator();
+
+    //  Device extensions listbox
+    static int device_ext_index = 0;
+    extensions_listbox(
+        "Device Extensions",
+        device_info.extensions,
+        device_ext_index
+    );
+
     ImGui::Separator();
 
     //  Queue families listbox
-    const VulkanPhysicalDeviceInfo& device_info = info.devices.at(device_index);
     static int queue_family_index = 0;
     queue_families_listbox(device_info, queue_family_index);
 
