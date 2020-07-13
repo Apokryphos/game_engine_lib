@@ -25,7 +25,7 @@ void GlRenderer::draw_frame(GLFWwindow* glfw_window) {
 
 //  ----------------------------------------------------------------------------
 void GlRenderer::draw_model(
-    const AssetId id,
+    const AssetId model_id,
     const glm::mat4x4& model,
     const glm::mat4x4& view,
     const glm::mat4x4& proj
