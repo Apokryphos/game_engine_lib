@@ -24,6 +24,7 @@ class AssetManager
 
     AssetId m_unique_id;
     std::vector<Entry> m_models;
+    std::vector<Entry> m_textures;
 
     AssetId get_unique_id();
 
