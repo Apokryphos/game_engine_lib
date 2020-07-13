@@ -25,6 +25,7 @@ public:
     virtual void draw_frame(GLFWwindow* glfw_window) = 0;
     virtual void draw_model(
         const common::AssetId model_id,
+        const common::AssetId texture_id,
         const glm::mat4x4& model,
         const glm::mat4x4& view,
         const glm::mat4x4& proj

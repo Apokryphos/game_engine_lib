@@ -357,6 +357,7 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::draw_model(
     const AssetId model_id,
+    const AssetId texture_id,
     const glm::mat4x4& model,
     const glm::mat4x4& view,
     const glm::mat4x4& proj

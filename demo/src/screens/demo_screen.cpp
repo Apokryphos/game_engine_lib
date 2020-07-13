@@ -83,6 +83,7 @@ void DemoScreen::on_render(Game& game) {
     for (const auto& draw_order : draw_order) {
         renderer.draw_model(
             draw_order.model_id,
+            0,
             draw_order.model * world,
             view,
             proj
