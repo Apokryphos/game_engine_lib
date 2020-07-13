@@ -83,7 +83,7 @@ VulkanRenderer::VulkanRenderer()
   m_framebuffer_resized(false),
   m_current_frame(0),
   m_model_mgr(std::make_unique<ModelManager>()),
-  m_dynamic_uniform(OBJECT_INSTANCES) {
+  m_object_dynamic_uniform(OBJECT_INSTANCES) {
 }
 
 //  ----------------------------------------------------------------------------
@@ -124,7 +124,8 @@ void VulkanRenderer::cleanup_swapchain() {
         vkDestroyImageView(m_device, m_swapchain.image_views[n], nullptr);
     }
 
-    m_dynamic_uniform.destroy();
+    m_frame_uniform.destroy();
+    m_object_dynamic_uniform.destroy();
 
     vkDestroyDescriptorPool(m_device, m_descriptor_pool, nullptr);
 
@@ -145,9 +146,6 @@ void VulkanRenderer::create_descriptor_sets() {
         m_swapchain,
         m_descriptor_set_layout,
         m_descriptor_pool,
-        texture.view,
-        texture.sampler,
-        m_dynamic_uniform.get_buffer(),
         m_descriptor_sets
     );
 
@@ -156,7 +154,9 @@ void VulkanRenderer::create_descriptor_sets() {
         m_swapchain,
         texture.view,
         texture.sampler,
-        m_dynamic_uniform.get_buffer(),
+        m_frame_uniform.get_buffer(),
+        m_object_dynamic_uniform.get_buffer(),
+        m_frame_uniform.get_ubo_size(),
         m_descriptor_sets
     );
 }
@@ -184,7 +184,8 @@ void VulkanRenderer::create_swapchain_objects(GLFWwindow* glfw_window) {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::create_swapchain_dependents() {
-    m_dynamic_uniform.create(m_physical_device, m_device);
+    m_frame_uniform.create(m_physical_device, m_device);
+    m_object_dynamic_uniform.create(m_physical_device, m_device);
 
     render_vk::create_descriptor_pool(
         m_device,
@@ -281,7 +282,7 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
     // Mark the image as now being in use by this frame
     m_images_in_flight[image_index] = m_in_flight_fences[m_current_frame];
 
-    update_uniform_buffer(image_index);
+    update_uniform_buffers(image_index);
 
     //  Build command buffers
     record_command_buffer(
@@ -293,7 +294,7 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
         m_swapchain.extent,
         m_swapchain.framebuffers[image_index],
         m_command_buffers[image_index],
-        m_dynamic_uniform.get_align()
+        m_object_dynamic_uniform.get_align()
     );
 
     VkSubmitInfo submit_info{};
@@ -568,18 +569,22 @@ void VulkanRenderer::shutdown() {
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanRenderer::update_uniform_buffer(uint32_t image_index) {
+void VulkanRenderer::update_uniform_buffers(uint32_t image_index) {
+    //  Update frame UBO
+    FrameUbo frame_ubo{};
+    frame_ubo.proj = m_draw_model_commands.at(0).proj;
+    frame_ubo.view = m_draw_model_commands.at(0).view;
+
+    m_frame_uniform.copy(frame_ubo);
+
     //  Update all UBO structs once per frame
-    std::vector<UboData> data(m_draw_model_commands.size());
+    std::vector<ObjectUbo> data(m_draw_model_commands.size());
     for (size_t n = 0; n < m_draw_model_commands.size(); ++n)  {
         const DrawModelCommand& cmd = m_draw_model_commands[n];
-
         data[n].model = cmd.model;
-        data[n].proj = cmd.proj;
-        data[n].view = cmd.view;
     }
 
     //  Copy UBO structs to dynamic uniform buffer
-    m_dynamic_uniform.copy(data);
+    m_object_dynamic_uniform.copy(data);
 }
 }

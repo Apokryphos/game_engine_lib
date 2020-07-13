@@ -6,6 +6,7 @@
 #include "render_vk/texture.hpp"
 #include "render_vk/ubo_dynamic.hpp"
 #include "render_vk/uniform.hpp"
+#include "render_vk/uniform_buffer.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
 #include "render_vk/vulkan.hpp"
 #include <vector>
@@ -68,11 +69,9 @@ class VulkanRenderer : public render::Renderer
 
     std::vector<DrawModelCommand> m_draw_model_commands;
 
-    // UniformBuffers m_uniform_buffers;
-    // UboDataDynamic  m_ubo_data_dynamic;
-
-    //  Dynamic uniform buffer
-    DynamicUniformBuffer<UboData> m_dynamic_uniform;
+    //  Uniform buffers
+    UniformBuffer<FrameUbo> m_frame_uniform;
+    DynamicUniformBuffer<ObjectUbo> m_object_dynamic_uniform;
 
     void create_descriptor_sets();
 
@@ -85,7 +84,7 @@ class VulkanRenderer : public render::Renderer
 
     void cleanup_swapchain();
     void recreate_swapchain(GLFWwindow* glfw_window);
-    void update_uniform_buffer(uint32_t image_index);
+    void update_uniform_buffers(uint32_t image_index);
 
 public:
     VulkanRenderer();

@@ -10,10 +10,6 @@ void create_descriptor_sets(
     const VulkanSwapchain swapchain,
     VkDescriptorSetLayout descriptor_set_layout,
     VkDescriptorPool descriptor_pool,
-    VkImageView texture_image_view,
-    VkSampler texture_sampler,
-    VkBuffer uniform_buffer,
-    // const std::vector<VkBuffer>& uniform_buffers,
     std::vector<VkDescriptorSet>& descriptor_sets
 );
 
@@ -22,7 +18,9 @@ void update_descriptor_sets(
     const VulkanSwapchain swapchain,
     VkImageView texture_image_view,
     VkSampler texture_sampler,
-    VkBuffer uniform_buffer,
+    VkBuffer frame_uniform_buffer,
+    VkBuffer object_uniform_buffer,
+    size_t frame_ubo_size,
     std::vector<VkDescriptorSet>& descriptor_sets
 );
 }
