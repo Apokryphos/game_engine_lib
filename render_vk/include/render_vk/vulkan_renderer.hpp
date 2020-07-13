@@ -20,6 +20,7 @@ class ModelManager;
 
 class VulkanRenderer : public render::Renderer
 {
+    bool m_rebuild_descriptor_sets;
     bool m_framebuffer_resized;
     size_t m_current_frame;
 

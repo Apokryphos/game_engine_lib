@@ -76,6 +76,7 @@ static void query_extensions() {
 //  ----------------------------------------------------------------------------
 VulkanRenderer::VulkanRenderer()
 : Renderer(RenderApi::Vulkan),
+  m_rebuild_descriptor_sets(false),
   m_framebuffer_resized(false),
   m_current_frame(0),
   m_model_mgr(std::make_unique<ModelManager>()) {
@@ -136,19 +137,6 @@ void VulkanRenderer::cleanup_swapchain() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::create_descriptor_sets() {
-    prepare_uniform_buffers(
-        m_physical_device,
-        m_device,
-        m_uniform_buffers,
-        m_ubo_data_dynamic
-    );
-
-    render_vk::create_descriptor_pool(
-        m_device,
-        m_swapchain,
-        m_descriptor_pool
-    );
-
     render_vk::create_descriptor_sets(
         m_device,
         m_swapchain,
@@ -184,6 +172,19 @@ void VulkanRenderer::create_swapchain_objects(GLFWwindow* glfw_window) {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::create_swapchain_dependents() {
+    prepare_uniform_buffers(
+        m_physical_device,
+        m_device,
+        m_uniform_buffers,
+        m_ubo_data_dynamic
+    );
+
+    render_vk::create_descriptor_pool(
+        m_device,
+        m_swapchain,
+        m_descriptor_pool
+    );
+
     create_graphics_pipeline(
         m_device,
         m_swapchain,
@@ -204,7 +205,12 @@ void VulkanRenderer::create_swapchain_dependents() {
         m_depth_image_memory
     );
 
-    create_framebuffers(m_device, m_render_pass, m_depth_image_view, m_swapchain);
+    create_framebuffers(
+        m_device,
+        m_render_pass,
+        m_depth_image_view,
+        m_swapchain
+    );
 
     create_command_buffers(
         m_device,
@@ -226,6 +232,12 @@ void VulkanRenderer::create_swapchain_dependents() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
+    if (m_rebuild_descriptor_sets) {
+        vkDeviceWaitIdle(m_device);
+        create_descriptor_sets();
+        m_rebuild_descriptor_sets = false;
+    }
+
     begin_debug_marker(m_graphics_queue, "Draw Frame", DEBUG_MARKER_COLOR_GREEN);
 
     vkWaitForFences(
@@ -459,10 +471,9 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
         m_texture
     );
 
-    //  Descriptor sets (currently) require texture objects to be created
-    create_descriptor_sets();
-
     create_swapchain_dependents();
+
+    create_descriptor_sets();
 
     return true;
 }
@@ -499,9 +510,9 @@ void VulkanRenderer::recreate_swapchain(GLFWwindow* glfw_window) {
 
     create_swapchain_objects(glfw_window);
 
-    create_descriptor_sets();
-
     create_swapchain_dependents();
+
+    create_descriptor_sets();
 }
 
 //  ----------------------------------------------------------------------------
