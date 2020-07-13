@@ -31,7 +31,7 @@ void end_single_time_commands(
     VkQueue transfer_queue
 );
 
-bool create_command_buffers(
+void create_command_buffers(
     VkDevice device,
     VkCommandPool command_pool,
     const VulkanSwapchain& swapchain,

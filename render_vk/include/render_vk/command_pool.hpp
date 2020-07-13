@@ -4,7 +4,7 @@
 
 namespace render_vk
 {
-bool create_command_pool(
+void create_command_pool(
     VkDevice device,
     VkPhysicalDevice physical_device,
     VkSurfaceKHR surface,

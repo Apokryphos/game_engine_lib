@@ -1,14 +1,12 @@
-#include "common/log.hpp"
 #include "render_vk/framebuffers.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
 #include <array>
-
-using namespace common;
+#include <stdexcept>
 
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-bool create_framebuffers(
+void create_framebuffers(
     VkDevice device,
     VkRenderPass render_pass,
     VulkanSwapchain& swapchain
@@ -39,12 +37,10 @@ bool create_framebuffers(
             throw std::runtime_error("Failed to create framebuffer.");
         }
     }
-
-    return true;
 }
 
 //  ----------------------------------------------------------------------------
-bool create_framebuffers(
+void create_framebuffers(
     VkDevice device,
     VkRenderPass render_pass,
     VkImageView depth_image_view,
@@ -74,11 +70,8 @@ bool create_framebuffers(
             nullptr,
             &swapchain.framebuffers[n]
         ) != VK_SUCCESS) {
-            log_debug("Failed to create framebuffer.");
-            return false;
+            throw std::runtime_error("Failed to create framebuffer.");
         }
     }
-
-    return true;
 }
 }

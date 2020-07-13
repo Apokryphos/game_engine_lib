@@ -1,12 +1,10 @@
-#include "common/log.hpp"
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/imgui/imgui_vk.hpp"
 #include "render_vk/uniform.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
-
-using namespace common;
+#include <stdexcept>
 
 namespace render_vk
 {
@@ -57,7 +55,7 @@ void end_single_time_commands(
 }
 
 //  ----------------------------------------------------------------------------
-bool create_command_buffers(
+void create_command_buffers(
     VkDevice device,
     VkCommandPool command_pool,
     const VulkanSwapchain& swapchain,
@@ -76,11 +74,8 @@ bool create_command_buffers(
         &alloc_info,
         command_buffers.data()
     ) != VK_SUCCESS) {
-        log_debug("Failed to allocate command buffers.");
-        return false;
+        throw std::runtime_error("Failed to allocate command buffers.");
     }
-
-    return true;
 }
 
 //  ----------------------------------------------------------------------------

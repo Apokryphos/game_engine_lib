@@ -1,13 +1,11 @@
-#include "common/log.hpp"
 #include "render_vk/queue_family.hpp"
 #include "render_vk/vulkan.hpp"
-
-using namespace common;
+#include <stdexcept>
 
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-bool create_command_pool(
+void create_command_pool(
     VkDevice device,
     VkPhysicalDevice physical_device,
     VkSurfaceKHR surface,
@@ -21,10 +19,7 @@ bool create_command_pool(
     pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
     if (vkCreateCommandPool(device, &pool_info, nullptr, &command_pool) != VK_SUCCESS) {
-        log_debug("Failed to create command pool.");
-        return false;
+        throw std::runtime_error("Failed to create command pool.");
     }
-
-    return true;
 }
 }
