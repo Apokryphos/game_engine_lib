@@ -12,6 +12,7 @@ set(SOURCE_FILES
     src/descriptor_pool.cpp
     src/descriptor_sets.cpp
     src/devices.cpp
+    src/dynamic_uniform_buffer.cpp
     src/framebuffers.cpp
     src/image_view.cpp
     src/imgui/imgui_vk.cpp
@@ -24,7 +25,6 @@ set(SOURCE_FILES
     src/queue_family.cpp
     src/render_pass.cpp
     src/texture.cpp
-    src/ubo_dynamic.cpp
     src/uniform.cpp
     src/vertex_buffer.cpp
     src/vulkan_model.cpp
