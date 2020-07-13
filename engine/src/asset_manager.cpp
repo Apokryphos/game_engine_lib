@@ -55,6 +55,37 @@ AssetId AssetManager::load_model(
 }
 
 //  ----------------------------------------------------------------------------
+AssetId AssetManager::load_texture(
+    Renderer& renderer,
+    const std::string& path
+) {
+    // const auto find = std::find_if(
+    //     m_models.begin(),
+    //     m_models.end(),
+    //     [&path](const Entry& entry) {
+    //         return entry.path == path;
+    //     }
+    // );
+
+    // if (find != m_models.end()) {
+    //     return (*find).id;
+    // }
+
+    const AssetId id = get_unique_id();
+
+    renderer.load_texture(id, path);
+
+    // Entry entry{};
+    // entry.id = id;
+    // entry.path = path;
+    // m_models.push_back(entry);
+
+    log_debug("Loaded texture '%s' (%d).", path.c_str(), id);
+
+    return id;
+}
+
+//  ----------------------------------------------------------------------------
 void AssetManager::unload_model(const AssetId id) {
     auto find = std::find_if(
         m_models.begin(),

@@ -137,13 +137,26 @@ void VulkanRenderer::cleanup_swapchain() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::create_descriptor_sets() {
+    assert(!m_textures.empty());
+
+    const Texture& texture = m_textures.at(0);
+
     render_vk::create_descriptor_sets(
         m_device,
         m_swapchain,
         m_descriptor_set_layout,
         m_descriptor_pool,
-        m_texture.view,
-        m_texture.sampler,
+        texture.view,
+        texture.sampler,
+        m_uniform_buffers.dynamic,
+        m_descriptor_sets
+    );
+
+    render_vk::update_descriptor_sets(
+        m_device,
+        m_swapchain,
+        texture.view,
+        texture.sampler,
         m_uniform_buffers.dynamic,
         m_descriptor_sets
     );
@@ -462,18 +475,7 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
         m_images_in_flight
     );
 
-    create_texture(
-        m_physical_device,
-        m_device,
-        m_graphics_queue,
-        m_command_pool,
-        "assets/textures/model.png",
-        m_texture
-    );
-
     create_swapchain_dependents();
-
-    create_descriptor_sets();
 
     return true;
 }
@@ -488,6 +490,24 @@ void VulkanRenderer::load_model(AssetId id, const std::string& path) {
         m_graphics_queue,
         m_command_pool
     );
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanRenderer::load_texture(AssetId id, const std::string& path) {
+    Texture texture{};
+
+    create_texture(
+        m_physical_device,
+        m_device,
+        m_graphics_queue,
+        m_command_pool,
+        path,
+        texture
+    );
+
+    m_textures.push_back(texture);
+
+    m_rebuild_descriptor_sets = true;
 }
 
 //  ----------------------------------------------------------------------------
@@ -529,7 +549,9 @@ void VulkanRenderer::shutdown() {
 
     cleanup_swapchain();
 
-    destroy_texture(m_device, m_texture);
+    for (Texture& texture : m_textures) {
+        destroy_texture(m_device, texture);
+    }
 
     vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layout, nullptr);
 

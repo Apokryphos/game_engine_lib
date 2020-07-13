@@ -251,6 +251,7 @@ void InitScreen::on_load(Game& game) {
     AssetManager& asset_mgr = engine.get_asset_manager();
     Renderer& renderer = engine.get_renderer();
     asset_mgr.load_model(renderer, "assets/models/model.obj");
+    asset_mgr.load_texture(renderer, "assets/textures/model.png");
 
     //  Next screen
     load_demo_screen(game);

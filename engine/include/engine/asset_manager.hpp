@@ -33,6 +33,7 @@ public:
     AssetManager(const AssetManager&) = delete;
     AssetManager& operator=(const AssetManager&) = delete;
     AssetId load_model(Renderer& renderer, const std::string& path);
+    AssetId load_texture(Renderer& renderer, const std::string& path);
     void unload_model(const AssetId id);
     void unload_models();
     void shutdown();

@@ -16,7 +16,6 @@ void create_descriptor_sets(
     VkImageView texture_image_view,
     VkSampler texture_sampler,
     VkBuffer uniform_buffer,
-    // const std::vector<VkBuffer>& uniform_buffers,
     std::vector<VkDescriptorSet>& descriptor_sets
 ) {
     const size_t image_count = swapchain.images.size();
@@ -32,6 +31,18 @@ void create_descriptor_sets(
     if (vkAllocateDescriptorSets(device, &alloc_info, descriptor_sets.data()) != VK_SUCCESS) {
         throw std::runtime_error("Failed to allocate descriptor sets.");
     }
+}
+
+//  ----------------------------------------------------------------------------
+void update_descriptor_sets(
+    VkDevice device,
+    const VulkanSwapchain swapchain,
+    VkImageView texture_image_view,
+    VkSampler texture_sampler,
+    VkBuffer uniform_buffer,
+    std::vector<VkDescriptorSet>& descriptor_sets
+) {
+    const size_t image_count = swapchain.images.size();
 
     for (size_t n = 0; n < image_count; n++) {
         VkDescriptorBufferInfo buffer_info{};

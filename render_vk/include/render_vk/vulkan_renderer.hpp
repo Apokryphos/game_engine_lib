@@ -56,7 +56,7 @@ class VulkanRenderer : public render::Renderer
     std::vector<VkFence> m_images_in_flight;
 
     //  Texture objects
-    Texture m_texture;
+    std::vector<Texture> m_textures;
 
     //  Depth buffer objects
     VkImage m_depth_image;
@@ -105,6 +105,11 @@ public:
     }
 
     virtual void load_model(
+        common::AssetId id,
+        const std::string& path
+    ) override;
+
+    virtual void load_texture(
         common::AssetId id,
         const std::string& path
     ) override;

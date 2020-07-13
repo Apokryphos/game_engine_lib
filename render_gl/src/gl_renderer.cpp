@@ -25,7 +25,7 @@ void GlRenderer::draw_frame(GLFWwindow* glfw_window) {
 
 //  ----------------------------------------------------------------------------
 void GlRenderer::draw_model(
-    const common::AssetId id,
+    const AssetId id,
     const glm::mat4x4& model,
     const glm::mat4x4& view,
     const glm::mat4x4& proj
@@ -54,7 +54,15 @@ bool GlRenderer::initialize(GLFWwindow* glfw_window) {
 
 //  ----------------------------------------------------------------------------
 void GlRenderer::load_model(
-    common::AssetId id,
+    AssetId id,
+    const std::string& path
+) {
+    throw std::runtime_error("Not implemented.");
+}
+
+//  ----------------------------------------------------------------------------
+void GlRenderer::load_texture(
+    AssetId id,
     const std::string& path
 ) {
     throw std::runtime_error("Not implemented.");

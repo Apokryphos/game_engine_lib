@@ -16,4 +16,13 @@ void create_descriptor_sets(
     // const std::vector<VkBuffer>& uniform_buffers,
     std::vector<VkDescriptorSet>& descriptor_sets
 );
+
+void update_descriptor_sets(
+    VkDevice device,
+    const VulkanSwapchain swapchain,
+    VkImageView texture_image_view,
+    VkSampler texture_sampler,
+    VkBuffer uniform_buffer,
+    std::vector<VkDescriptorSet>& descriptor_sets
+);
 }

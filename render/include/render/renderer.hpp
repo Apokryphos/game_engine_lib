@@ -40,6 +40,10 @@ public:
         common::AssetId id,
         const std::string& path
     ) = 0;
+    virtual void load_texture(
+        common::AssetId id,
+        const std::string& path
+    ) = 0;
     virtual void resize(GLFWwindow* glfw_window) = 0;
     virtual void shutdown() = 0;
 };
