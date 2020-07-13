@@ -69,6 +69,15 @@ class VulkanRenderer : public render::Renderer
     UniformBuffers m_uniform_buffers;
     UboDataDynamic  m_ubo_data_dynamic;
 
+    void create_descriptor_sets();
+
+    //  Creates swapchain and render pass
+    void create_swapchain_objects(GLFWwindow* glfw_window);
+
+    //  Creates objects that require the swapchain to exist before they
+    //  can be created (and need to be recreated when the swapchain changes).
+    void create_swapchain_dependents();
+
     void cleanup_swapchain();
     void recreate_swapchain(GLFWwindow* glfw_window);
     void update_uniform_buffer(uint32_t image_index);

@@ -110,7 +110,6 @@ void VulkanRenderer::cleanup_swapchain() {
 
     vkDestroyPipeline(m_device, m_graphics_pipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_pipeline_layout, nullptr);
-    vkDestroyRenderPass(m_device, m_render_pass, nullptr);
 
     imgui_vulkan_cleanup_swapchain(m_device);
 
@@ -128,8 +127,100 @@ void VulkanRenderer::cleanup_swapchain() {
 
     vkDestroyDescriptorPool(m_device, m_descriptor_pool, nullptr);
 
+    vkDestroyRenderPass(m_device, m_render_pass, nullptr);
+
     //  Destroy swapchain
     vkDestroySwapchainKHR(m_device, m_swapchain.swapchain, nullptr);
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanRenderer::create_descriptor_sets() {
+    prepare_uniform_buffers(
+        m_physical_device,
+        m_device,
+        m_uniform_buffers,
+        m_ubo_data_dynamic
+    );
+
+    render_vk::create_descriptor_pool(
+        m_device,
+        m_swapchain,
+        m_descriptor_pool
+    );
+
+    render_vk::create_descriptor_sets(
+        m_device,
+        m_swapchain,
+        m_descriptor_set_layout,
+        m_descriptor_pool,
+        m_texture.view,
+        m_texture.sampler,
+        m_uniform_buffers.dynamic,
+        m_descriptor_sets
+    );
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanRenderer::create_swapchain_objects(GLFWwindow* glfw_window) {
+    //  Get window size
+    int width;
+    int height;
+    glfwGetWindowSize(glfw_window, &width, &height);
+
+    //  Create swap chain
+    render_vk::create_swapchain(
+        m_device,
+        m_physical_device,
+        m_surface,
+        width,
+        height,
+        m_swapchain
+    );
+
+    //  Create render pass
+    create_render_pass(m_device, m_physical_device, m_swapchain, m_render_pass);
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanRenderer::create_swapchain_dependents() {
+    create_graphics_pipeline(
+        m_device,
+        m_swapchain,
+        m_render_pass,
+        m_descriptor_set_layout,
+        m_pipeline_layout,
+        m_graphics_pipeline
+    );
+
+    create_depth_resources(
+        m_physical_device,
+        m_device,
+        m_graphics_queue,
+        m_command_pool,
+        m_swapchain,
+        m_depth_image,
+        m_depth_image_view,
+        m_depth_image_memory
+    );
+
+    create_framebuffers(m_device, m_render_pass, m_depth_image_view, m_swapchain);
+
+    create_command_buffers(
+        m_device,
+        m_command_pool,
+        m_swapchain,
+        m_command_buffers
+    );
+
+    imgui_vulkan_init(
+        m_instance,
+        m_physical_device,
+        m_device,
+        m_graphics_queue,
+        m_swapchain,
+        m_render_pass,
+        m_command_pool
+    );
 }
 
 //  ----------------------------------------------------------------------------
@@ -316,11 +407,6 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
 
-    //  Get window size
-    int width;
-    int height;
-    glfwGetWindowSize(glfw_window, &width, &height);
-
     //  Initialize physical device
     if (!init_device(
         m_instance,
@@ -347,56 +433,21 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
     //  Optimize device calls
     volkLoadDevice(m_device);
 
-    //  Create swap chain
-    if (!create_swapchain(
-        m_device,
-        m_physical_device,
-        m_surface,
-        width,
-        height,
-        m_swapchain
-    )) {
-        return false;
-    }
+    create_command_pool(m_device, m_physical_device, m_surface, m_command_pool);
 
-    if (!create_render_pass(m_device, m_physical_device, m_swapchain, m_render_pass)) {
-        return false;
-    }
+    create_descriptor_set_layout(m_device, m_descriptor_set_layout);
 
-    create_descriptor_set_layout(
-        m_device,
-        m_descriptor_set_layout
-    );
+    create_swapchain_objects(glfw_window);
 
-    if (!create_graphics_pipeline(
+    //  Sync objects require swapchain image count
+    create_sync_objects(
         m_device,
         m_swapchain,
-        m_render_pass,
-        m_descriptor_set_layout,
-        m_pipeline_layout,
-        m_graphics_pipeline
-    )) {
-        return false;
-    }
-
-    if (!create_command_pool(m_device, m_physical_device, m_surface, m_command_pool)) {
-        return false;
-    }
-
-    create_depth_resources(
-        m_physical_device,
-        m_device,
-        m_graphics_queue,
-        m_command_pool,
-        m_swapchain,
-        m_depth_image,
-        m_depth_image_view,
-        m_depth_image_memory
+        m_image_available_semaphores,
+        m_render_finished_semaphores,
+        m_in_flight_fences,
+        m_images_in_flight
     );
-
-    if (!create_framebuffers(m_device, m_render_pass, m_depth_image_view, m_swapchain)) {
-        return false;
-    }
 
     create_texture(
         m_physical_device,
@@ -407,62 +458,15 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
         m_texture
     );
 
-    create_descriptor_pool(
-        m_device,
-        m_swapchain,
-        m_descriptor_pool
-    );
+    //  Descriptor sets (currently) require texture objects to be created
+    create_descriptor_sets();
 
-    prepare_uniform_buffers(
-        m_physical_device,
-        m_device,
-        m_uniform_buffers,
-        m_ubo_data_dynamic
-    );
-
-    create_descriptor_sets(
-        m_device,
-        m_swapchain,
-        m_descriptor_set_layout,
-        m_descriptor_pool,
-        m_texture.view,
-        m_texture.sampler,
-        m_uniform_buffers.dynamic,
-        m_descriptor_sets
-    );
-
-    if (!create_command_buffers(
-        m_device,
-        m_command_pool,
-        m_swapchain,
-        m_command_buffers
-    )) {
-        return false;
-    }
-
-    create_sync_objects(
-        m_device,
-        m_swapchain,
-        m_image_available_semaphores,
-        m_render_finished_semaphores,
-        m_in_flight_fences,
-        m_images_in_flight
-    );
+    create_swapchain_dependents();
 
     m_model_mgr = std::make_unique<ModelManager>(
         m_physical_device,
         m_device,
         m_graphics_queue,
-        m_command_pool
-    );
-
-    imgui_vulkan_init(
-        m_instance,
-        m_physical_device,
-        m_device,
-        m_graphics_queue,
-        m_swapchain,
-        m_render_pass,
         m_command_pool
     );
 
@@ -488,92 +492,15 @@ void VulkanRenderer::recreate_swapchain(GLFWwindow* glfw_window) {
     }
 
     vkDeviceWaitIdle(m_device);
+
+    //  Destroy all objects related to old swapchain
     cleanup_swapchain();
 
-    //  Create swap chain
-    if (!create_swapchain(
-        m_device,
-        m_physical_device,
-        m_surface,
-        width,
-        height,
-        m_swapchain
-    )) {
-        throw std::runtime_error("Failed to recreate swapchain.");
-    }
+    create_swapchain_objects(glfw_window);
 
-    if (!create_render_pass(m_device, m_physical_device, m_swapchain, m_render_pass)) {
-        throw std::runtime_error("Failed to recreate render pass.");
-    }
+    create_descriptor_sets();
 
-    if (!create_graphics_pipeline(
-        m_device,
-        m_swapchain,
-        m_render_pass,
-        m_descriptor_set_layout,
-        m_pipeline_layout,
-        m_graphics_pipeline
-    )) {
-        throw std::runtime_error("Failed to recreate graphics pipeline.");
-    }
-
-    create_depth_resources(
-        m_physical_device,
-        m_device,
-        m_graphics_queue,
-        m_command_pool,
-        m_swapchain,
-        m_depth_image,
-        m_depth_image_view,
-        m_depth_image_memory
-    );
-
-    if (!create_framebuffers(m_device, m_render_pass, m_depth_image_view, m_swapchain)) {
-        throw std::runtime_error("Failed to recreate framebuffers.");
-    }
-
-    prepare_uniform_buffers(
-        m_physical_device,
-        m_device,
-        m_uniform_buffers,
-        m_ubo_data_dynamic
-    );
-
-    create_descriptor_pool(
-        m_device,
-        m_swapchain,
-        m_descriptor_pool
-    );
-
-    create_descriptor_sets(
-        m_device,
-        m_swapchain,
-        m_descriptor_set_layout,
-        m_descriptor_pool,
-        m_texture.view,
-        m_texture.sampler,
-        m_uniform_buffers.dynamic,
-        m_descriptor_sets
-    );
-
-    if (!create_command_buffers(
-        m_device,
-        m_command_pool,
-        m_swapchain,
-        m_command_buffers
-    )) {
-        throw std::runtime_error("Failed to recreate command buffers.");
-    }
-
-    imgui_vulkan_recreate_swapchain(
-        m_instance,
-        m_physical_device,
-        m_device,
-        m_graphics_queue,
-        m_swapchain,
-        m_render_pass,
-        m_command_pool
-    );
+    create_swapchain_dependents();
 }
 
 //  ----------------------------------------------------------------------------

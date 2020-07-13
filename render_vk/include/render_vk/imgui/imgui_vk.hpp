@@ -23,15 +23,16 @@ void imgui_vulkan_init(
 void imgui_vulkan_cleanup_swapchain(VkDevice device);
 
 //  Call when resources should be recreated after swapchain is recreated.
-void imgui_vulkan_recreate_swapchain(
-    VkInstance instance,
-    VkPhysicalDevice physical_device,
-    VkDevice device,
-    VkQueue queue,
-    VulkanSwapchain& swapchain,
-    VkRenderPass render_pass,
-    VkCommandPool command_pool
-);
+//  REMOVED: Identical to imgui_vulkan_init
+// void imgui_vulkan_recreate_swapchain(
+//     VkInstance instance,
+//     VkPhysicalDevice physical_device,
+//     VkDevice device,
+//     VkQueue queue,
+//     VulkanSwapchain& swapchain,
+//     VkRenderPass render_pass,
+//     VkCommandPool command_pool
+// );
 
 void imgui_vulkan_render_frame(VkCommandBuffer command_buffer);
 void imgui_vulkan_shutdown(VkDevice device);

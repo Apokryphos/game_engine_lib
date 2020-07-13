@@ -88,26 +88,26 @@ void imgui_vulkan_init(
 }
 
 //  ----------------------------------------------------------------------------
-void imgui_vulkan_recreate_swapchain(
-    VkInstance instance,
-    VkPhysicalDevice physical_device,
-    VkDevice device,
-    VkQueue queue,
-    VulkanSwapchain& swapchain,
-    VkRenderPass render_pass,
-    VkCommandPool command_pool
-) {
-    //  Create new objects
-    imgui_vulkan_init(
-        instance,
-        physical_device,
-        device,
-        queue,
-        swapchain,
-        render_pass,
-        command_pool
-    );
-}
+// void imgui_vulkan_recreate_swapchain(
+//     VkInstance instance,
+//     VkPhysicalDevice physical_device,
+//     VkDevice device,
+//     VkQueue queue,
+//     VulkanSwapchain& swapchain,
+//     VkRenderPass render_pass,
+//     VkCommandPool command_pool
+// ) {
+//     //  Create new objects
+//     imgui_vulkan_init(
+//         instance,
+//         physical_device,
+//         device,
+//         queue,
+//         swapchain,
+//         render_pass,
+//         command_pool
+//     );
+// }
 
 //  ----------------------------------------------------------------------------
 void imgui_vulkan_render_frame(VkCommandBuffer command_buffer) {
