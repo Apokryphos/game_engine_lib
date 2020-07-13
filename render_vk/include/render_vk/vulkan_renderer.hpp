@@ -67,11 +67,14 @@ class VulkanRenderer : public render::Renderer
 
     std::unique_ptr<ModelManager> m_model_mgr;
 
+    //  Draw commands for this frame
     std::vector<DrawModelCommand> m_draw_model_commands;
 
-    //  Uniform buffers
+    //  Per-frame uniform buffer
     UniformBuffer<FrameUbo> m_frame_uniform;
-    DynamicUniformBuffer<ObjectUbo> m_object_dynamic_uniform;
+
+    //  Per-object dynamic uniform buffer
+    DynamicUniformBuffer<ObjectUbo> m_object_uniform;
 
     void create_descriptor_sets();
 
