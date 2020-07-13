@@ -3,7 +3,6 @@
 #include "common/alloc.hpp"
 #include "render_vk/buffer.hpp"
 #include "render_vk/ubo.hpp"
-#include "render_vk/ubo_dynamic.hpp"
 #include "render_vk/vulkan.hpp"
 #include <cassert>
 #include <string.h>
@@ -11,6 +10,14 @@
 
 namespace render_vk
 {
+void get_dynamic_buffer_align_and_size(
+    VkPhysicalDevice physical_device,
+    const size_t object_count,
+    const size_t uniform_buffer_size,
+    size_t& dynamic_align,
+    size_t& buffer_size
+);
+
 //  Dynamic uniform buffer.
 //  Stores UBO's (of type T).
 template <typename T>

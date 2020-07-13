@@ -1,9 +1,6 @@
 #include "common/alloc.hpp"
 #include "common/math.hpp"
-#include "render_vk/buffer.hpp"
-#include "render_vk/ubo_dynamic.hpp"
 #include "render_vk/vulkan.hpp"
-#include <cstring>
 
 using namespace common;
 
