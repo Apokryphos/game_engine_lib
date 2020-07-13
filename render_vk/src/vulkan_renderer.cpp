@@ -18,7 +18,6 @@
 #include "render_vk/model_manager.hpp"
 #include "render_vk/render_pass.hpp"
 #include "render_vk/texture.hpp"
-#include "render_vk/ubo_dynamic.hpp"
 #include "render_vk/uniform.hpp"
 #include "render_vk/vertex_buffer.hpp"
 #include "render_vk/vulkan.hpp"

@@ -4,7 +4,7 @@
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
 #include "render_vk/texture.hpp"
-#include "render_vk/ubo_dynamic.hpp"
+#include "render_vk/ubo.hpp"
 #include "render_vk/uniform.hpp"
 #include "render_vk/uniform_buffer.hpp"
 #include "render_vk/vulkan_swapchain.hpp"

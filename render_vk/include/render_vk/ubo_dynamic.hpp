@@ -5,19 +5,6 @@
 
 namespace render_vk
 {
-//  Per-frame UBO data (updated once a frame)
-struct FrameUbo
-{
-    glm::mat4 view;
-    glm::mat4 proj;
-};
-
-//  Per-object UBO data (updated every object, every frame)
-struct ObjectUbo
-{
-    glm::mat4 model;
-};
-
 void get_dynamic_buffer_align_and_size(
     VkPhysicalDevice physical_device,
     const size_t object_count,
