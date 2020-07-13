@@ -10,6 +10,7 @@ namespace render_vk
 {
 struct DrawModelCommand
 {
+    uint32_t texture_id;
     uint32_t index_count;
     glm::mat4x4 model;
     glm::mat4x4 view;

@@ -367,6 +367,7 @@ void VulkanRenderer::draw_model(
     VkBuffer index_buffer = vk_model->get_index_buffer();
 
     DrawModelCommand cmd{};
+    cmd.texture_id = texture_id;
     cmd.index_count = vk_model->get_index_count();
     cmd.model = model;
     cmd.view = view;
