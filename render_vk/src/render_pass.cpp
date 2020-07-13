@@ -1,14 +1,13 @@
-#include "common/log.hpp"
 #include "render_vk/depth.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
-
-using namespace common;
+#include <array>
+#include <stdexcept>
 
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-bool create_render_pass(
+void create_render_pass(
     VkDevice device,
     VkPhysicalDevice physical_device,
     const VulkanSwapchain& swapchain,
@@ -71,10 +70,7 @@ bool create_render_pass(
     render_pass_info.pDependencies = &dependency;
 
     if (vkCreateRenderPass(device, &render_pass_info, nullptr, &render_pass) != VK_SUCCESS) {
-        log_debug("Failed to create render pass.");
-        return false;
+        throw std::runtime_error("Failed to create render pass.");
     }
-
-    return true;
 }
 }

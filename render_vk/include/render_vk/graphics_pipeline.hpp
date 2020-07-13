@@ -6,7 +6,7 @@ namespace render_vk
 {
 struct VulkanSwapchain;
 
-bool create_graphics_pipeline(
+void create_graphics_pipeline(
     VkDevice device,
     const VulkanSwapchain& swapchain,
     VkRenderPass render_pass,

@@ -3,9 +3,8 @@
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
 #include <fstream>
+#include <stdexcept>
 #include <vector>
-
-using namespace common;
 
 namespace render_vk
 {
@@ -46,7 +45,7 @@ static VkShaderModule create_shader_module(
 }
 
 //  ----------------------------------------------------------------------------
-bool create_graphics_pipeline(
+void create_graphics_pipeline(
     VkDevice device,
     const VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
@@ -235,13 +234,10 @@ bool create_graphics_pipeline(
         nullptr,
         &graphics_pipeline) != VK_SUCCESS
     ) {
-        log_debug("Failed to create graphics pipeline.");
-        return false;
+        throw std::runtime_error("Failed to create graphics pipeline.");
     }
 
     vkDestroyShaderModule(device, frag_shader_module, nullptr);
     vkDestroyShaderModule(device, vert_shader_module, nullptr);
-
-    return true;
 }
 }
