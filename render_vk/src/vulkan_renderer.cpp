@@ -238,13 +238,15 @@ void VulkanRenderer::create_swapchain_dependents() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
+    //  Check if descriptor sets should be recreated
+    //  (e.g. after textures are loaded)
     if (m_rebuild_descriptor_sets) {
         vkDeviceWaitIdle(m_device);
         create_descriptor_sets();
         m_rebuild_descriptor_sets = false;
     }
 
-    begin_debug_marker(m_graphics_queue, "Draw Frame", DEBUG_MARKER_COLOR_GREEN);
+    begin_debug_marker(m_graphics_queue, "Draw Frame", DEBUG_MARKER_COLOR_YELLOW);
 
     vkWaitForFences(
         m_device,
@@ -254,8 +256,8 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
         UINT64_MAX
     );
 
+    //  Get next presentable image index
     uint32_t image_index;
-
     VkResult result = vkAcquireNextImageKHR(
         m_device,
         m_swapchain.swapchain,
@@ -266,6 +268,7 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
     );
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        //  Surface changed and swapchain is no longer compatible
         recreate_swapchain(glfw_window);
         return;
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -314,6 +317,7 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
 
     vkResetFences(m_device, 1, &m_in_flight_fences[m_current_frame]);
 
+    //  Submit draw commands
     if (vkQueueSubmit(
         m_graphics_queue,
         1,
@@ -325,15 +329,15 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
 
     end_debug_marker(m_graphics_queue);
 
+    begin_debug_marker(m_graphics_queue, "Present Frame", DEBUG_MARKER_COLOR_GREEN);
+
     //  Presentation
     VkPresentInfoKHR present_info{};
     present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     present_info.waitSemaphoreCount = 1;
     present_info.pWaitSemaphores = signal_semaphores;
-
-    //  Swapchains
-    VkSwapchainKHR swapchains[] = { m_swapchain.swapchain };
     present_info.swapchainCount = 1;
+    VkSwapchainKHR swapchains[] = { m_swapchain.swapchain };
     present_info.pSwapchains = swapchains;
     present_info.pImageIndices = &image_index;
     present_info.pResults = nullptr; // Optional
@@ -351,6 +355,7 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
         throw std::runtime_error("Failed to present swap chain image.");
     }
 
+    //  Advance frame counter
     m_current_frame = (m_current_frame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
