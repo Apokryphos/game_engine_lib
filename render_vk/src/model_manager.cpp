@@ -10,15 +10,7 @@ using namespace common;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-ModelManager::ModelManager(
-    VkPhysicalDevice physical_device,
-    VkDevice device,
-    VkQueue graphics_queue,
-    VkCommandPool command_pool
-) : m_physical_device(physical_device),
-    m_device(device),
-    m_graphics_queue(graphics_queue),
-    m_command_pool(command_pool) {
+ModelManager::ModelManager() {
 }
 
 //  ----------------------------------------------------------------------------
@@ -27,16 +19,23 @@ ModelManager::~ModelManager() {
 }
 
 //  ----------------------------------------------------------------------------
-void ModelManager::load_model(const AssetId id, const std::string& path) {
+void ModelManager::load_model(
+    const AssetId id,
+    const std::string& path,
+    VkPhysicalDevice physical_device,
+    VkDevice device,
+    VkQueue graphics_queue,
+    VkCommandPool command_pool
+) {
     Mesh mesh;
     load_mesh(mesh, path);
 
     auto model = std::make_unique<VulkanModel>(id, path);
     model->load(
-        m_physical_device,
-        m_device,
-        m_graphics_queue,
-        m_command_pool,
+        physical_device,
+        device,
+        graphics_queue,
+        command_pool,
         mesh
     );
 

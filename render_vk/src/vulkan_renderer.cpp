@@ -77,7 +77,8 @@ static void query_extensions() {
 VulkanRenderer::VulkanRenderer()
 : Renderer(RenderApi::Vulkan),
   m_framebuffer_resized(false),
-  m_current_frame(0) {
+  m_current_frame(0),
+  m_model_mgr(std::make_unique<ModelManager>()) {
 }
 
 //  ----------------------------------------------------------------------------
@@ -463,19 +464,19 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
 
     create_swapchain_dependents();
 
-    m_model_mgr = std::make_unique<ModelManager>(
-        m_physical_device,
-        m_device,
-        m_graphics_queue,
-        m_command_pool
-    );
-
     return true;
 }
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::load_model(AssetId id, const std::string& path) {
-    m_model_mgr->load_model(id, path);
+    m_model_mgr->load_model(
+        id,
+        path,
+        m_physical_device,
+        m_device,
+        m_graphics_queue,
+        m_command_pool
+    );
 }
 
 //  ----------------------------------------------------------------------------
