@@ -1,7 +1,6 @@
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/imgui/imgui_vk.hpp"
-#include "render_vk/uniform.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
 #include <stdexcept>

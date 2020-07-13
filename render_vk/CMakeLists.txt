@@ -10,6 +10,7 @@ set(SOURCE_FILES
     src/debug_utils.cpp
     src/depth.cpp
     src/descriptor_pool.cpp
+    src/descriptor_set_layout.cpp
     src/descriptor_sets.cpp
     src/devices.cpp
     src/dynamic_uniform_buffer.cpp
@@ -25,7 +26,6 @@ set(SOURCE_FILES
     src/queue_family.cpp
     src/render_pass.cpp
     src/texture.cpp
-    src/uniform.cpp
     src/vertex_buffer.cpp
     src/vulkan_model.cpp
     src/vulkan_renderer.cpp

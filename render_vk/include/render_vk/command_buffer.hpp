@@ -1,6 +1,5 @@
 #pragma once
 
-#include "render_vk/uniform.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
 #include <glm/mat4x4.hpp>

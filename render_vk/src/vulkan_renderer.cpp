@@ -5,6 +5,7 @@
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/depth.hpp"
 #include "render_vk/descriptor_pool.hpp"
+#include "render_vk/descriptor_set_layout.hpp"
 #include "render_vk/descriptor_sets.hpp"
 #include "render_vk/devices.hpp"
 #include "render_vk/framebuffers.hpp"
@@ -18,12 +19,10 @@
 #include "render_vk/model_manager.hpp"
 #include "render_vk/render_pass.hpp"
 #include "render_vk/texture.hpp"
-#include "render_vk/uniform.hpp"
 #include "render_vk/vertex_buffer.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_model.hpp"
 #include "render_vk/vulkan_renderer.hpp"
-#include "render_vk/vulkan_swapchain.hpp"
 #include <glm/mat4x4.hpp>
 #include <cstdint>
 #include <cstring>

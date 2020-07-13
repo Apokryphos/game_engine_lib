@@ -5,7 +5,6 @@
 #include "render_vk/dynamic_uniform_buffer.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/ubo.hpp"
-#include "render_vk/uniform.hpp"
 #include "render_vk/uniform_buffer.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
 #include "render_vk/vulkan.hpp"
