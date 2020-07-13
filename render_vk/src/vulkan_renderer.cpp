@@ -37,6 +37,9 @@ namespace render_vk
 {
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
+//  Number of objects to create UBO data structs for
+const size_t OBJECT_INSTANCES = 100;
+
 //  ----------------------------------------------------------------------------
 static void create_sync_objects(
     VkDevice device,
