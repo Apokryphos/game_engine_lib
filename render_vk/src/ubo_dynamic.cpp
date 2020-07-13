@@ -30,7 +30,7 @@ static size_t gpu_dynamic_align(
 }
 
 //  ----------------------------------------------------------------------------
-static void get_dynamic_buffer_align_and_size(
+void get_dynamic_buffer_align_and_size(
     VkPhysicalDevice physical_device,
     const size_t object_count,
     const size_t uniform_buffer_size,

@@ -51,6 +51,14 @@ void destroy_dynamic_uniform_buffer(
     UboDataDynamic& ubo_dynamic
 );
 
+void get_dynamic_buffer_align_and_size(
+    VkPhysicalDevice physical_device,
+    const size_t object_count,
+    const size_t uniform_buffer_size,
+    size_t& dynamic_align,
+    size_t& buffer_size
+);
+
 void prepare_uniform_buffers(
     VkPhysicalDevice physical_device,
     VkDevice device,

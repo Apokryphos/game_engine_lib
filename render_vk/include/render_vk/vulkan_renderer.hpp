@@ -2,6 +2,7 @@
 
 #include "render/renderer.hpp"
 #include "render_vk/command_buffer.hpp"
+#include "render_vk/dynamic_uniform_buffer.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/ubo_dynamic.hpp"
 #include "render_vk/uniform.hpp"
@@ -67,8 +68,11 @@ class VulkanRenderer : public render::Renderer
 
     std::vector<DrawModelCommand> m_draw_model_commands;
 
-    UniformBuffers m_uniform_buffers;
-    UboDataDynamic  m_ubo_data_dynamic;
+    // UniformBuffers m_uniform_buffers;
+    // UboDataDynamic  m_ubo_data_dynamic;
+
+    //  Dynamic uniform buffer
+    DynamicUniformBuffer<UboData> m_dynamic_uniform;
 
     void create_descriptor_sets();
 
