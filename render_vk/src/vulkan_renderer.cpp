@@ -364,8 +364,6 @@ void VulkanRenderer::draw_model(
 ) {
     VulkanModel* vk_model = m_model_mgr->get_model(model_id);
 
-    VkBuffer index_buffer = vk_model->get_index_buffer();
-
     DrawModelCommand cmd{};
     cmd.texture_id = texture_id;
     cmd.index_count = vk_model->get_index_count();
@@ -575,16 +573,18 @@ void VulkanRenderer::update_uniform_buffers(uint32_t image_index) {
     frame_ubo.proj = m_draw_model_commands.at(0).proj;
     frame_ubo.view = m_draw_model_commands.at(0).view;
 
+    //  Copy frame UBO struct to uniform buffer
     m_frame_uniform.copy(frame_ubo);
 
     //  Update all UBO structs once per frame
     std::vector<ObjectUbo> data(m_draw_model_commands.size());
     for (size_t n = 0; n < m_draw_model_commands.size(); ++n)  {
         const DrawModelCommand& cmd = m_draw_model_commands[n];
+        data[n].texture_index = cmd.texture_id;
         data[n].model = cmd.model;
     }
 
-    //  Copy UBO structs to dynamic uniform buffer
+    //  Copy object UBO structs to dynamic uniform buffer
     m_object_uniform.copy(data);
 }
 }

@@ -12,9 +12,9 @@ struct DrawModelCommand
 {
     uint32_t texture_id;
     uint32_t index_count;
-    glm::mat4x4 model;
-    glm::mat4x4 view;
-    glm::mat4x4 proj;
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
     VkBuffer vertex_buffer;
     VkBuffer index_buffer;
 };

@@ -2,6 +2,7 @@
 
 #include "render_vk/vulkan.hpp"
 #include <glm/mat4x4.hpp>
+#include <cstdint>
 
 namespace render_vk
 {
@@ -16,5 +17,6 @@ struct FrameUbo
 struct ObjectUbo
 {
     glm::mat4 model;
+    uint32_t texture_index;
 };
 }
