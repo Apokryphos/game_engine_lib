@@ -130,12 +130,6 @@ void record_command_buffer(
     begin_debug_marker(command_buffer, "Draw Model", DEBUG_MARKER_COLOR_ORANGE);
     for (const DrawModelCommand cmd : draw_model_commands) {
         //  Bind vertex buffer
-        vkCmdBindPipeline(
-            command_buffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            graphics_pipeline
-        );
-
         VkBuffer vertex_buffers[] = { cmd.vertex_buffer };
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
