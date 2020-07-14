@@ -23,6 +23,7 @@ void VulkanModel::load(
         device,
         graphics_queue,
         command_pool,
+        mesh.vertices,
         m_vertex_buffer,
         m_vertex_buffer_memory
     );
@@ -32,6 +33,7 @@ void VulkanModel::load(
         device,
         graphics_queue,
         command_pool,
+        mesh.indices,
         m_index_buffer,
         m_index_buffer_memory
     );

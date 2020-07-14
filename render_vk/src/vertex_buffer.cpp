@@ -7,35 +7,18 @@
 
 namespace render_vk
 {
-//  Test vertices (textured quad)
-std::vector<Vertex> s_vertices = {
-    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    {{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f,  0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-
-    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-};
-
-//  ----------------------------------------------------------------------------
-std::vector<Vertex>& get_vertices() {
-    return s_vertices;
-}
-
 //  ----------------------------------------------------------------------------
 void create_vertex_buffer(
     VkPhysicalDevice physical_device,
     VkDevice device,
     VkQueue transfer_queue,
     VkCommandPool command_pool,
+    const std::vector<Vertex>& vertices,
     VkBuffer& vertex_buffer,
     VkDeviceMemory& vertex_buffer_memory
 ) {
     //  Create vertex buffer
-    VkDeviceSize buffer_size = sizeof(s_vertices[0]) * s_vertices.size();
+    VkDeviceSize buffer_size = sizeof(Vertex) * vertices.size();
 
     VkBuffer staging_buffer;
     VkDeviceMemory staging_buffer_memory;
@@ -52,7 +35,7 @@ void create_vertex_buffer(
 
     void* data;
     vkMapMemory(device, staging_buffer_memory, 0, buffer_size, 0, &data);
-    memcpy(data, s_vertices.data(), (size_t)buffer_size);
+    memcpy(data, vertices.data(), (size_t)buffer_size);
     vkUnmapMemory(device, staging_buffer_memory);
 
     create_buffer(

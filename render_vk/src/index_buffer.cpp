@@ -6,28 +6,18 @@
 
 namespace render_vk
 {
-//  Test indices (color quad)
-std::vector<uint32_t> s_indices = {
-    0, 1, 2, 2, 3, 0,
-    4, 5, 6, 6, 7, 4,
-};
-
-//  ----------------------------------------------------------------------------
-std::vector<uint32_t>& get_indices() {
-    return s_indices;
-}
-
 //  ----------------------------------------------------------------------------
 void create_index_buffer(
     VkPhysicalDevice physical_device,
     VkDevice device,
     VkQueue transfer_queue,
     VkCommandPool command_pool,
+    const std::vector<uint32_t>& indices,
     VkBuffer& index_buffer,
     VkDeviceMemory& index_buffer_memory
 ) {
     //  Create vertex buffer
-    VkDeviceSize buffer_size = sizeof(s_indices[0]) * s_indices.size();
+    VkDeviceSize buffer_size = sizeof(uint32_t) * indices.size();
 
     VkBuffer staging_buffer;
     VkDeviceMemory staging_buffer_memory;
@@ -44,7 +34,7 @@ void create_index_buffer(
 
     void* data;
     vkMapMemory(device, staging_buffer_memory, 0, buffer_size, 0, &data);
-    memcpy(data, s_indices.data(), (size_t)buffer_size);
+    memcpy(data, indices.data(), (size_t)buffer_size);
     vkUnmapMemory(device, staging_buffer_memory);
 
     create_buffer(

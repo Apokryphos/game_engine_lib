@@ -11,9 +11,8 @@ void create_vertex_buffer(
     VkDevice device,
     VkQueue transfer_queue,
     VkCommandPool command_pool,
+    const std::vector<Vertex>& vertices,
     VkBuffer& vertex_buffer,
     VkDeviceMemory& vertex_buffer_memory
 );
-
-std::vector<Vertex>& get_vertices();
 }

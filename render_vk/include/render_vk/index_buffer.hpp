@@ -11,9 +11,8 @@ void create_index_buffer(
     VkDevice device,
     VkQueue transfer_queue,
     VkCommandPool command_pool,
+    const std::vector<uint32_t>& indices,
     VkBuffer& index_buffer,
     VkDeviceMemory& index_buffer_memory
 );
-
-std::vector<uint32_t>& get_indices();
 }

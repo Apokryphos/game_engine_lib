@@ -38,8 +38,5 @@ void load_mesh(Mesh& mesh, const std::string& path) {
          mesh.indices.push_back(mesh.indices.size());
       }
    }
-
-   get_vertices() = mesh.vertices;
-   get_indices() = mesh.indices;
 }
 }
