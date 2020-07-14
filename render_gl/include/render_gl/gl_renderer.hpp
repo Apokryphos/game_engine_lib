@@ -17,6 +17,12 @@ public:
         const glm::mat4x4& view,
         const glm::mat4x4& proj
     ) override;
+    virtual void draw_models(
+        const glm::mat4& view,
+        const glm::mat4& proj,
+        std::vector<uint32_t>& model_ids,
+        std::vector<glm::vec3>& positions
+    ) override;
     virtual float get_aspect_ratio() const override;
     virtual bool initialize(GLFWwindow* glfw_window) override;
     virtual void load_model(

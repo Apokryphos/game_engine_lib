@@ -2,6 +2,7 @@
 #include "render_vk/command_pool.hpp"
 #include "render_vk/render_job_manager.hpp"
 #include "render_vk/render_job_manager.hpp"
+#include "render_vk/render_tasks/draw_models_task.hpp"
 #include "render_vk/render_tasks/load_model_task.hpp"
 #include "render_vk/render_tasks/load_texture_task.hpp"
 #include "render_vk/render_tasks/render_task_ids.hpp"
@@ -22,6 +23,18 @@ RenderJobManager::~RenderJobManager() {
 }
 
 //  ----------------------------------------------------------------------------
+void RenderJobManager::draw_models(
+    const std::vector<uint32_t>& model_ids,
+    const std::vector<glm::vec3>& positions
+) {
+    DrawModelsArgs args{};
+    args.model_ids = model_ids;
+    args.positions = positions;
+
+    m_thread_mgr.add_job(RENDER_TASK_DRAW_MODELS, args);
+}
+
+//  ----------------------------------------------------------------------------
 void RenderJobManager::initialize(
     VkPhysicalDevice physical_device,
     VkDevice device,
@@ -36,6 +49,7 @@ void RenderJobManager::initialize(
         state.graphics_queue = &graphics_queue;
         state.model_mgr = &model_mgr;
 
+        //  Each thread has its own command pool
         create_command_pool(
             state.device,
             state.physical_device,
@@ -58,6 +72,7 @@ void RenderJobManager::initialize(
 void RenderJobManager::initialize_tasks() {
     m_thread_mgr.add_task<LoadModelArgs>(RENDER_TASK_LOAD_MODEL, task_load_model);
     m_thread_mgr.add_task<LoadTextureArgs>(RENDER_TASK_LOAD_TEXTURE, task_load_texture);
+    m_thread_mgr.add_task<DrawModelsArgs>(RENDER_TASK_DRAW_MODELS, task_draw_models);
 }
 
 //  ----------------------------------------------------------------------------

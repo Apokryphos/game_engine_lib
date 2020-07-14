@@ -396,6 +396,22 @@ void VulkanRenderer::draw_model(
 }
 
 //  ----------------------------------------------------------------------------
+void VulkanRenderer::draw_models(
+    const glm::mat4& view,
+    const glm::mat4& proj,
+    std::vector<uint32_t>& model_ids,
+    std::vector<glm::vec3>& positions
+) {
+    m_job_mgr.draw_models(model_ids, positions);
+
+    m_view = view;
+
+    //  GLM (OpenGL) uses inverted Y clip coordinate
+    m_proj = proj;
+    m_proj[1][1] *= -1;
+}
+
+//  ----------------------------------------------------------------------------
 float VulkanRenderer::get_aspect_ratio() const {
     return m_swapchain.extent.width / (float)m_swapchain.extent.height;
 }

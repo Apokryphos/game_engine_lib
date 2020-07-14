@@ -4,6 +4,7 @@
 #include "common/thread_manager.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_queue.hpp"
+#include <glm/vec3.hpp>
 
 namespace render_vk
 {
@@ -29,6 +30,11 @@ public:
     ~RenderJobManager();
     RenderJobManager(const RenderJobManager&) = delete;
     RenderJobManager& operator=(const RenderJobManager&) = delete;
+
+    void draw_models(
+        const std::vector<uint32_t>& model_ids,
+        const std::vector<glm::vec3>& positions
+    );
 
     void initialize(
         VkPhysicalDevice physical_device,

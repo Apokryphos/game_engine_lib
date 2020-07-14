@@ -26,6 +26,7 @@ set(SOURCE_FILES
     src/queue_family.cpp
     src/render_job_manager.cpp
     src/render_pass.cpp
+    src/render_tasks/draw_models_task.cpp
     src/render_tasks/load_model_task.cpp
     src/render_tasks/load_texture_task.cpp
     src/texture.cpp

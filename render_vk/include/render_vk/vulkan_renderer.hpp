@@ -26,6 +26,9 @@ class VulkanRenderer : public render::Renderer
     bool m_framebuffer_resized;
     size_t m_current_frame;
 
+    glm::mat4 m_view;
+    glm::mat4 m_proj;
+
     VkInstance m_instance;
     VkDevice m_device;
     VkPhysicalDevice m_physical_device;
@@ -76,8 +79,8 @@ class VulkanRenderer : public render::Renderer
     //  Per-object dynamic uniform buffer
     DynamicUniformBuffer<ObjectUbo> m_object_uniform;
 
+    //  Multithreading objects
     VulkanQueue m_queue;
-
     RenderJobManager m_job_mgr;
 
     void create_descriptor_sets();
@@ -106,6 +109,13 @@ public:
         const glm::mat4x4& model,
         const glm::mat4x4& view,
         const glm::mat4x4& proj
+    ) override;
+
+    void draw_models(
+        const glm::mat4& view,
+        const glm::mat4& proj,
+        std::vector<uint32_t>& model_ids,
+        std::vector<glm::vec3>& positions
     ) override;
 
     virtual float get_aspect_ratio() const override;

@@ -2,9 +2,11 @@
 
 #include "common/asset.hpp"
 #include "render/render_api.hpp"
-#include <glm/fwd.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 #include <memory>
 #include <string>
+#include <vector>
 
 struct GLFWwindow;
 
@@ -29,6 +31,13 @@ public:
         const glm::mat4x4& model,
         const glm::mat4x4& view,
         const glm::mat4x4& proj
+    ) = 0;
+
+    virtual void draw_models(
+        const glm::mat4& view,
+        const glm::mat4& proj,
+        std::vector<uint32_t>& model_ids,
+        std::vector<glm::vec3>& positions
     ) = 0;
 
     RenderApi get_render_api() const {
