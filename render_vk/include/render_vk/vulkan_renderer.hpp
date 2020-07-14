@@ -3,8 +3,8 @@
 #include "render/renderer.hpp"
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
+#include "render_vk/render_job_manager.hpp"
 #include "render_vk/texture.hpp"
-#include "render_vk/thread_manager.hpp"
 #include "render_vk/ubo.hpp"
 #include "render_vk/uniform_buffer.hpp"
 #include "render_vk/vulkan_queue.hpp"
@@ -78,7 +78,7 @@ class VulkanRenderer : public render::Renderer
 
     VulkanQueue m_queue;
 
-    ThreadManager m_thread_mgr;
+    RenderJobManager m_job_mgr;
 
     void create_descriptor_sets();
 

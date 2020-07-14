@@ -24,9 +24,11 @@ set(SOURCE_FILES
     src/mesh.cpp
     src/model_manager.cpp
     src/queue_family.cpp
+    src/render_job_manager.cpp
     src/render_pass.cpp
+    src/render_tasks/load_model_task.cpp
+    src/render_tasks/load_texture_task.cpp
     src/texture.cpp
-    src/thread_manager.cpp
     src/vertex_buffer.cpp
     src/vulkan_model.cpp
     src/vulkan_queue.cpp

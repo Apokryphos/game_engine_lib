@@ -1,0 +1,17 @@
+#pragma once
+
+#include "common/asset.hpp"
+#include "render_vk/render_job_manager.hpp"
+#include "render_vk/vulkan.hpp"
+#include <string>
+
+namespace render_vk
+{
+struct LoadTextureArgs
+{
+    common::AssetId id;
+    std::string path;
+};
+
+void task_load_texture(RenderThreadState& state, LoadTextureArgs& args);
+}

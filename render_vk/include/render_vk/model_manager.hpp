@@ -27,7 +27,7 @@ public:
     ModelManager(const ModelManager&) = delete;
     ModelManager& operator=(const ModelManager&) = delete;
 
-    void add_model(const AssetId id, std::unique_ptr<VulkanModel> model);
+    void add_model(std::unique_ptr<VulkanModel> model);
     void add_texture(const AssetId id, const Texture& texture);
 
     bool descriptor_sets_changed() {

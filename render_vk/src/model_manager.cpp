@@ -20,13 +20,10 @@ ModelManager::~ModelManager() {
 }
 
 //  ----------------------------------------------------------------------------
-void ModelManager::add_model(
-    const AssetId id,
-    std::unique_ptr<VulkanModel> model
-) {
+void ModelManager::add_model(std::unique_ptr<VulkanModel> model) {
     std::lock_guard<std::mutex> lock(m_models_mutex);
 
-    m_models[id] = std::move(model);
+    m_models[model->get_id()] = std::move(model);
 }
 
 //  ----------------------------------------------------------------------------

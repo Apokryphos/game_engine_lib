@@ -469,7 +469,7 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
 
     m_queue.initialize(m_physical_device, m_device, m_graphics_queue);
 
-    m_thread_mgr.initialize(
+    m_job_mgr.initialize(
         m_physical_device,
         m_device,
         m_queue,
@@ -499,7 +499,7 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::load_model(AssetId id, const std::string& path) {
-    m_thread_mgr.load_model(id, path);
+    m_job_mgr.load_model(id, path);
     // m_model_mgr->load_model(
     //     id,
     //     path,
@@ -512,7 +512,7 @@ void VulkanRenderer::load_model(AssetId id, const std::string& path) {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::load_texture(AssetId id, const std::string& path) {
-    m_thread_mgr.load_texture(id, path);
+    m_job_mgr.load_texture(id, path);
     // Texture texture{};
 
     // create_texture(
@@ -584,7 +584,7 @@ void VulkanRenderer::shutdown() {
         vkDestroyFence(m_device, m_in_flight_fences[n], nullptr);
     }
 
-    m_thread_mgr.shutdown();
+    m_job_mgr.shutdown();
 
     vkDestroyCommandPool(m_device, m_command_pool, nullptr);
 
