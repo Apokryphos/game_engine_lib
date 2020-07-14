@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render_vk/vulkan.hpp"
+#include "render_vk/vulkan_queue.hpp"
 #include <string>
 
 namespace render_vk
@@ -22,7 +23,8 @@ public:
 void create_texture(
     VkPhysicalDevice physical_device,
     VkDevice device,
-    VkQueue graphics_queue,
+    VulkanQueue& transfer_queue,
+    // VkQueue graphics_queue,
     VkCommandPool command_pool,
     const std::string& filename,
     Texture& texture
@@ -66,7 +68,7 @@ void destroy_texture(VkDevice device, const Texture& texture);
 
 void transition_image_layout(
     VkDevice device,
-    VkQueue transfer_queue,
+    VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     VkImage image,
     VkFormat format,

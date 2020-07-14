@@ -6,6 +6,7 @@
 #include "render_vk/image_view.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
+#include "render_vk/vulkan_queue.hpp"
 #include <lodepng.h>
 #include <stdexcept>
 
@@ -16,7 +17,7 @@ namespace render_vk
 //  ----------------------------------------------------------------------------
 void transition_image_layout(
     VkDevice device,
-    VkQueue transfer_queue,
+    VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     VkImage image,
     VkFormat format,
@@ -103,18 +104,13 @@ void transition_image_layout(
         &barrier
     );
 
-    end_single_time_commands(
-        device,
-        command_pool,
-        command_buffer,
-        transfer_queue
-    );
+    transfer_queue.end_single_time_commands(command_pool, command_buffer);
 }
 
 //  ----------------------------------------------------------------------------
-void copy_buffer_to_image(
+static void copy_buffer_to_image(
     VkDevice device,
-    VkQueue transfer_queue,
+    VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     VkBuffer buffer,
     VkImage image,
@@ -152,12 +148,7 @@ void copy_buffer_to_image(
         &region
     );
 
-    end_single_time_commands(
-        device,
-        command_pool,
-        command_buffer,
-        transfer_queue
-    );
+    transfer_queue.end_single_time_commands(command_pool, command_buffer);
 }
 
 //  ----------------------------------------------------------------------------
@@ -216,7 +207,7 @@ void create_image(
 void create_texture_image(
     VkPhysicalDevice physical_device,
     VkDevice device,
-    VkQueue transfer_queue,
+    VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const std::string& filename,
     VkImage& texture_image,
@@ -364,7 +355,7 @@ void create_texture_sampler(
 void create_texture(
     VkPhysicalDevice physical_device,
     VkDevice device,
-    VkQueue graphics_queue,
+    VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const std::string& filename,
     Texture& texture
@@ -372,7 +363,7 @@ void create_texture(
     create_texture_image(
         physical_device,
         device,
-        graphics_queue,
+        transfer_queue,
         command_pool,
         filename,
         texture.image,

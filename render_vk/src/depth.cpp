@@ -1,6 +1,7 @@
 #include "render_vk/image_view.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
+#include "render_vk/vulkan_queue.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
 #include <stdexcept>
 #include <vector>
@@ -59,7 +60,7 @@ VkFormat find_depth_format(VkPhysicalDevice physical_device) {
 void create_depth_resources(
     VkPhysicalDevice physical_device,
     VkDevice device,
-    VkQueue transfer_queue,
+    VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const VulkanSwapchain& swapchain,
     VkImage& depth_image,

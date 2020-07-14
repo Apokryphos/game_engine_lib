@@ -7,7 +7,6 @@ namespace render_vk
 void create_command_pool(
     VkDevice device,
     VkPhysicalDevice physical_device,
-    VkSurfaceKHR surface,
     VkCommandPool& command_pool
 );
 }

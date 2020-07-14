@@ -4,8 +4,10 @@
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
 #include "render_vk/texture.hpp"
+#include "render_vk/thread_manager.hpp"
 #include "render_vk/ubo.hpp"
 #include "render_vk/uniform_buffer.hpp"
+#include "render_vk/vulkan_queue.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
 #include "render_vk/vulkan.hpp"
 #include <vector>
@@ -21,7 +23,6 @@ class ModelManager;
 
 class VulkanRenderer : public render::Renderer
 {
-    bool m_rebuild_descriptor_sets;
     bool m_framebuffer_resized;
     size_t m_current_frame;
 
@@ -74,6 +75,10 @@ class VulkanRenderer : public render::Renderer
 
     //  Per-object dynamic uniform buffer
     DynamicUniformBuffer<ObjectUbo> m_object_uniform;
+
+    VulkanQueue m_queue;
+
+    ThreadManager m_thread_mgr;
 
     void create_descriptor_sets();
 

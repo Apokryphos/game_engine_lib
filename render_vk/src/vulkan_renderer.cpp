@@ -23,6 +23,7 @@
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_model.hpp"
 #include "render_vk/vulkan_renderer.hpp"
+#include "imgui.h"
 #include <glm/mat4x4.hpp>
 #include <cstdint>
 #include <cstring>
@@ -77,7 +78,6 @@ static void query_extensions() {
 //  ----------------------------------------------------------------------------
 VulkanRenderer::VulkanRenderer()
 : Renderer(RenderApi::Vulkan),
-  m_rebuild_descriptor_sets(false),
   m_framebuffer_resized(false),
   m_current_frame(0),
   m_model_mgr(std::make_unique<ModelManager>()),
@@ -203,7 +203,7 @@ void VulkanRenderer::create_swapchain_dependents() {
     create_depth_resources(
         m_physical_device,
         m_device,
-        m_graphics_queue,
+        m_queue,
         m_command_pool,
         m_swapchain,
         m_depth_image,
@@ -240,13 +240,18 @@ void VulkanRenderer::create_swapchain_dependents() {
 void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
     //  Check if descriptor sets should be recreated
     //  (e.g. after textures are loaded)
-    if (m_rebuild_descriptor_sets) {
+    if (m_model_mgr->descriptor_sets_changed()) {
+        m_model_mgr->get_textures(m_textures);
         vkDeviceWaitIdle(m_device);
         create_descriptor_sets();
-        m_rebuild_descriptor_sets = false;
     }
 
-    begin_debug_marker(m_graphics_queue, "Draw Frame", DEBUG_MARKER_COLOR_YELLOW);
+    if (m_textures.empty()) {
+        ImGui::EndFrame();
+        return;
+    }
+
+    // begin_debug_marker(m_graphics_queue, "Draw Frame", DEBUG_MARKER_COLOR_YELLOW);
 
     vkWaitForFences(
         m_device,
@@ -291,10 +296,10 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
         m_pipeline_layout,
         m_graphics_pipeline,
         m_draw_model_commands,
-        m_descriptor_sets[image_index],
+        m_descriptor_sets.at(image_index),
         m_swapchain.extent,
-        m_swapchain.framebuffers[image_index],
-        m_command_buffers[image_index],
+        m_swapchain.framebuffers.at(image_index),
+        m_command_buffers.at(image_index),
         m_object_uniform.get_align()
     );
 
@@ -318,18 +323,19 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
     vkResetFences(m_device, 1, &m_in_flight_fences[m_current_frame]);
 
     //  Submit draw commands
-    if (vkQueueSubmit(
-        m_graphics_queue,
-        1,
-        &submit_info,
-        m_in_flight_fences[m_current_frame]
-    ) != VK_SUCCESS) {
+    if (m_queue.submit(1, submit_info, m_in_flight_fences[m_current_frame]) != VK_SUCCESS) {
+    // if (vkQueueSubmit(
+    //     m_graphics_queue,
+    //     1,
+    //     &submit_info,
+    //     m_in_flight_fences[m_current_frame]
+    // ) != VK_SUCCESS) {
         throw std::runtime_error("Failed to submit draw command buffer.");
     }
 
-    end_debug_marker(m_graphics_queue);
+    // end_debug_marker(m_graphics_queue);
 
-    begin_debug_marker(m_graphics_queue, "Present Frame", DEBUG_MARKER_COLOR_GREEN);
+    begin_debug_marker(m_present_queue, "Present Frame", DEBUG_MARKER_COLOR_GREEN);
 
     //  Presentation
     VkPresentInfoKHR present_info{};
@@ -368,6 +374,10 @@ void VulkanRenderer::draw_model(
     const glm::mat4x4& proj
 ) {
     VulkanModel* vk_model = m_model_mgr->get_model(model_id);
+
+    if (vk_model == nullptr) {
+        return;
+    }
 
     DrawModelCommand cmd{};
     cmd.texture_id = texture_id;
@@ -457,7 +467,16 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
     //  Optimize device calls
     volkLoadDevice(m_device);
 
-    create_command_pool(m_device, m_physical_device, m_surface, m_command_pool);
+    m_queue.initialize(m_physical_device, m_device, m_graphics_queue);
+
+    m_thread_mgr.initialize(
+        m_physical_device,
+        m_device,
+        m_queue,
+        *m_model_mgr
+    );
+
+    create_command_pool(m_device, m_physical_device, m_command_pool);
 
     create_descriptor_set_layout(m_device, m_descriptor_set_layout);
 
@@ -480,32 +499,34 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::load_model(AssetId id, const std::string& path) {
-    m_model_mgr->load_model(
-        id,
-        path,
-        m_physical_device,
-        m_device,
-        m_graphics_queue,
-        m_command_pool
-    );
+    m_thread_mgr.load_model(id, path);
+    // m_model_mgr->load_model(
+    //     id,
+    //     path,
+    //     m_physical_device,
+    //     m_device,
+    //     m_graphics_queue,
+    //     m_command_pool
+    // );
 }
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::load_texture(AssetId id, const std::string& path) {
-    Texture texture{};
+    m_thread_mgr.load_texture(id, path);
+    // Texture texture{};
 
-    create_texture(
-        m_physical_device,
-        m_device,
-        m_graphics_queue,
-        m_command_pool,
-        path,
-        texture
-    );
+    // create_texture(
+    //     m_physical_device,
+    //     m_device,
+    //     m_queue,
+    //     m_command_pool,
+    //     path,
+    //     texture
+    // );
 
-    m_textures.push_back(texture);
+    // m_textures.push_back(texture);
 
-    m_rebuild_descriptor_sets = true;
+    // m_rebuild_descriptor_sets = true;
 }
 
 //  ----------------------------------------------------------------------------
@@ -563,6 +584,8 @@ void VulkanRenderer::shutdown() {
         vkDestroyFence(m_device, m_in_flight_fences[n], nullptr);
     }
 
+    m_thread_mgr.shutdown();
+
     vkDestroyCommandPool(m_device, m_command_pool, nullptr);
 
     vkDestroyDevice(m_device, nullptr);
@@ -573,6 +596,10 @@ void VulkanRenderer::shutdown() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::update_uniform_buffers(uint32_t image_index) {
+    if (m_draw_model_commands.empty()) {
+        return;
+    }
+
     //  Update frame UBO
     FrameUbo frame_ubo{};
     frame_ubo.proj = m_draw_model_commands.at(0).proj;

@@ -26,8 +26,10 @@ set(SOURCE_FILES
     src/queue_family.cpp
     src/render_pass.cpp
     src/texture.cpp
+    src/thread_manager.cpp
     src/vertex_buffer.cpp
     src/vulkan_model.cpp
+    src/vulkan_queue.cpp
     src/vulkan_renderer.cpp
     src/vulkan_swapchain.cpp
 )
