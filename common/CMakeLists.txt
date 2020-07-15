@@ -5,7 +5,6 @@ project(common)
 set(SOURCE_FILES
     src/alloc.cpp
     src/ini_config.cpp
-    src/thread_manager.cpp
 )
 
 add_library(common ${SOURCE_FILES})
