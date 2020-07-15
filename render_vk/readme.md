@@ -25,3 +25,14 @@ and the conclusion section of [this tutorial](https://vulkan-tutorial.com/en/Ver
 Index and vertex buffers should be combined into one VkBuffer.
 See [this recommendation](https://developer.nvidia.com/vulkan-memory-management)
 and the conclusion section of [this tutorial](https://vulkan-tutorial.com/en/Vertex_buffers/Index_buffer).
+
+A modification may be needed in **imgui_impl_vulkan.cpp** to prevent validation
+layer errors from appearing. ImGui creates a pipeline with a subpass
+index of zero, but the game engine starts a second subpass (index of one)
+before allowing ImGui to create its commands.
+
+```cpp
+    VkGraphicsPipelineCreateInfo info = {};
+    ...
+    info.subpass = 1;
+```
