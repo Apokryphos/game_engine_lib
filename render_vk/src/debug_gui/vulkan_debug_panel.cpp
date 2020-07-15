@@ -14,6 +14,7 @@ struct VulkanPhysicalDeviceInfo
 {
     VkPhysicalDevice device;
     VkPhysicalDeviceProperties properties;
+    VkPhysicalDeviceFeatures features;
     std::vector<VulkanQueueFamilyInfo> queue_families;
 
     //  Device extensions
@@ -47,6 +48,9 @@ static void init_vulkan_device_info(
         &extension_count,
         info.extensions.data()
     );
+
+    //  Get physical device features
+    vkGetPhysicalDeviceFeatures(info.device, &info.features);
 
     //  Query device queue family count
     uint32_t queue_family_count = 0;
@@ -246,6 +250,14 @@ void queue_family_panel(const VulkanQueueFamilyInfo& info) {
 }
 
 //  ----------------------------------------------------------------------------
+void device_features_panel(const VulkanPhysicalDeviceInfo& device_info) {
+    //  Device features
+    ImGui::Text("Device Features");
+    bool feature = device_info.features.shaderSampledImageArrayDynamicIndexing;
+    ImGui::Checkbox("shaderSampledImageArrayDynamicIndexing", &feature);
+}
+
+//  ----------------------------------------------------------------------------
 void vulkan_debug_panel(VkInstance instance) {
     static VulkanInfo info{};
 
@@ -301,6 +313,10 @@ void vulkan_debug_panel(VkInstance instance) {
     //  Queue family panel
     const VulkanQueueFamilyInfo& queue_family_info = device_info.queue_families.at(queue_family_index);
     queue_family_panel(queue_family_info);
+
+    ImGui::Separator();
+
+    device_features_panel(device_info);
 
     ImGui::Separator();
 }
