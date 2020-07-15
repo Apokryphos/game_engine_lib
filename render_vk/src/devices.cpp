@@ -153,10 +153,12 @@ bool create_logical_device(
     VkPhysicalDeviceVulkan12Features features_12;
     features_12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
     features_12.descriptorIndexing = VK_TRUE;
+    features_12.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
 
     VkPhysicalDeviceFeatures2 device_features{};
     device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     device_features.features.shaderSampledImageArrayDynamicIndexing = VK_TRUE;
+
     device_features.features.samplerAnisotropy = VK_TRUE;
     device_features.pNext = &features_12;
 
