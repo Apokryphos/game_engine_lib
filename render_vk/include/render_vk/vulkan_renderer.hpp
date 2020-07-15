@@ -48,6 +48,7 @@ class VulkanRenderer : public render::Renderer
     //  Command objects
     VkCommandPool m_command_pool;
     std::vector<VkCommandBuffer> m_command_buffers;
+    std::vector<VkCommandBuffer> m_secondary_buffers;
 
     //  Shader objects
     VkDescriptorSetLayout m_descriptor_set_layout;

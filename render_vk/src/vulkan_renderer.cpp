@@ -226,6 +226,13 @@ void VulkanRenderer::create_swapchain_dependents() {
         m_command_buffers
     );
 
+    create_secondary_command_buffers(
+        m_device,
+        m_command_pool,
+        m_swapchain.images.size(),
+        m_secondary_buffers
+    );
+
     imgui_vulkan_init(
         m_instance,
         m_physical_device,
@@ -291,7 +298,19 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
 
     update_uniform_buffers(image_index);
 
-    //  Build command buffers
+    //  Build secondary command buffers
+    record_secondary_command_buffer(
+        m_render_pass,
+        m_pipeline_layout,
+        m_graphics_pipeline,
+        m_draw_model_commands,
+        m_descriptor_sets.at(image_index),
+        m_swapchain.extent,
+        m_secondary_buffers.at(image_index),
+        m_object_uniform.get_align()
+    );
+
+    //  Build primary command buffers
     record_command_buffer(
         m_render_pass,
         m_pipeline_layout,
@@ -301,6 +320,7 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
         m_swapchain.extent,
         m_swapchain.framebuffers.at(image_index),
         m_command_buffers.at(image_index),
+        m_secondary_buffers.at(image_index),
         m_object_uniform.get_align()
     );
 
