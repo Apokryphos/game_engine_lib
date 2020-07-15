@@ -57,10 +57,10 @@ void end_single_time_commands(
 void create_command_buffers(
     VkDevice device,
     VkCommandPool command_pool,
-    const VulkanSwapchain& swapchain,
+    const uint32_t& swapchain_image_count,
     std::vector<VkCommandBuffer>& command_buffers
 ) {
-    command_buffers.resize(swapchain.framebuffers.size());
+    command_buffers.resize(swapchain_image_count);
 
     VkCommandBufferAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

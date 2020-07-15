@@ -34,7 +34,7 @@ void end_single_time_commands(
 void create_command_buffers(
     VkDevice device,
     VkCommandPool command_pool,
-    const VulkanSwapchain& swapchain,
+    const uint32_t& swapchain_image_count,
     std::vector<VkCommandBuffer>& command_buffers
 );
 

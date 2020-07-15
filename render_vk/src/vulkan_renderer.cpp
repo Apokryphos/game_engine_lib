@@ -221,7 +221,7 @@ void VulkanRenderer::create_swapchain_dependents() {
     create_command_buffers(
         m_device,
         m_command_pool,
-        m_swapchain,
+        m_swapchain.images.size(),
         m_command_buffers
     );
 
