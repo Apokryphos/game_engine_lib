@@ -195,11 +195,10 @@ void create_secondary_command_buffers(
 // }
 
 //  ----------------------------------------------------------------------------
-void record_command_buffer(
+void record_primary_command_buffer(
     VkRenderPass render_pass,
     VkPipelineLayout pipeline_layout,
     VkPipeline graphics_pipeline,
-    std::vector<DrawModelCommand>& draw_model_commands,
     VkDescriptorSet descriptor_set,
     VkExtent2D extent,
     VkFramebuffer framebuffer,

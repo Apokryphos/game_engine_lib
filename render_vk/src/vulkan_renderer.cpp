@@ -311,11 +311,10 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
     );
 
     //  Build primary command buffers
-    record_command_buffer(
+    record_primary_command_buffer(
         m_render_pass,
         m_pipeline_layout,
         m_graphics_pipeline,
-        m_draw_model_commands,
         m_descriptor_sets.at(image_index),
         m_swapchain.extent,
         m_swapchain.framebuffers.at(image_index),
