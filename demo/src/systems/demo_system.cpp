@@ -35,7 +35,7 @@ void DemoSystem::build_draw_order(
     draw_order.model_ids.resize(entity_count);
     for (size_t n = 0; n < entity_count; ++n) {
         const auto model_cmpnt = model_sys.get_component(entities[n]);
-        draw_order.model_ids[n] = model_sys.get_id(model_cmpnt);
+        draw_order.model_ids[n] = model_sys.get_model_id(model_cmpnt);
     }
 
     //  Get positions

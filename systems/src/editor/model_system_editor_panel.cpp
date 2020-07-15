@@ -16,9 +16,9 @@ void ModelSystemEditorPanel::on_update(Game& game, const ecs::Entity entity) {
     ModelSystem& model_sys = get_system();
     const auto model_cmpnt = model_sys.get_component(entity);
 
-    int model_id = model_sys.get_id(model_cmpnt);
+    int model_id = model_sys.get_model_id(model_cmpnt);
     if (ImGui::InputInt("Model ID", &model_id)) {
-        model_sys.set_id(model_cmpnt, model_id);
+        model_sys.set_model_id(model_cmpnt, model_id);
     }
 }
 }

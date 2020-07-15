@@ -36,7 +36,7 @@ void add_model_component(
     }
 
     const auto model_cmpnt = model_sys.get_component(entity);
-    model_sys.set_id(model_cmpnt, model_id);
+    model_sys.set_model_id(model_cmpnt, model_id);
 }
 
 //  ----------------------------------------------------------------------------
