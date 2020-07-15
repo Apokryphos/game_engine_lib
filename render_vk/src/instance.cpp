@@ -58,17 +58,22 @@ bool create_instance(
     app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     app_info.apiVersion = VK_API_VERSION_1_0;
 
-    uint32_t count;
-    const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&count);
+    //  Required extensions
+    std::vector<const char*> extensions = {
+        VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
+    };
+
+    //  Get extensions required by GLFW
+    uint32_t glfw_extensions_count;
+    const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extensions_count);
     if (glfw_extensions == NULL) {
         log_error("Vulkan is not supported.");
         return false;
     }
 
-    //  Copy required extensions
-    std::vector<const char*> extensions(count);
-    for (uint32_t n = 0; n < count; ++n) {
-        extensions[n] = glfw_extensions[n];
+    //  Add GLFW required extensions to list of instance required extensions
+    for (uint32_t n = 0; n < glfw_extensions_count; ++n) {
+        extensions.push_back(glfw_extensions[n]);
     }
 
     //  Check if debug utils extension is supported

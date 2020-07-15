@@ -150,17 +150,24 @@ bool create_logical_device(
         queue_create_infos.push_back(queue_create_info);
     }
 
-    VkPhysicalDeviceFeatures device_features{};
-    device_features.samplerAnisotropy = VK_TRUE;
+    VkPhysicalDeviceVulkan12Features features_12;
+    features_12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+    features_12.descriptorIndexing = VK_TRUE;
+
+    VkPhysicalDeviceFeatures2 device_features{};
+    device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    device_features.features.samplerAnisotropy = VK_TRUE;
+    device_features.pNext = &features_12;
 
     VkDeviceCreateInfo create_info{};
     create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     create_info.queueCreateInfoCount = 1;
-    create_info.pEnabledFeatures = &device_features;
+    create_info.pEnabledFeatures = NULL;
     create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
     create_info.pQueueCreateInfos = queue_create_infos.data();
     create_info.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size());
     create_info.ppEnabledExtensionNames = device_extensions.data();
+    create_info.pNext = &device_features;
 
     if (validation_layers.size() > 0) {
         create_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());

@@ -252,7 +252,7 @@ void queue_family_panel(const VulkanQueueFamilyInfo& info) {
 //  ----------------------------------------------------------------------------
 void device_features_panel(const VulkanPhysicalDeviceInfo& device_info) {
     //  Device features
-    ImGui::Text("Device Features");
+    ImGui::Text("Device Supported Features");
     bool feature = device_info.features.shaderSampledImageArrayDynamicIndexing;
     ImGui::Checkbox("shaderSampledImageArrayDynamicIndexing", &feature);
 }
