@@ -48,7 +48,8 @@ static bool check_validation_layers_support(
 //  ----------------------------------------------------------------------------
 bool create_instance(
     VkInstance& instance,
-    const std::vector<const char*>& validation_layers
+    const std::vector<const char*>& validation_layers,
+    VkDebugUtilsMessengerEXT& debug_messenger
 ) {
     VkApplicationInfo app_info{};
     app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -60,7 +61,7 @@ bool create_instance(
 
     //  Required extensions
     std::vector<const char*> extensions = {
-        VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
+        VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
     };
 
     //  Get extensions required by GLFW
@@ -76,17 +77,24 @@ bool create_instance(
         extensions.push_back(glfw_extensions[n]);
     }
 
-    //  Check if debug utils extension is supported
-    if (check_debug_utils_support()) {
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    }
-
     VkInstanceCreateInfo create_info{};
     create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     create_info.pApplicationInfo = &app_info;
+
+    //  Check if debug utils extension is supported
+    VkDebugUtilsMessengerCreateInfoEXT debug_msg_info{};
+    if (check_debug_utils_support()) {
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+        //  Create a separate debug messenger for vkCreateInstance and
+        //  vkDestroyInstance calls. This will be cleaned up by
+        //  vkDestroyInstance.
+        make_debug_messenger_create_info(debug_msg_info);
+        create_info.pNext = &debug_msg_info;
+    }
+
     create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     create_info.ppEnabledExtensionNames = extensions.data();
-    create_info.enabledLayerCount = 0;
 
     //  Validation layers
     #ifdef DEBUG

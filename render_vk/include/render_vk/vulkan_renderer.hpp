@@ -84,6 +84,9 @@ class VulkanRenderer : public render::Renderer
     VulkanQueue m_queue;
     RenderJobManager m_job_mgr;
 
+    //  Debug messenger
+    VkDebugUtilsMessengerEXT m_debug_messenger;
+
     void create_descriptor_sets();
 
     //  Creates swapchain and render pass

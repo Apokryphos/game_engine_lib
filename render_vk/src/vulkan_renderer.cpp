@@ -82,7 +82,8 @@ VulkanRenderer::VulkanRenderer()
   m_framebuffer_resized(false),
   m_current_frame(0),
   m_model_mgr(std::make_unique<ModelManager>()),
-  m_object_uniform(OBJECT_INSTANCES) {
+  m_object_uniform(OBJECT_INSTANCES),
+  m_debug_messenger(VK_NULL_HANDLE) {
 }
 
 //  ----------------------------------------------------------------------------
@@ -449,7 +450,7 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
     };
 
     //  Create Vulkan instance
-    if (!create_instance(m_instance, validation_layers)) {
+    if (!create_instance(m_instance, validation_layers, m_debug_messenger)) {
         return false;
     }
 
@@ -487,6 +488,13 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
         device_extensions
     )) {
         return false;
+    }
+
+    //  Add debug callback
+    if (check_debug_utils_support()) {
+        //  Call after device is created because debug util function pointers
+        //  are loaded by create_logical_device
+        create_debug_messenger(m_instance, m_debug_messenger);
     }
 
     //  Optimize device calls
@@ -616,6 +624,9 @@ void VulkanRenderer::shutdown() {
     vkDestroyDevice(m_device, nullptr);
 
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
+
+    vkDestroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger, nullptr);
+
     vkDestroyInstance(m_instance, nullptr);
 }
 

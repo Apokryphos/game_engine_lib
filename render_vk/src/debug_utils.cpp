@@ -8,6 +8,9 @@ namespace render_vk
 {
 static bool s_debug_utils_exists = false;
 
+static PFN_vkCreateDebugUtilsMessengerEXT pfn_vkCreateDebugUtilsMessengerEXT = 0;
+static PFN_vkDestroyDebugUtilsMessengerEXT pfn_vkDestroyDebugUtilsMessengerEXT = 0;
+
 static PFN_vkCmdBeginDebugUtilsLabelEXT pfn_vkCmdBeginDebugUtilsLabelEXT = 0;
 static PFN_vkCmdEndDebugUtilsLabelEXT pfn_vkCmdEndDebugUtilsLabelEXT = 0;
 static PFN_vkCmdInsertDebugUtilsLabelEXT pfn_vkCmdInsertDebugUtilsLabelEXT = 0;
@@ -18,6 +21,28 @@ static PFN_vkQueueInsertDebugUtilsLabelEXT pfn_vkQueueInsertDebugUtilsLabelEXT =
 
 static PFN_vkSetDebugUtilsObjectNameEXT pfn_vkSetDebugUtilsObjectNameEXT = 0;
 static PFN_vkSetDebugUtilsObjectTagEXT pfn_vkSetDebugUtilsObjectTagEXT​ = 0;
+
+//  ----------------------------------------------------------------------------
+static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    void* pUserData
+) {
+    switch (messageSeverity) {
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+            log_debug("Vulkan: %s", pCallbackData->pMessage);
+            break;
+
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+            log_error("Vulkan: %s", pCallbackData->pMessage);
+            break;
+    }
+
+    return VK_FALSE;
+}
 
 //  ----------------------------------------------------------------------------
 void begin_debug_marker(
@@ -141,9 +166,22 @@ bool check_debug_utils_support() {
 //  ----------------------------------------------------------------------------
 void init_vulkan_debug_utils(VkDevice device) {
     if (!s_debug_utils_exists) {
-        pfn_vkSetDebugUtilsObjectNameEXT = 0;
         return;
     }
+
+    pfn_vkCreateDebugUtilsMessengerEXT =
+        (PFN_vkCreateDebugUtilsMessengerEXT)(vkGetDeviceProcAddr(
+            device,
+            "vkCreateDebugUtilsMessengerEXT"
+        )
+    );
+
+    pfn_vkDestroyDebugUtilsMessengerEXT =
+        (PFN_vkDestroyDebugUtilsMessengerEXT)(vkGetDeviceProcAddr(
+            device,
+            "vkDestroyDebugUtilsMessengerEXT"
+        )
+    );
 
     pfn_vkCmdBeginDebugUtilsLabelEXT =
         (PFN_vkCmdBeginDebugUtilsLabelEXT)(vkGetDeviceProcAddr(
@@ -200,5 +238,36 @@ void init_vulkan_debug_utils(VkDevice device) {
             "vkSetDebugUtilsObjectTagEXT​"
         )
     );
+}
+
+//  ----------------------------------------------------------------------------
+void make_debug_messenger_create_info(
+    VkDebugUtilsMessengerCreateInfoEXT& info
+) {
+    info = {};
+    info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    info.messageSeverity =
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    info.messageType =
+        VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    info.pfnUserCallback = debug_callback;
+    info.pUserData = nullptr;
+}
+
+//  ----------------------------------------------------------------------------
+void create_debug_messenger(
+    VkInstance instance,
+    VkDebugUtilsMessengerEXT& debug_messenger
+) {
+    VkDebugUtilsMessengerCreateInfoEXT msg_info{};
+    make_debug_messenger_create_info(msg_info);
+
+    if (vkCreateDebugUtilsMessengerEXT(instance, &msg_info, nullptr, &debug_messenger) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to set up debug messenger.");
+    }
 }
 }

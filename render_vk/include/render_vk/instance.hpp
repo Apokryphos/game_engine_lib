@@ -7,6 +7,7 @@ namespace render_vk
 {
 bool create_instance(
     VkInstance& instance,
-    const std::vector<const char*>& validation_layers
+    const std::vector<const char*>& validation_layers,
+    VkDebugUtilsMessengerEXT& debug_messenger
 );
 }

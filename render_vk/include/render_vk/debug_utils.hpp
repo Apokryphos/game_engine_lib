@@ -17,7 +17,14 @@ const float DEBUG_MARKER_COLOR_RED[]      = { hex_color(0x7d), hex_color(0x38), 
 const float DEBUG_MARKER_COLOR_YELLOW[]   = { hex_color(0xfb), hex_color(0xdf), hex_color(0x9b), 1.0f };
 
 bool check_debug_utils_support();
+void create_debug_messenger(
+    VkInstance instance,
+    VkDebugUtilsMessengerEXT& debug_messenger
+);
 void init_vulkan_debug_utils(VkDevice device);
+void make_debug_messenger_create_info(
+    VkDebugUtilsMessengerCreateInfoEXT& info
+);
 void begin_debug_marker(
     VkCommandBuffer command_buffer,
     const char* name,
