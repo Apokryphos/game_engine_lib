@@ -76,19 +76,17 @@ void DemoScreen::on_render(Game& game) {
 
     //  Build draw order
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
-    std::vector<DemoSystem::DrawOrder> draw_order;
+    DemoSystem::DrawOrder draw_order;
     demo_sys.build_draw_order(game, draw_order);
 
     //  Draw entities
-    for (const auto& draw_order : draw_order) {
-        renderer.draw_model(
-            draw_order.model_id,
-            0,
-            draw_order.model * world,
-            view,
-            proj
-        );
-    }
+    renderer.draw_models(
+        view,
+        proj,
+        draw_order.model_ids,
+        draw_order.positions,
+        draw_order.texture_ids
+    );
 
     renderer.draw_frame(window.get_glfw_window());
 }

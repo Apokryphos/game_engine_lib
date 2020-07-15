@@ -103,19 +103,13 @@ public:
     virtual void begin_frame() override;
     //  TODO: Change parameters to single MVP object (rename UniformBufferObject struct)
     virtual void draw_frame(GLFWwindow* glfw_window) override;
-    virtual void draw_model(
-        const common::AssetId model_id,
-        const common::AssetId texture_id,
-        const glm::mat4x4& model,
-        const glm::mat4x4& view,
-        const glm::mat4x4& proj
-    ) override;
 
     void draw_models(
         const glm::mat4& view,
         const glm::mat4& proj,
         std::vector<uint32_t>& model_ids,
-        std::vector<glm::vec3>& positions
+        std::vector<glm::vec3>& positions,
+        std::vector<uint32_t>& texture_ids
     ) override;
 
     virtual float get_aspect_ratio() const override;

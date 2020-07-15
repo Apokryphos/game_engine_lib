@@ -3,6 +3,7 @@
 #include "common/system.hpp"
 #include "systems/system_ids.hpp"
 #include <glm/mat4x4.hpp>
+#include <vector>
 
 namespace engine
 {
@@ -18,8 +19,9 @@ class DemoSystem : public common::System
 public:
     struct DrawOrder
     {
-        glm::mat4x4 model;
-        uint32_t model_id;
+        std::vector<uint32_t> model_ids;
+        std::vector<glm::vec3> positions;
+        std::vector<uint32_t> texture_ids;
     };
 
 private:
@@ -28,7 +30,7 @@ public:
     DemoSystem();
     void build_draw_order(
         engine::Game& game,
-        std::vector<DrawOrder>& draw_order
+        DrawOrder& draw_order
     );
 };
 }

@@ -24,17 +24,6 @@ void GlRenderer::draw_frame(GLFWwindow* glfw_window) {
 }
 
 //  ----------------------------------------------------------------------------
-void GlRenderer::draw_model(
-    const AssetId model_id,
-    const AssetId texture_id,
-    const glm::mat4x4& model,
-    const glm::mat4x4& view,
-    const glm::mat4x4& proj
-) {
-    throw std::runtime_error("Not implemented.");
-}
-
-//  ----------------------------------------------------------------------------
 float GlRenderer::get_aspect_ratio() const {
     throw std::runtime_error("Not implemented.");
 }

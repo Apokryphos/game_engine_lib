@@ -25,6 +25,7 @@
 #include "render_vk/vulkan_renderer.hpp"
 #include "imgui.h"
 #include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <cstdint>
 #include <cstring>
 
@@ -366,49 +367,38 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanRenderer::draw_model(
-    const AssetId model_id,
-    const AssetId texture_id,
-    const glm::mat4x4& model,
-    const glm::mat4x4& view,
-    const glm::mat4x4& proj
-) {
-    VulkanModel* vk_model = m_model_mgr->get_model(model_id);
-
-    if (vk_model == nullptr) {
-        return;
-    }
-
-    DrawModelCommand cmd{};
-    cmd.texture_id = texture_id;
-    cmd.index_count = vk_model->get_index_count();
-    cmd.model = model;
-    cmd.view = view;
-    cmd.proj = proj;
-
-    //  GLM (OpenGL) uses inverted Y clip coordinate
-    cmd.proj[1][1] *= -1;
-
-    cmd.vertex_buffer = vk_model->get_vertex_buffer();
-    cmd.index_buffer = vk_model->get_index_buffer();
-
-    m_draw_model_commands.push_back(cmd);
-}
-
-//  ----------------------------------------------------------------------------
 void VulkanRenderer::draw_models(
     const glm::mat4& view,
     const glm::mat4& proj,
     std::vector<uint32_t>& model_ids,
-    std::vector<glm::vec3>& positions
+    std::vector<glm::vec3>& positions,
+    std::vector<uint32_t>& texture_ids
 ) {
-    m_job_mgr.draw_models(model_ids, positions);
+    // m_job_mgr.draw_models(model_ids, positions);
 
     m_view = view;
 
     //  GLM (OpenGL) uses inverted Y clip coordinate
     m_proj = proj;
     m_proj[1][1] *= -1;
+
+    for (size_t n = 0; n < model_ids.size(); ++n) {
+        VulkanModel* model = m_model_mgr->get_model(model_ids[n]);
+
+        if (model == nullptr) {
+            continue;
+        }
+
+        DrawModelCommand cmd{};
+        cmd.texture_id = texture_ids[n];
+        cmd.index_count = model->get_index_count();
+        cmd.model = glm::translate(glm::mat4(1.0f), positions[n]);
+
+        cmd.vertex_buffer = model->get_vertex_buffer();
+        cmd.index_buffer = model->get_index_buffer();
+
+        m_draw_model_commands.push_back(cmd);
+    }
 }
 
 //  ----------------------------------------------------------------------------
@@ -618,8 +608,8 @@ void VulkanRenderer::update_uniform_buffers(uint32_t image_index) {
 
     //  Update frame UBO
     FrameUbo frame_ubo{};
-    frame_ubo.proj = m_draw_model_commands.at(0).proj;
-    frame_ubo.view = m_draw_model_commands.at(0).view;
+    frame_ubo.proj = m_proj;
+    frame_ubo.view = m_view;
 
     //  Copy frame UBO struct to uniform buffer
     m_frame_uniform.copy(frame_ubo);

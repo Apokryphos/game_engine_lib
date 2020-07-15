@@ -25,19 +25,13 @@ public:
     Renderer& operator=(const Renderer&) = delete;
     virtual void begin_frame() = 0;
     virtual void draw_frame(GLFWwindow* glfw_window) = 0;
-    virtual void draw_model(
-        const common::AssetId model_id,
-        const common::AssetId texture_id,
-        const glm::mat4x4& model,
-        const glm::mat4x4& view,
-        const glm::mat4x4& proj
-    ) = 0;
 
     virtual void draw_models(
         const glm::mat4& view,
         const glm::mat4& proj,
         std::vector<uint32_t>& model_ids,
-        std::vector<glm::vec3>& positions
+        std::vector<glm::vec3>& positions,
+        std::vector<uint32_t>& texture_ids
     ) = 0;
 
     RenderApi get_render_api() const {
