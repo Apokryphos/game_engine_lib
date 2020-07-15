@@ -156,6 +156,7 @@ bool create_logical_device(
 
     VkPhysicalDeviceFeatures2 device_features{};
     device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    device_features.features.shaderSampledImageArrayDynamicIndexing = VK_TRUE;
     device_features.features.samplerAnisotropy = VK_TRUE;
     device_features.pNext = &features_12;
 
