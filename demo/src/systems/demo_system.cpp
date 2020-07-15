@@ -50,7 +50,8 @@ void DemoSystem::build_draw_order(
     //  Get texture IDs
     draw_order.texture_ids.resize(entity_count);
     for (size_t n = 0; n < entity_count; ++n) {
-        draw_order.texture_ids[n] = 0;
+        const auto model_cmpnt = model_sys.get_component(entities[n]);
+        draw_order.texture_ids[n] = model_sys.get_texture_id(model_cmpnt);
     }
 }
 }
