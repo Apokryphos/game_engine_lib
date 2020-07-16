@@ -139,7 +139,9 @@ void VulkanRenderer::cleanup_swapchain() {
 void VulkanRenderer::create_descriptor_sets() {
     assert(!m_textures.empty());
 
-    const Texture& texture = m_textures.at(0);
+    vkDestroyDescriptorPool(m_device, m_descriptor_pool, nullptr);
+
+    render_vk::create_descriptor_pool(m_device, m_swapchain, m_descriptor_pool);
 
     render_vk::create_descriptor_sets(
         m_device,
@@ -152,8 +154,7 @@ void VulkanRenderer::create_descriptor_sets() {
     render_vk::update_descriptor_sets(
         m_device,
         m_swapchain,
-        texture.view,
-        texture.sampler,
+        m_textures,
         m_frame_uniform.get_buffer(),
         m_object_uniform.get_buffer(),
         m_frame_uniform.get_ubo_size(),
@@ -255,12 +256,12 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
         create_descriptor_sets();
     }
 
-    if (m_textures.empty()) {
+    if (m_textures.size() < 2) {
         ImGui::EndFrame();
         return;
     }
 
-    // begin_debug_marker(m_graphics_queue, "Draw Frame", DEBUG_MARKER_COLOR_YELLOW);
+    begin_debug_marker(m_graphics_queue, "Draw Frame", DEBUG_MARKER_COLOR_YELLOW);
 
     vkWaitForFences(
         m_device,
@@ -354,7 +355,7 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
         throw std::runtime_error("Failed to submit draw command buffer.");
     }
 
-    // end_debug_marker(m_graphics_queue);
+    end_debug_marker(m_graphics_queue);
 
     begin_debug_marker(m_present_queue, "Present Frame", DEBUG_MARKER_COLOR_GREEN);
 
@@ -464,7 +465,7 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
     }
 
     const std::vector<const char*> device_extensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     };
 
     //  Initialize physical device

@@ -1,3 +1,4 @@
+#include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
 #include <array>
@@ -33,8 +34,7 @@ void create_descriptor_sets(
 void update_descriptor_sets(
     VkDevice device,
     const VulkanSwapchain swapchain,
-    VkImageView texture_image_view,
-    VkSampler texture_sampler,
+    std::vector<Texture>& textures,
     VkBuffer frame_uniform_buffer,
     VkBuffer object_uniform_buffer,
     size_t frame_ubo_size,
@@ -53,10 +53,12 @@ void update_descriptor_sets(
         object_buffer_info.offset = 0;
         object_buffer_info.range = VK_WHOLE_SIZE;
 
-        VkDescriptorImageInfo image_info{};
-        image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        image_info.imageView = texture_image_view;
-        image_info.sampler = texture_sampler;
+        std::vector<VkDescriptorImageInfo> image_infos(textures.size());
+        for (size_t n = 0; n < image_infos.size(); ++n) {
+            image_infos[n].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            image_infos[n].imageView = textures[n].view;
+            image_infos[n].sampler = textures[n].sampler;
+        }
 
         std::array<VkWriteDescriptorSet, 3> descriptor_writes{};
 
@@ -82,15 +84,15 @@ void update_descriptor_sets(
         descriptor_writes[1].pImageInfo = nullptr;
         descriptor_writes[1].pTexelBufferView = nullptr;
 
-        //  Texture sampler
+        //  Combined texture sampler
         descriptor_writes[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptor_writes[2].dstSet = descriptor_sets[n];
         descriptor_writes[2].dstBinding = 2;
         descriptor_writes[2].dstArrayElement = 0;
         descriptor_writes[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptor_writes[2].descriptorCount = 1;
+        descriptor_writes[2].descriptorCount = static_cast<uint32_t>(image_infos.size());
         descriptor_writes[2].pBufferInfo = nullptr;
-        descriptor_writes[2].pImageInfo = &image_info;
+        descriptor_writes[2].pImageInfo = image_infos.data();
         descriptor_writes[2].pTexelBufferView = nullptr;
 
         vkUpdateDescriptorSets(

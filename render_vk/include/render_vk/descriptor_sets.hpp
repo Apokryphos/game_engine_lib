@@ -1,3 +1,4 @@
+#include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
 #include <vector>
 
@@ -16,8 +17,7 @@ void create_descriptor_sets(
 void update_descriptor_sets(
     VkDevice device,
     const VulkanSwapchain swapchain,
-    VkImageView texture_image_view,
-    VkSampler texture_sampler,
+    std::vector<Texture>& textures,
     VkBuffer frame_uniform_buffer,
     VkBuffer object_uniform_buffer,
     size_t frame_ubo_size,
