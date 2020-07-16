@@ -198,6 +198,9 @@ static void init_entities(Game& game) {
     Random& random = game.get_random();
     std::uniform_int_distribution<int> position_dist(-10, 10);
 
+    //  Texture ID distribution
+    std::uniform_int_distribution<int> texture_id_dist(0, 1);
+
     const int ENTITY_COUNT = 100;
     for (int n = 0; n < ENTITY_COUNT; ++n) {
         Entity entity = ecs.create_entity();
@@ -218,7 +221,7 @@ static void init_entities(Game& game) {
         add_position_component(entity, pos_sys, position);
 
         ModelSystem& model_sys = get_model_system(sys_mgr);
-        add_model_component(entity, model_sys, 1);
+        add_model_component(entity, model_sys, 1, texture_id_dist(random.get_rng()));
     }
 }
 

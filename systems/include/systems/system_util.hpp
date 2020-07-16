@@ -26,7 +26,8 @@ void add_camera_component(
 void add_model_component(
     const ecs::Entity entity,
     ModelSystem& model_sys,
-    uint32_t model_id
+    uint32_t model_id,
+    uint32_t texture_id
 );
 
 void add_move_component(

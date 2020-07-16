@@ -29,7 +29,8 @@ void add_camera_component(
 void add_model_component(
     const Entity entity,
     ModelSystem& model_sys,
-    uint32_t model_id
+    uint32_t model_id,
+    uint32_t texture_id
 ) {
     if (!model_sys.has_component(entity)) {
         model_sys.add_component(entity);
@@ -37,6 +38,7 @@ void add_model_component(
 
     const auto model_cmpnt = model_sys.get_component(entity);
     model_sys.set_model_id(model_cmpnt, model_id);
+    model_sys.set_texture_id(model_cmpnt, texture_id);
 }
 
 //  ----------------------------------------------------------------------------
