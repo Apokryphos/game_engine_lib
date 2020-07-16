@@ -8,6 +8,7 @@ VkImageView create_image_view(
     VkDevice device,
     VkImage image,
     VkFormat format,
+    uint32_t mip_levels,
     VkImageAspectFlags aspect_flags
 ) {
     VkImageViewCreateInfo create_info{};
@@ -24,7 +25,7 @@ VkImageView create_image_view(
 
     create_info.subresourceRange.aspectMask = aspect_flags;
     create_info.subresourceRange.baseMipLevel = 0;
-    create_info.subresourceRange.levelCount = 1;
+    create_info.subresourceRange.levelCount = mip_levels;
     create_info.subresourceRange.baseArrayLayer = 0;
     create_info.subresourceRange.layerCount = 1;
 

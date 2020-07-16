@@ -8,6 +8,7 @@ VkImageView create_image_view(
     VkDevice device,
     VkImage image,
     VkFormat format,
+    uint32_t mip_levels,
     VkImageAspectFlags aspect_flags
 );
 }

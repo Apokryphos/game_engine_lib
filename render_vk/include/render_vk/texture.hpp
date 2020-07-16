@@ -11,8 +11,7 @@ class Texture
 public:
     // uint32_t width;
     // uint32_t height;
-    // uint32_t mip_levels;
-
+    uint32_t mip_levels;
     VkImage image;
     VkDeviceMemory image_memory;
     VkImageLayout layout;
@@ -35,6 +34,7 @@ void create_image(
     VkDevice device,
     uint32_t width,
     uint32_t height,
+    uint32_t mip_levels,
     VkFormat format,
     VkImageTiling tiling,
     VkImageUsageFlags usage,
@@ -50,17 +50,20 @@ void create_texture_image(
     VkCommandPool command_pool,
     const std::string& filename,
     VkImage& texture_image,
+    uint32_t& mip_levels,
     VkDeviceMemory& texture_image_memory
 );
 
 void create_texture_image_view(
     VkDevice device,
+    uint32_t mip_levels,
     VkImage& texture_image,
     VkImageView& texture_image_view
 );
 
 void create_texture_sampler(
     VkDevice device,
+    uint32_t mipmap_levels,
     VkSampler& texture_sampler
 );
 
@@ -72,6 +75,7 @@ void transition_image_layout(
     VkCommandPool command_pool,
     VkImage image,
     VkFormat format,
+    uint32_t mip_levels,
     VkImageLayout old_layout,
     VkImageLayout new_layout
 );

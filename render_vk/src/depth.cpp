@@ -74,6 +74,7 @@ void create_depth_resources(
         device,
         swapchain.extent.width,
         swapchain.extent.height,
+        1,
         depth_format,
         VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -86,6 +87,7 @@ void create_depth_resources(
         device,
         depth_image,
         depth_format,
+        1,
         VK_IMAGE_ASPECT_DEPTH_BIT
     );
 
@@ -95,6 +97,7 @@ void create_depth_resources(
         command_pool,
         depth_image,
         depth_format,
+        1,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
     );

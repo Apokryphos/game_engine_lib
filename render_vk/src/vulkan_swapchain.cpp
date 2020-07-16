@@ -103,6 +103,7 @@ static bool create_image_views(VkDevice device, VulkanSwapchain& swapchain) {
             device,
             swapchain.images[n],
             swapchain.format,
+            1,
             VK_IMAGE_ASPECT_COLOR_BIT
         );
     }
