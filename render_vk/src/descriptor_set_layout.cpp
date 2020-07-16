@@ -22,24 +22,24 @@ void create_descriptor_set_layout(
     frame_ubo_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     frame_ubo_layout_binding.pImmutableSamplers = nullptr;
 
-    VkDescriptorSetLayoutBinding sampler_layout_binding{};
-    sampler_layout_binding.binding = 1;
-    sampler_layout_binding.descriptorCount = 1;
-    sampler_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    sampler_layout_binding.pImmutableSamplers = nullptr;
-    sampler_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
     VkDescriptorSetLayoutBinding object_ubo_layout_binding{};
-    object_ubo_layout_binding.binding = 2;
+    object_ubo_layout_binding.binding = 1;
     object_ubo_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     object_ubo_layout_binding.descriptorCount = 1;
     object_ubo_layout_binding.pImmutableSamplers = nullptr;
     object_ubo_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+    VkDescriptorSetLayoutBinding sampler_layout_binding{};
+    sampler_layout_binding.binding = 2;
+    sampler_layout_binding.descriptorCount = 1;
+    sampler_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    sampler_layout_binding.pImmutableSamplers = nullptr;
+    sampler_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
     std::array<VkDescriptorSetLayoutBinding, 3> bindings = {
         frame_ubo_layout_binding,
-        sampler_layout_binding,
         object_ubo_layout_binding,
+        sampler_layout_binding,
     };
 
     VkDescriptorSetLayoutCreateInfo layout_info{};

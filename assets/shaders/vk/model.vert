@@ -6,7 +6,7 @@ layout(binding = 0) uniform FrameUniformBufferObject {
     mat4 proj;
 } frame_ubo;
 
-layout(binding = 2) uniform ModelUniformBufferObject {
+layout(binding = 1) uniform ModelUniformBufferObject {
     mat4 model;
     uint texture_index;
 } obj_ubo;

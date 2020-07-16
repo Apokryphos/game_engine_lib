@@ -71,26 +71,26 @@ void update_descriptor_sets(
         descriptor_writes[0].pImageInfo = nullptr;
         descriptor_writes[0].pTexelBufferView = nullptr;
 
-        //  Texture sampler
+        //  Per-object dynamic uniform buffer
         descriptor_writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptor_writes[1].dstSet = descriptor_sets[n];
         descriptor_writes[1].dstBinding = 1;
         descriptor_writes[1].dstArrayElement = 0;
-        descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
         descriptor_writes[1].descriptorCount = 1;
-        descriptor_writes[1].pBufferInfo = nullptr;
-        descriptor_writes[1].pImageInfo = &image_info;
+        descriptor_writes[1].pBufferInfo = &object_buffer_info;
+        descriptor_writes[1].pImageInfo = nullptr;
         descriptor_writes[1].pTexelBufferView = nullptr;
 
-        //  Per-object dynamic uniform buffer
+        //  Texture sampler
         descriptor_writes[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptor_writes[2].dstSet = descriptor_sets[n];
         descriptor_writes[2].dstBinding = 2;
         descriptor_writes[2].dstArrayElement = 0;
-        descriptor_writes[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        descriptor_writes[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         descriptor_writes[2].descriptorCount = 1;
-        descriptor_writes[2].pBufferInfo = &object_buffer_info;
-        descriptor_writes[2].pImageInfo = nullptr;
+        descriptor_writes[2].pBufferInfo = nullptr;
+        descriptor_writes[2].pImageInfo = &image_info;
         descriptor_writes[2].pTexelBufferView = nullptr;
 
         vkUpdateDescriptorSets(
