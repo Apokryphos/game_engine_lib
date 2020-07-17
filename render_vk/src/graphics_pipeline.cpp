@@ -1,4 +1,5 @@
 #include "common/log.hpp"
+#include "render_vk/descriptor_set_layout.hpp"
 #include "render_vk/vertex.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
@@ -49,7 +50,7 @@ void create_graphics_pipeline(
     VkDevice device,
     const VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
-    VkDescriptorSetLayout descriptor_set_layout,
+    const DescriptorSetLayouts& descriptor_set_layouts,
     VkPipelineLayout& pipeline_layout,
     VkPipeline& graphics_pipeline
 ) {
@@ -192,11 +193,16 @@ void create_graphics_pipeline(
     dynamic_state.dynamicStateCount = 2;
     dynamic_state.pDynamicStates = dynamicStates;
 
+    std::array<VkDescriptorSetLayout, 2> set_layouts = {
+        descriptor_set_layouts.frame,
+        descriptor_set_layouts.object,
+    };
+
     //  Pipeline layout
     VkPipelineLayoutCreateInfo pipeline_layout_info{};
     pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipeline_layout_info.setLayoutCount = 1;
-    pipeline_layout_info.pSetLayouts = &descriptor_set_layout;
+    pipeline_layout_info.setLayoutCount = static_cast<uint32_t>(set_layouts.size());
+    pipeline_layout_info.pSetLayouts = &set_layouts[0];
     pipeline_layout_info.pushConstantRangeCount = 0; // Optional
     pipeline_layout_info.pPushConstantRanges = nullptr; // Optional
 

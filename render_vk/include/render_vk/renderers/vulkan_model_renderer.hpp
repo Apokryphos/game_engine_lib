@@ -2,6 +2,7 @@
 
 #include "render/renderers/model_renderer.hpp"
 #include "render_vk/command_buffer.hpp"
+#include "render_vk/descriptor_sets.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
 #include "render_vk/uniform_buffer.hpp"
 #include "render_vk/vulkan.hpp"
@@ -21,7 +22,7 @@ class VulkanModelRenderer : public render::ModelRenderer
     VkPipeline m_graphics_pipeline;
 
     //  Set in begin_frame()
-    VkDescriptorSet m_descriptor_set;
+    DescriptorSets m_descriptor_sets;
 
     VkCommandPool m_command_pool;
     std::vector<VkCommandBuffer> m_command_buffers;
@@ -41,10 +42,10 @@ public:
 
     void begin_frame(
         uint32_t current_image,
-        VkDescriptorSet descriptor_set
+        const DescriptorSets& descriptor_sets
     ) {
         m_current_image = current_image;
-        m_descriptor_set = descriptor_set;
+        m_descriptor_sets = descriptor_sets;
     }
 
     void create_objects(

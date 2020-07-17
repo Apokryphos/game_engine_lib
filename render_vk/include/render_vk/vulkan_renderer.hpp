@@ -2,6 +2,8 @@
 
 #include "render/renderer.hpp"
 #include "render_vk/command_buffer.hpp"
+#include "render_vk/descriptor_sets.hpp"
+#include "render_vk/descriptor_set_layout.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
 #include "render_vk/render_job_manager.hpp"
 #include "render_vk/texture.hpp"
@@ -53,9 +55,9 @@ class VulkanRenderer : public render::Renderer
     std::vector<VkCommandBuffer> m_command_buffers;
 
     //  Shader objects
-    VkDescriptorSetLayout m_descriptor_set_layout;
-    std::vector<VkDescriptorSet> m_descriptor_sets;
     VkDescriptorPool m_descriptor_pool;
+    DescriptorSetLayouts m_descriptor_set_layouts;
+    DescriptorSets m_descriptor_sets;
 
     //  Frame sync objects
     std::vector<VkSemaphore> m_image_available_semaphores;

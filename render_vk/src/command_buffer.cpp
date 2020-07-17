@@ -199,12 +199,10 @@ void record_primary_command_buffer(
     VkRenderPass render_pass,
     VkPipelineLayout pipeline_layout,
     VkPipeline graphics_pipeline,
-    VkDescriptorSet descriptor_set,
     VkExtent2D extent,
     VkFramebuffer framebuffer,
     VkCommandBuffer& command_buffer,
-    VkCommandBuffer secondary_command_buffer,
-    size_t ubo_dynamic_align
+    VkCommandBuffer secondary_command_buffer
 ) {
     //  Record command buffer
     VkCommandBufferBeginInfo begin_info{};

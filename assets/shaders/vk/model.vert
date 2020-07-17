@@ -1,12 +1,12 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(binding = 0) uniform FrameUniformBufferObject {
+layout(set = 0, binding = 0) uniform FrameUniformBufferObject {
     mat4 view;
     mat4 proj;
 } frame_ubo;
 
-layout(binding = 1) uniform ModelUniformBufferObject {
+layout(set = 1, binding = 0) uniform ObjectUniformBufferObject {
     mat4 model;
     uint texture_index;
 } obj_ubo;

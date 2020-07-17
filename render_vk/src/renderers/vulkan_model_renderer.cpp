@@ -17,7 +17,6 @@ const size_t OBJECT_INSTANCES = 100;
 //  ----------------------------------------------------------------------------
 VulkanModelRenderer::VulkanModelRenderer(ModelManager& model_mgr)
 : m_current_image(0),
-  m_descriptor_set(VK_NULL_HANDLE),
   m_model_mgr(model_mgr),
   m_object_uniform(OBJECT_INSTANCES) {
 }
@@ -67,7 +66,7 @@ void VulkanModelRenderer::draw_models(
     assert(!batches.empty());
 
     //  Check that descriptor set is valid
-    if (m_descriptor_set == VK_NULL_HANDLE) {
+    if (m_descriptor_sets.frame_sets.empty()) {
         return;
     }
 
@@ -145,6 +144,18 @@ void VulkanModelRenderer::draw_models(
             VK_INDEX_TYPE_UINT32
         );
 
+        //  Bind per-frame descriptors
+        vkCmdBindDescriptorSets(
+            command_buffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_pipeline_layout,
+            0,
+            1,
+            &m_descriptor_sets.frame_sets[m_current_image],
+            0,
+            nullptr
+        );
+
         //  Draw each object
         for (int n = 0; n < batch.positions.size(); ++n) {
             //  One dynamic offset per dynamic descriptor to offset into the ubo
@@ -152,14 +163,14 @@ void VulkanModelRenderer::draw_models(
             const size_t dynamic_align = m_object_uniform.get_align();
             const uint32_t dynamic_offset = model_index * static_cast<uint32_t>(dynamic_align);
 
-            //  Bind the descriptor set for rendering a mesh using the dynamic offset
+            //  Bind per-object descriptor set using the dynamic offset
             vkCmdBindDescriptorSets(
                 command_buffer,
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                 m_pipeline_layout,
-                0,
                 1,
-                &m_descriptor_set,
+                1,
+                &m_descriptor_sets.object_sets[m_current_image],
                 1,
                 &dynamic_offset
             );
@@ -184,7 +195,7 @@ void VulkanModelRenderer::draw_models(
         throw std::runtime_error("Failed to record secondary command buffer.");
     }
 
-    m_descriptor_set = VK_NULL_HANDLE;
+    m_descriptor_sets = {};
 }
 
 //  ----------------------------------------------------------------------------

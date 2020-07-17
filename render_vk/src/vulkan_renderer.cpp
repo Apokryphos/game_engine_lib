@@ -140,7 +140,7 @@ void VulkanRenderer::begin_frame() {
 
     m_model_renderer->begin_frame(
         m_image_index,
-        m_descriptor_sets.at(m_image_index)
+        m_descriptor_sets
     );
 
     m_frame_ready = true;
@@ -200,7 +200,7 @@ void VulkanRenderer::create_descriptor_sets() {
     render_vk::create_descriptor_sets(
         m_device,
         m_swapchain.images.size(),
-        m_descriptor_set_layout,
+        m_descriptor_set_layouts,
         m_descriptor_pool,
         m_descriptor_sets
     );
@@ -252,7 +252,7 @@ void VulkanRenderer::create_swapchain_dependents() {
         m_device,
         m_swapchain,
         m_render_pass,
-        m_descriptor_set_layout,
+        m_descriptor_set_layouts,
         m_pipeline_layout,
         m_graphics_pipeline
     );
@@ -325,12 +325,10 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
         m_render_pass,
         m_pipeline_layout,
         m_graphics_pipeline,
-        m_descriptor_sets.at(m_image_index),
         m_swapchain.extent,
         m_swapchain.framebuffers.at(m_image_index),
         m_command_buffers.at(m_image_index),
-        m_model_renderer->get_command_buffer(),
-        object_uniform.get_align()
+        m_model_renderer->get_command_buffer()
     );
 
     VkSubmitInfo submit_info{};
@@ -492,7 +490,7 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
 
     create_command_pool(m_device, m_physical_device, m_command_pool);
 
-    create_descriptor_set_layout(m_device, m_descriptor_set_layout);
+    create_descriptor_set_layouts(m_device, m_descriptor_set_layouts);
 
     create_swapchain_objects(glfw_window);
 
@@ -587,7 +585,8 @@ void VulkanRenderer::shutdown() {
         destroy_texture(m_device, texture);
     }
 
-    vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layout, nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.frame, nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.object, nullptr);
 
     //  Unload models
     m_model_mgr->unload();
