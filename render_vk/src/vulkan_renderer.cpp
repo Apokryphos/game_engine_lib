@@ -97,8 +97,6 @@ void VulkanRenderer::begin_frame() {
         create_descriptor_sets();
     }
 
-    m_model_renderer->begin_frame();
-
     if (m_textures.size() < 2) {
         ImGui::EndFrame();
         return;
@@ -139,6 +137,11 @@ void VulkanRenderer::begin_frame() {
 
     // Mark the image as now being in use by this frame
     m_images_in_flight[m_image_index] = m_in_flight_fences[m_current_frame];
+
+    m_model_renderer->begin_frame(
+        m_image_index,
+        m_descriptor_sets.at(m_image_index)
+    );
 
     m_frame_ready = true;
 }
@@ -239,8 +242,6 @@ void VulkanRenderer::create_swapchain_objects(GLFWwindow* glfw_window) {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::create_swapchain_dependents() {
-    m_model_renderer->create_objects(m_physical_device, m_device);
-
     render_vk::create_descriptor_pool(
         m_device,
         m_swapchain.images.size(),
@@ -281,11 +282,20 @@ void VulkanRenderer::create_swapchain_dependents() {
         m_command_buffers
     );
 
-    create_secondary_command_buffers(
+    // create_secondary_command_buffers(
+    //     m_device,
+    //     m_command_pool,
+    //     m_swapchain.images.size(),
+    //     m_secondary_buffers
+    // );
+
+    m_model_renderer->create_objects(
+        m_physical_device,
         m_device,
-        m_command_pool,
-        m_swapchain.images.size(),
-        m_secondary_buffers
+        m_render_pass,
+        m_pipeline_layout,
+        m_graphics_pipeline,
+        m_swapchain.images.size()
     );
 
     imgui_vulkan_init(
@@ -309,16 +319,6 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
 
     //  Build secondary command buffers
     auto& object_uniform = m_model_renderer->get_object_uniform();
-    record_secondary_command_buffer(
-        m_render_pass,
-        m_pipeline_layout,
-        m_graphics_pipeline,
-        m_model_renderer->get_draw_commands(),
-        m_descriptor_sets.at(m_image_index),
-        m_swapchain.extent,
-        m_secondary_buffers.at(m_image_index),
-        object_uniform.get_align()
-    );
 
     //  Build primary command buffers
     record_primary_command_buffer(
@@ -329,7 +329,7 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
         m_swapchain.extent,
         m_swapchain.framebuffers.at(m_image_index),
         m_command_buffers.at(m_image_index),
-        m_secondary_buffers.at(m_image_index),
+        m_model_renderer->get_command_buffer(),
         object_uniform.get_align()
     );
 

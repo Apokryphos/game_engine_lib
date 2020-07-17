@@ -12,11 +12,19 @@ class ModelManager;
 
 class VulkanModelRenderer : public render::ModelRenderer
 {
-    VkDevice m_device;
+    //  Current swapchain image index
+    uint32_t m_current_image;
 
-    //  Draw commands
-    //  TODO: Replace with secondary command buffer
-    std::vector<DrawModelCommand> m_draw_commands;
+    VkDevice m_device;
+    VkRenderPass m_render_pass;
+    VkPipelineLayout m_pipeline_layout;
+    VkPipeline m_graphics_pipeline;
+
+    //  Set in begin_frame()
+    VkDescriptorSet m_descriptor_set;
+
+    VkCommandPool m_command_pool;
+    std::vector<VkCommandBuffer> m_command_buffers;
 
     //  Per-frame uniform buffer
     UniformBuffer<FrameUbo> m_frame_uniform;
@@ -31,11 +39,23 @@ class VulkanModelRenderer : public render::ModelRenderer
 public:
     VulkanModelRenderer(ModelManager& model_mgr);
 
-    void begin_frame() {
-        m_draw_commands.clear();
+    void begin_frame(
+        uint32_t current_image,
+        VkDescriptorSet descriptor_set
+    ) {
+        m_current_image = current_image;
+        m_descriptor_set = descriptor_set;
     }
 
-    void create_objects(VkPhysicalDevice physical_device, VkDevice device);
+    void create_objects(
+        VkPhysicalDevice physical_device,
+        VkDevice device,
+        VkRenderPass render_pass,
+        VkPipelineLayout pipeline_layout,
+        VkPipeline graphics_pipeline,
+        uint32_t swapchain_image_count
+    );
+
     void destroy_objects();
 
     virtual void draw_models(
@@ -46,8 +66,8 @@ public:
         std::vector<uint32_t>& texture_ids
     ) override;
 
-    const std::vector<DrawModelCommand>& get_draw_commands() const {
-        return m_draw_commands;
+    VkCommandBuffer get_command_buffer() const {
+        return m_command_buffers.at(m_current_image);
     }
 
     UniformBuffer<FrameUbo>& get_frame_uniform() {
