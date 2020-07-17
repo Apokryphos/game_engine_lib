@@ -8,15 +8,6 @@
 
 namespace render_vk
 {
-struct DrawModelCommand
-{
-    uint32_t texture_id;
-    uint32_t index_count;
-    glm::mat4 model;
-    VkBuffer vertex_buffer;
-    VkBuffer index_buffer;
-};
-
 VkCommandBuffer begin_single_time_commands(
     VkDevice device,
     VkCommandPool command_pool
@@ -55,14 +46,14 @@ void record_primary_command_buffer(
     size_t ubo_dynamic_align
 );
 
-void record_secondary_command_buffer(
-    VkRenderPass render_pass,
-    VkPipelineLayout pipeline_layout,
-    VkPipeline graphics_pipeline,
-    const std::vector<DrawModelCommand>& draw_model_commands,
-    VkDescriptorSet descriptor_set,
-    VkExtent2D extent,
-    VkCommandBuffer& command_buffer,
-    size_t ubo_dynamic_align
-);
+// void record_secondary_command_buffer(
+//     VkRenderPass render_pass,
+//     VkPipelineLayout pipeline_layout,
+//     VkPipeline graphics_pipeline,
+//     const std::vector<DrawModelCommand>& draw_model_commands,
+//     VkDescriptorSet descriptor_set,
+//     VkExtent2D extent,
+//     VkCommandBuffer& command_buffer,
+//     size_t ubo_dynamic_align
+// );
 }
