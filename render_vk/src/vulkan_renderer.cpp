@@ -12,7 +12,6 @@
 #include "render_vk/frame_sync.hpp"
 #include "render_vk/graphics_pipeline.hpp"
 #include "render_vk/imgui/imgui_vk.hpp"
-#include "render_vk/index_buffer.hpp"
 #include "render_vk/instance.hpp"
 #include "render_vk/queue_family.hpp"
 #include "render_vk/mesh.hpp"
@@ -20,13 +19,11 @@
 #include "render_vk/render_pass.hpp"
 #include "render_vk/renderers/vulkan_model_renderer.hpp"
 #include "render_vk/texture.hpp"
-#include "render_vk/vertex_buffer.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_model.hpp"
 #include "render_vk/vulkan_renderer.hpp"
 #include "imgui.h"
 #include <glm/mat4x4.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <cstdint>
 #include <cstring>
 
