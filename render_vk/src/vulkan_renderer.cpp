@@ -359,8 +359,6 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
 
     end_debug_marker(m_graphics_queue);
 
-    begin_debug_marker(m_present_queue, "Present Frame", DEBUG_MARKER_COLOR_GREEN);
-
     //  Presentation
     VkPresentInfoKHR present_info{};
     present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -373,6 +371,7 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
     present_info.pResults = nullptr; // Optional
 
     //  Submit request to present image to swap chain
+    begin_debug_marker(m_present_queue, "Present Frame", DEBUG_MARKER_COLOR_GREEN);
     VkResult result = vkQueuePresentKHR(m_present_queue, &present_info);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR ||
@@ -384,6 +383,7 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Failed to present swap chain image.");
     }
+    end_debug_marker(m_present_queue);
 
     //  Advance frame counter
     m_current_frame = (m_current_frame + 1) % MAX_FRAMES_IN_FLIGHT;
