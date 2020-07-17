@@ -69,12 +69,6 @@ class VulkanRenderer : public render::Renderer
 
     std::unique_ptr<ModelManager> m_model_mgr;
 
-    //  Per-frame uniform buffer
-    UniformBuffer<FrameUbo> m_frame_uniform;
-
-    //  Per-object dynamic uniform buffer
-    DynamicUniformBuffer<ObjectUbo> m_object_uniform;
-
     //  Multithreading objects
     VulkanQueue m_queue;
     RenderJobManager m_job_mgr;

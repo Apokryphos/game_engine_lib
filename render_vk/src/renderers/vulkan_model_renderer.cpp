@@ -5,9 +5,30 @@
 
 namespace render_vk
 {
+//  Number of objects to create UBO data structs for
+const size_t OBJECT_INSTANCES = 100;
+
 //  ----------------------------------------------------------------------------
 VulkanModelRenderer::VulkanModelRenderer(ModelManager& model_mgr)
-: m_model_mgr(model_mgr) {
+: m_model_mgr(model_mgr),
+  m_object_uniform(OBJECT_INSTANCES) {
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanModelRenderer::create_objects(
+    VkPhysicalDevice physical_device,
+    VkDevice device
+) {
+    m_device = device;
+    m_frame_uniform.create(physical_device, m_device);
+    m_object_uniform.create(physical_device, m_device);
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanModelRenderer::destroy_objects() {
+    m_frame_uniform.destroy();
+    m_object_uniform.destroy();
+    m_device = VK_NULL_HANDLE;
 }
 
 //  ----------------------------------------------------------------------------
