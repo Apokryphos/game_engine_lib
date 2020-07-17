@@ -48,7 +48,8 @@ void generate_mipmaps(
 
         vkCmdPipelineBarrier(
             command_buffer,
-            VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+            VK_PIPELINE_STAGE_TRANSFER_BIT,
+            VK_PIPELINE_STAGE_TRANSFER_BIT,
             0,
             0,
             nullptr,
@@ -89,7 +90,8 @@ void generate_mipmaps(
 
         vkCmdPipelineBarrier(
             command_buffer,
-            VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            VK_PIPELINE_STAGE_TRANSFER_BIT,
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
             0,
             0,
             nullptr,
@@ -115,7 +117,8 @@ void generate_mipmaps(
 
     vkCmdPipelineBarrier(
         command_buffer,
-        VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
         0,
         0,
         nullptr,
