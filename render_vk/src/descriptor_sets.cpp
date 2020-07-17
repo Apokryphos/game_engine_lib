@@ -1,6 +1,5 @@
 #include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
-#include "render_vk/vulkan_swapchain.hpp"
 #include <array>
 #include <stdexcept>
 #include <vector>
@@ -10,21 +9,19 @@ namespace render_vk
 //  ----------------------------------------------------------------------------
 void create_descriptor_sets(
     VkDevice device,
-    const VulkanSwapchain swapchain,
+    const uint32_t swapchain_image_count,
     VkDescriptorSetLayout descriptor_set_layout,
     VkDescriptorPool descriptor_pool,
     std::vector<VkDescriptorSet>& descriptor_sets
 ) {
-    const size_t image_count = swapchain.images.size();
-
-    std::vector<VkDescriptorSetLayout> layouts(image_count, descriptor_set_layout);
+    std::vector<VkDescriptorSetLayout> layouts(swapchain_image_count, descriptor_set_layout);
     VkDescriptorSetAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     alloc_info.descriptorPool = descriptor_pool;
-    alloc_info.descriptorSetCount = static_cast<uint32_t>(image_count);
+    alloc_info.descriptorSetCount = static_cast<uint32_t>(swapchain_image_count);
     alloc_info.pSetLayouts = layouts.data();
 
-    descriptor_sets.resize(image_count);
+    descriptor_sets.resize(swapchain_image_count);
     if (vkAllocateDescriptorSets(device, &alloc_info, descriptor_sets.data()) != VK_SUCCESS) {
         throw std::runtime_error("Failed to allocate descriptor sets.");
     }
@@ -33,16 +30,14 @@ void create_descriptor_sets(
 //  ----------------------------------------------------------------------------
 void update_descriptor_sets(
     VkDevice device,
-    const VulkanSwapchain swapchain,
+    const uint32_t swapchain_image_count,
     std::vector<Texture>& textures,
     VkBuffer frame_uniform_buffer,
     VkBuffer object_uniform_buffer,
     size_t frame_ubo_size,
     std::vector<VkDescriptorSet>& descriptor_sets
 ) {
-    const size_t image_count = swapchain.images.size();
-
-    for (size_t n = 0; n < image_count; n++) {
+    for (size_t n = 0; n < swapchain_image_count; n++) {
         VkDescriptorBufferInfo frame_buffer_info{};
         frame_buffer_info.buffer = frame_uniform_buffer;
         frame_buffer_info.offset = 0;

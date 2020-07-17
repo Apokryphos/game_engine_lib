@@ -150,7 +150,7 @@ void VulkanRenderer::create_descriptor_sets() {
 
     render_vk::create_descriptor_sets(
         m_device,
-        m_swapchain,
+        m_swapchain.images.size(),
         m_descriptor_set_layout,
         m_descriptor_pool,
         m_descriptor_sets
@@ -158,7 +158,7 @@ void VulkanRenderer::create_descriptor_sets() {
 
     render_vk::update_descriptor_sets(
         m_device,
-        m_swapchain,
+        m_swapchain.images.size(),
         m_textures,
         m_frame_uniform.get_buffer(),
         m_object_uniform.get_buffer(),

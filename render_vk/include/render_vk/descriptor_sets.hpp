@@ -4,11 +4,9 @@
 
 namespace render_vk
 {
-struct VulkanSwapchain;
-
 void create_descriptor_sets(
     VkDevice device,
-    const VulkanSwapchain swapchain,
+    const uint32_t swapchain_image_count,
     VkDescriptorSetLayout descriptor_set_layout,
     VkDescriptorPool descriptor_pool,
     std::vector<VkDescriptorSet>& descriptor_sets
@@ -16,7 +14,7 @@ void create_descriptor_sets(
 
 void update_descriptor_sets(
     VkDevice device,
-    const VulkanSwapchain swapchain,
+    const uint32_t swapchain_image_count,
     std::vector<Texture>& textures,
     VkBuffer frame_uniform_buffer,
     VkBuffer object_uniform_buffer,
