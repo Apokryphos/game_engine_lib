@@ -480,18 +480,19 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
 
     m_queue.initialize(m_physical_device, m_device, m_graphics_queue);
 
-    m_job_mgr.initialize(
-        m_physical_device,
-        m_device,
-        m_queue,
-        *m_model_mgr
-    );
-
     create_command_pool(m_device, m_physical_device, m_command_pool);
 
     create_descriptor_set_layouts(m_device, m_descriptor_set_layouts);
 
     create_swapchain_objects(glfw_window);
+
+    m_job_mgr.initialize(
+        m_physical_device,
+        m_device,
+        m_queue,
+        *m_model_mgr,
+        m_swapchain.images.size()
+    );
 
     //  Sync objects require swapchain image count
     create_sync_objects(

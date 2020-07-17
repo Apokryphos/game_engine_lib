@@ -12,11 +12,14 @@ class ModelManager;
 
 struct RenderThreadState
 {
-    VkPhysicalDevice physical_device;
-    VkDevice device;
-    VulkanQueue* graphics_queue;
-    VkCommandPool command_pool;
-    ModelManager* model_mgr;
+    VkPhysicalDevice physical_device = VK_NULL_HANDLE;
+    VkDevice device = VK_NULL_HANDLE;
+    //  Thread-owned command pool
+    VkCommandPool command_pool = VK_NULL_HANDLE;
+    VulkanQueue* graphics_queue = VK_NULL_HANDLE;
+    ModelManager* model_mgr = nullptr;
+    //  Thread-owned secondary command buffers
+    std::vector<VkCommandBuffer> command_buffers;
 };
 
 class RenderJobManager
@@ -41,7 +44,8 @@ public:
         VkPhysicalDevice physical_device,
         VkDevice device,
         VulkanQueue& graphics_queue,
-        ModelManager& model_mgr
+        ModelManager& model_mgr,
+        uint32_t swapchain_image_count
     );
 
     void load_model(common::AssetId id, const std::string& path);

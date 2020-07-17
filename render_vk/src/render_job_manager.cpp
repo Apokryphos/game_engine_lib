@@ -1,4 +1,5 @@
 #include "common/thread_manager.hpp"
+#include "render_vk/command_buffer.hpp"
 #include "render_vk/command_pool.hpp"
 #include "render_vk/render_job_manager.hpp"
 #include "render_vk/render_job_manager.hpp"
@@ -40,10 +41,13 @@ void RenderJobManager::initialize(
     VkPhysicalDevice physical_device,
     VkDevice device,
     VulkanQueue& graphics_queue,
-    ModelManager& model_mgr
+    ModelManager& model_mgr,
+    uint32_t swapchain_image_count
 ) {
+    assert(swapchain_image_count > 0);
+
     //  Initialize thread state lambda
-    auto init_state = [physical_device, device, &graphics_queue, &model_mgr]() {
+    auto init_state = [physical_device, device, &graphics_queue, &model_mgr, swapchain_image_count]() {
         RenderThreadState state{};
         state.physical_device = physical_device;
         state.device = device;
@@ -55,6 +59,13 @@ void RenderJobManager::initialize(
             state.device,
             state.physical_device,
             state.command_pool
+        );
+
+        create_secondary_command_buffers(
+            state.device,
+            state.command_pool,
+            swapchain_image_count,
+            state.command_buffers
         );
 
         return state;
