@@ -142,7 +142,11 @@ void VulkanRenderer::create_descriptor_sets() {
 
     vkDestroyDescriptorPool(m_device, m_descriptor_pool, nullptr);
 
-    render_vk::create_descriptor_pool(m_device, m_swapchain, m_descriptor_pool);
+    render_vk::create_descriptor_pool(
+        m_device,
+        m_swapchain.images.size(),
+        m_descriptor_pool
+    );
 
     render_vk::create_descriptor_sets(
         m_device,
@@ -191,7 +195,7 @@ void VulkanRenderer::create_swapchain_dependents() {
 
     render_vk::create_descriptor_pool(
         m_device,
-        m_swapchain,
+        m_swapchain.images.size(),
         m_descriptor_pool
     );
 

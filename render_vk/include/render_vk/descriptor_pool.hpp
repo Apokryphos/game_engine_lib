@@ -4,12 +4,10 @@
 
 namespace render_vk
 {
-struct VulkanSwapchain;
-
 //  ----------------------------------------------------------------------------
 void create_descriptor_pool(
     VkDevice device,
-    const VulkanSwapchain& swapchain,
+    const uint32_t swapchain_image_count,
     VkDescriptorPool& descriptor_pool
 );
 }
