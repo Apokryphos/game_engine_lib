@@ -59,7 +59,7 @@ void record_secondary_command_buffer(
     VkRenderPass render_pass,
     VkPipelineLayout pipeline_layout,
     VkPipeline graphics_pipeline,
-    std::vector<DrawModelCommand>& draw_model_commands,
+    const std::vector<DrawModelCommand>& draw_model_commands,
     VkDescriptorSet descriptor_set,
     VkExtent2D extent,
     VkCommandBuffer& command_buffer,

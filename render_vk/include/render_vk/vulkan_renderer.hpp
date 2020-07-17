@@ -20,14 +20,12 @@ class Model;
 namespace render_vk
 {
 class ModelManager;
+class VulkanModelRenderer;
 
 class VulkanRenderer : public render::Renderer
 {
     bool m_framebuffer_resized;
     size_t m_current_frame;
-
-    glm::mat4 m_view;
-    glm::mat4 m_proj;
 
     VkInstance m_instance;
     VkDevice m_device;
@@ -71,9 +69,6 @@ class VulkanRenderer : public render::Renderer
 
     std::unique_ptr<ModelManager> m_model_mgr;
 
-    //  Draw commands for this frame
-    std::vector<DrawModelCommand> m_draw_model_commands;
-
     //  Per-frame uniform buffer
     UniformBuffer<FrameUbo> m_frame_uniform;
 
@@ -86,6 +81,9 @@ class VulkanRenderer : public render::Renderer
 
     //  Debug messenger
     VkDebugUtilsMessengerEXT m_debug_messenger;
+
+    //  Renderers
+    std::unique_ptr<VulkanModelRenderer> m_model_renderer;
 
     void create_descriptor_sets();
 
@@ -107,21 +105,14 @@ public:
     virtual void begin_frame() override;
     //  TODO: Change parameters to single MVP object (rename UniformBufferObject struct)
     virtual void draw_frame(GLFWwindow* glfw_window) override;
-
-    void draw_models(
-        const glm::mat4& view,
-        const glm::mat4& proj,
-        std::vector<uint32_t>& model_ids,
-        std::vector<glm::vec3>& positions,
-        std::vector<uint32_t>& texture_ids
-    ) override;
-
     virtual float get_aspect_ratio() const override;
     virtual bool initialize(GLFWwindow* glfw_window) override;
 
     VkInstance get_instance() {
         return m_instance;
     }
+
+    virtual render::ModelRenderer& get_model_renderer() override;
 
     virtual void load_model(
         common::AssetId id,

@@ -9,6 +9,7 @@
 #include "engine/system_manager.hpp"
 #include "platform/window.hpp"
 #include "render/renderer.hpp"
+#include "render/renderers/model_renderer.hpp"
 #include "systems/camera_system.hpp"
 #include "systems/model_system.hpp"
 #include "systems/move_system.hpp"
@@ -80,7 +81,8 @@ void DemoScreen::on_render(Game& game) {
     demo_sys.build_draw_order(game, draw_order);
 
     //  Draw entities
-    renderer.draw_models(
+    ModelRenderer& model_renderer = renderer.get_model_renderer();
+    model_renderer.draw_models(
         view,
         proj,
         draw_order.model_ids,

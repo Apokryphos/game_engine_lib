@@ -18,6 +18,7 @@
 #include "render_vk/mesh.hpp"
 #include "render_vk/model_manager.hpp"
 #include "render_vk/render_pass.hpp"
+#include "render_vk/renderers/vulkan_model_renderer.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/vertex_buffer.hpp"
 #include "render_vk/vulkan.hpp"
@@ -92,7 +93,7 @@ VulkanRenderer::~VulkanRenderer() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::begin_frame() {
-    m_draw_model_commands.clear();
+    m_model_renderer->begin_frame();
 }
 
 //  ----------------------------------------------------------------------------
@@ -305,7 +306,7 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
         m_render_pass,
         m_pipeline_layout,
         m_graphics_pipeline,
-        m_draw_model_commands,
+        m_model_renderer->get_draw_commands(),
         m_descriptor_sets.at(image_index),
         m_swapchain.extent,
         m_secondary_buffers.at(image_index),
@@ -388,43 +389,13 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanRenderer::draw_models(
-    const glm::mat4& view,
-    const glm::mat4& proj,
-    std::vector<uint32_t>& model_ids,
-    std::vector<glm::vec3>& positions,
-    std::vector<uint32_t>& texture_ids
-) {
-    // m_job_mgr.draw_models(model_ids, positions);
-
-    m_view = view;
-
-    //  GLM (OpenGL) uses inverted Y clip coordinate
-    m_proj = proj;
-    m_proj[1][1] *= -1;
-
-    for (size_t n = 0; n < model_ids.size(); ++n) {
-        VulkanModel* model = m_model_mgr->get_model(model_ids[n]);
-
-        if (model == nullptr) {
-            continue;
-        }
-
-        DrawModelCommand cmd{};
-        cmd.texture_id = texture_ids[n];
-        cmd.index_count = model->get_index_count();
-        cmd.model = glm::translate(glm::mat4(1.0f), positions[n]);
-
-        cmd.vertex_buffer = model->get_vertex_buffer();
-        cmd.index_buffer = model->get_index_buffer();
-
-        m_draw_model_commands.push_back(cmd);
-    }
+float VulkanRenderer::get_aspect_ratio() const {
+    return m_swapchain.extent.width / (float)m_swapchain.extent.height;
 }
 
 //  ----------------------------------------------------------------------------
-float VulkanRenderer::get_aspect_ratio() const {
-    return m_swapchain.extent.width / (float)m_swapchain.extent.height;
+ModelRenderer& VulkanRenderer::get_model_renderer() {
+    return *m_model_renderer;
 }
 
 //  ----------------------------------------------------------------------------
@@ -527,6 +498,8 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
     );
 
     create_swapchain_dependents();
+
+    m_model_renderer = std::make_unique<VulkanModelRenderer>(*m_model_mgr);
 
     return true;
 }
@@ -633,22 +606,24 @@ void VulkanRenderer::shutdown() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::update_uniform_buffers(uint32_t image_index) {
-    if (m_draw_model_commands.empty()) {
+    const auto& draw_model_commands = m_model_renderer->get_draw_commands();
+
+    if (draw_model_commands.empty()) {
         return;
     }
 
     //  Update frame UBO
     FrameUbo frame_ubo{};
-    frame_ubo.proj = m_proj;
-    frame_ubo.view = m_view;
+    frame_ubo.proj = m_model_renderer->get_projection();
+    frame_ubo.view = m_model_renderer->get_view();
 
     //  Copy frame UBO struct to uniform buffer
     m_frame_uniform.copy(frame_ubo);
 
     //  Update all UBO structs once per frame
-    std::vector<ObjectUbo> data(m_draw_model_commands.size());
-    for (size_t n = 0; n < m_draw_model_commands.size(); ++n)  {
-        const DrawModelCommand& cmd = m_draw_model_commands[n];
+    std::vector<ObjectUbo> data(draw_model_commands.size());
+    for (size_t n = 0; n < draw_model_commands.size(); ++n)  {
+        const DrawModelCommand& cmd = draw_model_commands[n];
         data[n].texture_index = cmd.texture_id;
         data[n].model = cmd.model;
     }

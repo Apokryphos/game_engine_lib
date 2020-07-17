@@ -10,14 +10,8 @@ public:
     GlRenderer();
     virtual void draw_frame(GLFWwindow* glfw_window) override;
     virtual void begin_frame() override;
-    virtual void draw_models(
-        const glm::mat4& view,
-        const glm::mat4& proj,
-        std::vector<uint32_t>& model_ids,
-        std::vector<glm::vec3>& positions,
-        std::vector<uint32_t>& texture_ids
-    ) override;
     virtual float get_aspect_ratio() const override;
+    virtual render::ModelRenderer& get_model_renderer() override;
     virtual bool initialize(GLFWwindow* glfw_window) override;
     virtual void load_model(
         common::AssetId id,
