@@ -13,7 +13,8 @@ using namespace common;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-RenderJobManager::RenderJobManager() {
+RenderJobManager::RenderJobManager(const uint32_t max_frames_in_flight)
+: m_max_frames_in_flight(max_frames_in_flight) {
     initialize_tasks();
 }
 

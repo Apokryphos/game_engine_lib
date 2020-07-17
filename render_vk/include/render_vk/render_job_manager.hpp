@@ -21,12 +21,13 @@ struct RenderThreadState
 
 class RenderJobManager
 {
+    uint32_t m_max_frames_in_flight;
     common::ThreadManager<RenderThreadState> m_thread_mgr;
 
     void initialize_tasks();
 
 public:
-    RenderJobManager();
+    RenderJobManager(const uint32_t max_frames_in_flight);
     ~RenderJobManager();
     RenderJobManager(const RenderJobManager&) = delete;
     RenderJobManager& operator=(const RenderJobManager&) = delete;

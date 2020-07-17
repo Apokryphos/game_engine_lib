@@ -74,6 +74,7 @@ static void query_extensions() {
 //  ----------------------------------------------------------------------------
 VulkanRenderer::VulkanRenderer()
 : Renderer(RenderApi::Vulkan),
+  m_job_mgr(MAX_FRAMES_IN_FLIGHT),
   m_model_mgr(std::make_unique<ModelManager>()) {
 }
 
