@@ -77,17 +77,15 @@ void DemoScreen::on_render(Game& game) {
 
     //  Build draw order
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
-    DemoSystem::DrawOrder draw_order;
-    demo_sys.build_draw_order(game, draw_order);
+    std::vector<ModelBatch> model_batches;
+    demo_sys.batch_models(game, model_batches);
 
     //  Draw entities
     ModelRenderer& model_renderer = renderer.get_model_renderer();
     model_renderer.draw_models(
         view,
         proj,
-        draw_order.model_ids,
-        draw_order.positions,
-        draw_order.texture_ids
+        model_batches
     );
 
     renderer.draw_frame(window.get_glfw_window());

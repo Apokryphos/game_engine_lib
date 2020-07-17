@@ -5,9 +5,11 @@
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
 #include <glm/glm.hpp>
+#include <map>
 
 using namespace ecs;
 using namespace engine;
+using namespace render;
 using namespace systems;
 
 namespace demo
@@ -18,9 +20,9 @@ DemoSystem::DemoSystem()
 }
 
 //  ----------------------------------------------------------------------------
-void DemoSystem::build_draw_order(
+void DemoSystem::batch_models(
     Game& game,
-    DrawOrder& draw_order
+    std::vector<ModelBatch>& model_batches
 ) {
     SystemManager& sys_mgr = game.get_system_manager();
 
@@ -31,27 +33,33 @@ void DemoSystem::build_draw_order(
 
     const size_t entity_count = entities.size();
 
-    //  Get model IDs
-    draw_order.model_ids.resize(entity_count);
-    for (size_t n = 0; n < entity_count; ++n) {
-        const auto model_cmpnt = model_sys.get_component(entities[n]);
-        draw_order.model_ids[n] = model_sys.get_model_id(model_cmpnt);
-    }
+    std::map<uint32_t, ModelBatch> batches;
 
-    //  Get positions
-    draw_order.positions.resize(entity_count);
     const PositionSystem& pos_sys = get_position_system(sys_mgr);
     for (size_t n = 0; n < entity_count; ++n) {
+        const auto model_cmpnt = model_sys.get_component(entities[n]);
+        const uint32_t model_id = model_sys.get_model_id(model_cmpnt);
+        ModelBatch& batch = batches[model_id];
+
+        batch.model_id = model_id;
+
+        //  Get positions
         const auto pos_cmpnt = pos_sys.get_component(entities[n]);
         const glm::vec3 position = pos_sys.get_position(pos_cmpnt);
-        draw_order.positions[n] = position;
+        batch.positions.push_back(position);
     }
 
-    //  Get texture IDs
-    draw_order.texture_ids.resize(entity_count);
     for (size_t n = 0; n < entity_count; ++n) {
         const auto model_cmpnt = model_sys.get_component(entities[n]);
-        draw_order.texture_ids[n] = model_sys.get_texture_id(model_cmpnt);
+        const uint32_t model_id = model_sys.get_model_id(model_cmpnt);
+        ModelBatch& batch = batches[model_id];
+
+        //  Get texture IDs
+        batch.texture_ids.push_back(model_sys.get_texture_id(model_cmpnt));
+    }
+
+    for (const auto& pair : batches) {
+        model_batches.push_back(pair.second);
     }
 }
 }

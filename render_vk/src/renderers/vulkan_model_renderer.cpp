@@ -5,7 +5,9 @@
 #include "render_vk/renderers/vulkan_model_renderer.hpp"
 #include "render_vk/vulkan_model.hpp"
 #include <glm/gtc/matrix_transform.hpp>
-#include <map>
+#include <vector>
+
+using namespace render;
 
 namespace render_vk
 {
@@ -60,10 +62,10 @@ void VulkanModelRenderer::destroy_objects() {
 void VulkanModelRenderer::draw_models(
     const glm::mat4& view,
     const glm::mat4& proj,
-    std::vector<uint32_t>& model_ids,
-    std::vector<glm::vec3>& positions,
-    std::vector<uint32_t>& texture_ids
+    std::vector<ModelBatch>& batches
 ) {
+    assert(!batches.empty());
+
     //  Check that descriptor set is valid
     if (m_descriptor_set == VK_NULL_HANDLE) {
         return;
@@ -76,6 +78,22 @@ void VulkanModelRenderer::draw_models(
         return;
     }
 
+    //   Build vectors for uniform buffers
+    std::vector<glm::vec3> positions;
+    std::vector<uint32_t> texture_ids;
+    for (const ModelBatch& batch : batches) {
+        positions.insert(
+            positions.end(),
+            batch.positions.begin(),
+            batch.positions.end()
+        );
+
+        texture_ids.insert(
+            texture_ids.end(),
+            batch.texture_ids.begin(),
+            batch.texture_ids.end()
+        );
+    }
     update_uniform_buffers(view, proj, positions, texture_ids);
 
     //  Build secondary command buffer
@@ -107,11 +125,9 @@ void VulkanModelRenderer::draw_models(
     //  Keep track of model index because of dynamic buffer alignment
     size_t model_index = 0;
 
-    //  Draw each model
-    const size_t object_count = model_ids.size();
-    for (size_t n = 0; n < object_count; ++n) {
+    for (const ModelBatch& batch : batches) {
         //  Get model
-        VulkanModel* model = m_model_mgr.get_model(model_ids[n]);
+        VulkanModel* model = m_model_mgr.get_model(batch.model_id);
         if (model == nullptr) {
             continue;
         }
@@ -129,33 +145,37 @@ void VulkanModelRenderer::draw_models(
             VK_INDEX_TYPE_UINT32
         );
 
-        // One dynamic offset per dynamic descriptor to offset into the ubo containing all model matrices
-        const size_t dynamic_align = m_object_uniform.get_align();
-        const uint32_t dynamic_offset = model_index * static_cast<uint32_t>(dynamic_align);
+        //  Draw each object
+        for (int n = 0; n < batch.positions.size(); ++n) {
+            //  One dynamic offset per dynamic descriptor to offset into the ubo
+            //  containing all model matrices
+            const size_t dynamic_align = m_object_uniform.get_align();
+            const uint32_t dynamic_offset = model_index * static_cast<uint32_t>(dynamic_align);
 
-        // Bind the descriptor set for rendering a mesh using the dynamic offset
-        vkCmdBindDescriptorSets(
-            command_buffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            m_pipeline_layout,
-            0,
-            1,
-            &m_descriptor_set,
-            1,
-            &dynamic_offset
-        );
+            //  Bind the descriptor set for rendering a mesh using the dynamic offset
+            vkCmdBindDescriptorSets(
+                command_buffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                m_pipeline_layout,
+                0,
+                1,
+                &m_descriptor_set,
+                1,
+                &dynamic_offset
+            );
 
-        ++model_index;
+            ++model_index;
 
-        //  Draw
-        vkCmdDrawIndexed(
-            command_buffer,
-            static_cast<uint32_t>(model->get_index_count()),
-            1,
-            0,
-            0,
-            0
-        );
+            //  Draw
+            vkCmdDrawIndexed(
+                command_buffer,
+                static_cast<uint32_t>(model->get_index_count()),
+                1,
+                0,
+                0,
+                0
+            );
+        }
     }
 
     end_debug_marker(command_buffer);
