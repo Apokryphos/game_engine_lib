@@ -1,6 +1,7 @@
 #include "render_vk/debug_gui/vulkan_debug_panel.hpp"
 #include "render_vk/vulkan.hpp"
 #include "imgui.h"
+#include <sstream>
 #include <string>
 
 namespace render_vk
@@ -204,10 +205,19 @@ static bool queue_families_listbox(const VulkanPhysicalDeviceInfo& info, int& in
             return false;
         }
 
-        static std::string family_name;
-        family_name = std::to_string(index);
+        const VulkanQueueFamilyInfo info = families.at(index);
+        const uint32_t queue_count = info.properties.queueCount;
 
-        *out_text = family_name.c_str();
+        static std::stringstream ss;
+        ss  << "Family " << index << " - "
+            << queue_count << " Queue" << (queue_count == 1 ? "" : "s");
+
+        static std::string text_str;
+        text_str = ss.str();
+        ss.str(std::string());
+
+        *out_text = text_str.c_str();
+
         return true;
     };
 
