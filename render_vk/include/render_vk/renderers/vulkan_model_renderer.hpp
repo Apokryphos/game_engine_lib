@@ -14,9 +14,6 @@ class VulkanModelRenderer : public render::ModelRenderer
 {
     VkDevice m_device;
 
-    glm::mat4 m_view;
-    glm::mat4 m_proj;
-
     //  Draw commands
     //  TODO: Replace with secondary command buffer
     std::vector<DrawModelCommand> m_draw_commands;
@@ -28,6 +25,8 @@ class VulkanModelRenderer : public render::ModelRenderer
     DynamicUniformBuffer<ObjectUbo> m_object_uniform;
 
     ModelManager& m_model_mgr;
+
+    void update_uniform_buffers();
 
 public:
     VulkanModelRenderer(ModelManager& model_mgr);
@@ -59,12 +58,11 @@ public:
         return m_object_uniform;
     }
 
-    glm::mat4 get_projection() const {
-        return m_proj;
-    }
-
-    glm::mat4 get_view() const {
-        return m_view;
-    }
+    void update_uniform_buffers(
+        glm::mat4 view,
+        glm::mat4 proj,
+        const std::vector<glm::vec3>& positions,
+        const std::vector<uint32_t>& texture_ids
+    );
 };
 }

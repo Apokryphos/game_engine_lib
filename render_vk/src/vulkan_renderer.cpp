@@ -77,6 +77,7 @@ static void query_extensions() {
 //  ----------------------------------------------------------------------------
 VulkanRenderer::VulkanRenderer()
 : Renderer(RenderApi::Vulkan),
+  m_frame_ready(false),
   m_framebuffer_resized(false),
   m_current_frame(0),
   m_model_mgr(std::make_unique<ModelManager>()),
@@ -89,7 +90,60 @@ VulkanRenderer::~VulkanRenderer() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::begin_frame() {
+    m_frame_ready = false;
+
+    //  Check if descriptor sets should be recreated
+    //  (e.g. after textures are loaded)
+    if (m_model_mgr->descriptor_sets_changed()) {
+        m_model_mgr->get_textures(m_textures);
+        vkDeviceWaitIdle(m_device);
+        create_descriptor_sets();
+    }
+
     m_model_renderer->begin_frame();
+
+    if (m_textures.size() < 2) {
+        ImGui::EndFrame();
+        return;
+    }
+
+    begin_debug_marker(m_graphics_queue, "Draw Frame", DEBUG_MARKER_COLOR_YELLOW);
+
+    vkWaitForFences(
+        m_device,
+        1,
+        &m_in_flight_fences[m_current_frame],
+        VK_TRUE,
+        UINT64_MAX
+    );
+
+    //  Get next presentable image index
+    VkResult result = vkAcquireNextImageKHR(
+        m_device,
+        m_swapchain.swapchain,
+        UINT64_MAX,
+        m_image_available_semaphores[m_current_frame],
+        VK_NULL_HANDLE,
+        &m_image_index
+    );
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        //  Surface changed and swapchain is no longer compatible
+        recreate_swapchain(m_glfw_window);
+        return;
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("Failed to acquire swapchain image.");
+    }
+
+    //  Check if previous frame is using this image
+    if (m_images_in_flight[m_image_index] != VK_NULL_HANDLE) {
+        vkWaitForFences(m_device, 1, &m_images_in_flight[m_image_index], VK_TRUE, UINT64_MAX);
+    }
+
+    // Mark the image as now being in use by this frame
+    m_images_in_flight[m_image_index] = m_in_flight_fences[m_current_frame];
+
+    m_frame_ready = true;
 }
 
 //  ----------------------------------------------------------------------------
@@ -250,57 +304,11 @@ void VulkanRenderer::create_swapchain_dependents() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
-    //  Check if descriptor sets should be recreated
-    //  (e.g. after textures are loaded)
-    if (m_model_mgr->descriptor_sets_changed()) {
-        m_model_mgr->get_textures(m_textures);
-        vkDeviceWaitIdle(m_device);
-        create_descriptor_sets();
-    }
-
-    if (m_textures.size() < 2) {
-        ImGui::EndFrame();
+    if (!m_frame_ready) {
         return;
     }
 
-    begin_debug_marker(m_graphics_queue, "Draw Frame", DEBUG_MARKER_COLOR_YELLOW);
-
-    vkWaitForFences(
-        m_device,
-        1,
-        &m_in_flight_fences[m_current_frame],
-        VK_TRUE,
-        UINT64_MAX
-    );
-
-    //  Get next presentable image index
-    uint32_t image_index;
-    VkResult result = vkAcquireNextImageKHR(
-        m_device,
-        m_swapchain.swapchain,
-        UINT64_MAX,
-        m_image_available_semaphores[m_current_frame],
-        VK_NULL_HANDLE,
-        &image_index
-    );
-
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        //  Surface changed and swapchain is no longer compatible
-        recreate_swapchain(glfw_window);
-        return;
-    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        throw std::runtime_error("Failed to acquire swapchain image.");
-    }
-
-    //  Check if previous frame is using this image
-    if (m_images_in_flight[image_index] != VK_NULL_HANDLE) {
-        vkWaitForFences(m_device, 1, &m_images_in_flight[image_index], VK_TRUE, UINT64_MAX);
-    }
-
-    // Mark the image as now being in use by this frame
-    m_images_in_flight[image_index] = m_in_flight_fences[m_current_frame];
-
-    update_uniform_buffers(image_index);
+    m_frame_ready = false;
 
     //  Build secondary command buffers
     auto& object_uniform = m_model_renderer->get_object_uniform();
@@ -309,9 +317,9 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
         m_pipeline_layout,
         m_graphics_pipeline,
         m_model_renderer->get_draw_commands(),
-        m_descriptor_sets.at(image_index),
+        m_descriptor_sets.at(m_image_index),
         m_swapchain.extent,
-        m_secondary_buffers.at(image_index),
+        m_secondary_buffers.at(m_image_index),
         object_uniform.get_align()
     );
 
@@ -320,11 +328,11 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
         m_render_pass,
         m_pipeline_layout,
         m_graphics_pipeline,
-        m_descriptor_sets.at(image_index),
+        m_descriptor_sets.at(m_image_index),
         m_swapchain.extent,
-        m_swapchain.framebuffers.at(image_index),
-        m_command_buffers.at(image_index),
-        m_secondary_buffers.at(image_index),
+        m_swapchain.framebuffers.at(m_image_index),
+        m_command_buffers.at(m_image_index),
+        m_secondary_buffers.at(m_image_index),
         object_uniform.get_align()
     );
 
@@ -338,7 +346,7 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
     submit_info.pWaitSemaphores = wait_semaphores;
     submit_info.pWaitDstStageMask = wait_stages;
     submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &m_command_buffers[image_index];
+    submit_info.pCommandBuffers = &m_command_buffers[m_image_index];
 
     //  Semaphores to signal once command buffers have finished execution
     VkSemaphore signal_semaphores[] = { m_render_finished_semaphores[m_current_frame] };
@@ -370,11 +378,11 @@ void VulkanRenderer::draw_frame(GLFWwindow* glfw_window) {
     present_info.swapchainCount = 1;
     VkSwapchainKHR swapchains[] = { m_swapchain.swapchain };
     present_info.pSwapchains = swapchains;
-    present_info.pImageIndices = &image_index;
+    present_info.pImageIndices = &m_image_index;
     present_info.pResults = nullptr; // Optional
 
     //  Submit request to present image to swap chain
-    result = vkQueuePresentKHR(m_present_queue, &present_info);
+    VkResult result = vkQueuePresentKHR(m_present_queue, &present_info);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR ||
         result == VK_SUBOPTIMAL_KHR ||
@@ -403,6 +411,8 @@ ModelRenderer& VulkanRenderer::get_model_renderer() {
 //  ----------------------------------------------------------------------------
 bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
     log_info("Initializing Vulkan renderer...");
+
+    m_glfw_window = glfw_window;
 
     //  Check if Vulkan is supported
     if (!glfwVulkanSupported()) {
@@ -603,35 +613,5 @@ void VulkanRenderer::shutdown() {
     vkDestroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger, nullptr);
 
     vkDestroyInstance(m_instance, nullptr);
-}
-
-//  ----------------------------------------------------------------------------
-void VulkanRenderer::update_uniform_buffers(uint32_t image_index) {
-    const auto& draw_model_commands = m_model_renderer->get_draw_commands();
-
-    if (draw_model_commands.empty()) {
-        return;
-    }
-
-    //  Update frame UBO
-    FrameUbo frame_ubo{};
-    frame_ubo.proj = m_model_renderer->get_projection();
-    frame_ubo.view = m_model_renderer->get_view();
-
-    //  Copy frame UBO struct to uniform buffer
-    auto& frame_uniform = m_model_renderer->get_frame_uniform();
-    frame_uniform.copy(frame_ubo);
-
-    //  Update all UBO structs once per frame
-    std::vector<ObjectUbo> data(draw_model_commands.size());
-    for (size_t n = 0; n < draw_model_commands.size(); ++n)  {
-        const DrawModelCommand& cmd = draw_model_commands[n];
-        data[n].texture_index = cmd.texture_id;
-        data[n].model = cmd.model;
-    }
-
-    //  Copy object UBO structs to dynamic uniform buffer
-    auto& object_uniform = m_model_renderer->get_object_uniform();
-    object_uniform.copy(data);
 }
 }

@@ -24,8 +24,13 @@ class VulkanModelRenderer;
 
 class VulkanRenderer : public render::Renderer
 {
+    bool m_frame_ready;
+
     bool m_framebuffer_resized;
     size_t m_current_frame;
+    uint32_t m_image_index;
+
+    GLFWwindow* m_glfw_window;
 
     VkInstance m_instance;
     VkDevice m_device;
@@ -90,7 +95,6 @@ class VulkanRenderer : public render::Renderer
 
     void cleanup_swapchain();
     void recreate_swapchain(GLFWwindow* glfw_window);
-    void update_uniform_buffers(uint32_t image_index);
 
 public:
     VulkanRenderer();

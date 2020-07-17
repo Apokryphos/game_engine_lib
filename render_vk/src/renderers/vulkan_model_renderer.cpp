@@ -41,15 +41,10 @@ void VulkanModelRenderer::draw_models(
 ) {
     // m_job_mgr.draw_models(model_ids, positions);
 
-    m_view = view;
-
-    //  GLM (OpenGL) uses inverted Y clip coordinate
-    m_proj = proj;
-    m_proj[1][1] *= -1;
+    update_uniform_buffers(view, proj, positions, texture_ids);
 
     for (size_t n = 0; n < model_ids.size(); ++n) {
         VulkanModel* model = m_model_mgr.get_model(model_ids[n]);
-
         if (model == nullptr) {
             continue;
         }
@@ -64,5 +59,39 @@ void VulkanModelRenderer::draw_models(
 
         m_draw_commands.push_back(cmd);
     }
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanModelRenderer::update_uniform_buffers(
+    glm::mat4 view,
+    glm::mat4 proj,
+    const std::vector<glm::vec3>& positions,
+    const std::vector<uint32_t>& texture_ids
+) {
+    assert(positions.size() == texture_ids.size());
+
+    //  Update frame UBO
+    FrameUbo frame_ubo{};
+    frame_ubo.view = view;
+    frame_ubo.proj = proj;
+
+    //  GLM (OpenGL) uses inverted Y clip coordinate
+    frame_ubo.proj[1][1] *= -1;
+
+    //  Copy frame UBO struct to uniform buffer
+    m_frame_uniform.copy(frame_ubo);
+
+    //  Update all UBO structs once per frame
+    const size_t object_count = positions.size();
+    assert(object_count > 0);
+
+    std::vector<ObjectUbo> data(object_count);
+    for (size_t n = 0; n < object_count; ++n)  {
+        data[n].texture_index = texture_ids[n];
+        data[n].model = glm::translate(glm::mat4(1.0f), positions[n]);
+    }
+
+    //  Copy object UBO structs to dynamic uniform buffer
+    m_object_uniform.copy(data);
 }
 }
