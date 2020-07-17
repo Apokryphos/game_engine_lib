@@ -13,5 +13,5 @@ struct LoadTextureArgs
     std::string path;
 };
 
-void task_load_texture(RenderThreadState& state, LoadTextureArgs& args);
+RenderJobResult task_load_texture(RenderThreadState& state, LoadTextureArgs& args);
 }

@@ -26,5 +26,5 @@ struct UpdateUboArgs
     DynamicUniformBuffer<ObjectUbo>* object_uniform;
 };
 
-void task_update_ubo(RenderThreadState& state, UpdateUboArgs& args);
+RenderJobResult task_update_ubo(RenderThreadState& state, UpdateUboArgs& args);
 }

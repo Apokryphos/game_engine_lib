@@ -11,15 +11,24 @@
 namespace render_vk
 {
 class ModelManager;
+class VulkanRenderer;
+
+struct RenderJobResult
+{
+    uint32_t current_frame = 0;
+    VkFence complete_fence = VK_NULL_HANDLE;
+};
 
 struct RenderThreadState
 {
+    uint32_t current_frame;
     VkPhysicalDevice physical_device = VK_NULL_HANDLE;
     VkDevice device = VK_NULL_HANDLE;
     //  Thread-owned command pool
     VkCommandPool command_pool = VK_NULL_HANDLE;
     VulkanQueue* graphics_queue = VK_NULL_HANDLE;
     ModelManager* model_mgr = nullptr;
+    VulkanRenderer* renderer = nullptr;
     //  Thread-owned secondary command buffers
     std::vector<VkCommandBuffer> command_buffers;
 };
@@ -27,7 +36,7 @@ struct RenderThreadState
 class RenderJobManager
 {
     uint32_t m_max_frames_in_flight;
-    common::ThreadManager<RenderThreadState> m_thread_mgr;
+    common::ThreadManager<RenderThreadState, RenderJobResult> m_thread_mgr;
 
     void initialize_tasks();
 
@@ -51,6 +60,7 @@ public:
         VkPhysicalDevice physical_device,
         VkDevice device,
         VulkanQueue& graphics_queue,
+        VulkanRenderer& renderer,
         ModelManager& model_mgr,
         uint32_t swapchain_image_count
     );

@@ -13,6 +13,7 @@ namespace render_vk
 struct DrawModelsArgs
 {
     //  Current swapchain image index
+    uint32_t current_frame;
     uint32_t current_image;
     uint32_t object_uniform_align;
     VkRenderPass render_pass;
@@ -22,5 +23,5 @@ struct DrawModelsArgs
     std::vector<render::ModelBatch> batches;
 };
 
-void task_draw_models(RenderThreadState& state, DrawModelsArgs& args);
+RenderJobResult task_draw_models(RenderThreadState& state, DrawModelsArgs& args);
 }

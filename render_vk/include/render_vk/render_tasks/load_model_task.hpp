@@ -13,5 +13,5 @@ struct LoadModelArgs
     std::string path;
 };
 
-void task_load_model(RenderThreadState& state, LoadModelArgs& args);
+RenderJobResult task_load_model(RenderThreadState& state, LoadModelArgs& args);
 }

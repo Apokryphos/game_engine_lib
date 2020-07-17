@@ -5,7 +5,9 @@
 #include "render_vk/model_manager.hpp"
 #include "render_vk/renderers/vulkan_model_renderer.hpp"
 #include "render_vk/render_tasks/draw_models_task.hpp"
+#include "render_vk/render_tasks/render_task_ids.hpp"
 #include "render_vk/vulkan_model.hpp"
+#include "render_vk/vulkan_renderer.hpp"
 #include <string>
 
 using namespace common;
@@ -14,7 +16,7 @@ using namespace render;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-void task_draw_models(RenderThreadState& state, DrawModelsArgs& args) {
+RenderJobResult task_draw_models(RenderThreadState& state, DrawModelsArgs& args) {
     //  Build secondary command buffer
     VkCommandBuffer command_buffer = state.command_buffers.at(args.current_image);
 
@@ -114,5 +116,23 @@ void task_draw_models(RenderThreadState& state, DrawModelsArgs& args) {
     if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record secondary command buffer.");
     }
+
+    VkFence complete_fence;
+    VkFenceCreateInfo info{};
+    info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    vkCreateFence(state.device, &info, nullptr, &complete_fence);
+
+    RenderJobResult result{};
+    result.current_frame = args.current_frame;
+    result.complete_fence = complete_fence;
+
+    state.renderer->post_command_buffer(
+        args.current_frame,
+        RENDER_TASK_DRAW_MODELS,
+        command_buffer,
+        result.complete_fence
+    );
+
+    return result;
 }
 }

@@ -16,7 +16,7 @@ using namespace common;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-void task_update_ubo(RenderThreadState& state, UpdateUboArgs& args) {
+RenderJobResult task_update_ubo(RenderThreadState& state, UpdateUboArgs& args) {
     const size_t count = args.positions.size();
 
     //  Update all UBO structs once per frame

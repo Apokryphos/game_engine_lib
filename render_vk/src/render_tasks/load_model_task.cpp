@@ -11,7 +11,7 @@ using namespace common;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-void task_load_model(RenderThreadState& state, LoadModelArgs& args) {
+RenderJobResult task_load_model(RenderThreadState& state, LoadModelArgs& args) {
     Mesh mesh;
     load_mesh(mesh, args.path);
 
@@ -25,5 +25,8 @@ void task_load_model(RenderThreadState& state, LoadModelArgs& args) {
     );
 
     state.model_mgr->add_model(std::move(model));
+
+    RenderJobResult result{};
+    return result;
 }
 }

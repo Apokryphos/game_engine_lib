@@ -8,6 +8,7 @@
 #include "render_vk/render_tasks/load_texture_task.hpp"
 #include "render_vk/render_tasks/render_task_ids.hpp"
 #include "render_vk/vulkan.hpp"
+#include "render_vk/vulkan_renderer.hpp"
 
 using namespace common;
 
@@ -51,17 +52,19 @@ void RenderJobManager::initialize(
     VkPhysicalDevice physical_device,
     VkDevice device,
     VulkanQueue& graphics_queue,
+    VulkanRenderer& renderer,
     ModelManager& model_mgr,
     uint32_t swapchain_image_count
 ) {
     assert(swapchain_image_count > 0);
 
     //  Initialize thread state lambda
-    auto init_state = [physical_device, device, &graphics_queue, &model_mgr, swapchain_image_count]() {
+    auto init_state = [physical_device, device, &graphics_queue, &renderer, &model_mgr, swapchain_image_count]() {
         RenderThreadState state{};
         state.physical_device = physical_device;
         state.device = device;
         state.graphics_queue = &graphics_queue;
+        state.renderer = &renderer;
         state.model_mgr = &model_mgr;
 
         //  Each thread has its own command pool
@@ -81,13 +84,28 @@ void RenderJobManager::initialize(
         return state;
     };
 
+    //  Check if thread is ready to process a job
+    auto thread_ready = [](RenderThreadState& state, RenderJobResult& result) {
+        if (result.complete_fence == VK_NULL_HANDLE) {
+            return true;
+        }
+
+        if (vkGetFenceStatus(state.device, result.complete_fence) == VK_SUCCESS) {
+            vkDestroyFence(state.device, result.complete_fence, nullptr);
+            result.complete_fence = VK_NULL_HANDLE;
+            return true;
+        }
+
+        return false;
+    };
+
     //  Cleanup thread state lambda
     auto cleanup_state = [](RenderThreadState& state) {
         vkDestroyCommandPool(state.device, state.command_pool, nullptr);
     };
 
     //  Start threads
-    m_thread_mgr.start_threads(init_state, cleanup_state, 4);
+    m_thread_mgr.start_threads(init_state, thread_ready, cleanup_state, 4);
 }
 
 //  ----------------------------------------------------------------------------

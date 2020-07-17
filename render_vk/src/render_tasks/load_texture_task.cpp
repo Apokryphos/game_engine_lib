@@ -10,7 +10,7 @@ using namespace common;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-void task_load_texture(RenderThreadState& state, LoadTextureArgs& args) {
+RenderJobResult task_load_texture(RenderThreadState& state, LoadTextureArgs& args) {
     Texture texture{};
 
     create_texture(
@@ -23,5 +23,8 @@ void task_load_texture(RenderThreadState& state, LoadTextureArgs& args) {
     );
 
     state.model_mgr->add_texture(args.id, texture);
+
+    RenderJobResult result{};
+    return result;
 }
 }

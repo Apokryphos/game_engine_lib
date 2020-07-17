@@ -490,6 +490,7 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
         m_physical_device,
         m_device,
         m_queue,
+        *this,
         *m_model_mgr,
         m_swapchain.images.size()
     );
@@ -540,6 +541,23 @@ void VulkanRenderer::load_texture(AssetId id, const std::string& path) {
     // m_textures.push_back(texture);
 
     // m_rebuild_descriptor_sets = true;
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanRenderer::post_command_buffer(
+    uint32_t current_frame,
+    TaskId task_id,
+    VkCommandBuffer command_buffer,
+    VkFence& complete_fence
+) {
+    //  TODO: This fence should probably be created in begin_frame and returned
+    //  to all callers. That way vkGetFenceStatus calls in the threads are
+    //  checking the same fence instead of multiple fences.
+    VkFenceCreateInfo info{};
+    info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    vkCreateFence(m_device, &info, nullptr, &complete_fence);
+
+    m_completed_tasks[task_id] = command_buffer;
 }
 
 //  ----------------------------------------------------------------------------

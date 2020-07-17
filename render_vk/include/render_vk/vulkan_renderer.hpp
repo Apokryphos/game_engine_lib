@@ -86,6 +86,8 @@ class VulkanRenderer : public render::Renderer
 
     std::unique_ptr<ModelManager> m_model_mgr;
 
+    std::map<common::TaskId, VkCommandBuffer> m_completed_tasks;
+
     //  Multithreading objects
     VulkanQueue m_queue;
     RenderJobManager m_job_mgr;
@@ -133,6 +135,13 @@ public:
         common::AssetId id,
         const std::string& path
     ) override;
+
+    void post_command_buffer(
+        uint32_t current_frame,
+        common::TaskId task_id,
+        VkCommandBuffer command_buffer,
+        VkFence& complete_func
+    );
 
     virtual void resize(GLFWwindow* glfw_window) override;
     virtual void shutdown() override;
