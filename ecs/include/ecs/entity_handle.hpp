@@ -7,13 +7,12 @@ namespace ecs
 {
 class EntityHandle
 {
-    bool m_assigned;
+    bool m_assigned = false;
     Entity m_entity;
 
 public:
     EntityHandle()
-    : m_assigned(false),
-      m_entity(0) {
+    : m_entity(0) {
     }
 
     bool equals(const EntityHandle& handle) const {

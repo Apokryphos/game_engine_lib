@@ -8,18 +8,18 @@ namespace render_vk
 //  Contains a swapchain (and its images, image views, framebuffers, etc.)
 struct VulkanSwapchain
 {
+    //  Image format
+    VkFormat format = VK_FORMAT_UNDEFINED;
+    //  Extent
+    VkExtent2D extent = {0};
     //  Swapchain
-    VkSwapchainKHR swapchain;
+    VkSwapchainKHR swapchain = VK_NULL_HANDLE;
     //  Swapchain images
     std::vector<VkImage> images;
     //  Swapchain image views
     std::vector<VkImageView> image_views;
     //  Framebuffers
     std::vector<VkFramebuffer> framebuffers;
-    //  Image format
-    VkFormat format;
-    //  Extent
-    VkExtent2D extent;
 };
 
 struct VulkanSwapchainSupport {

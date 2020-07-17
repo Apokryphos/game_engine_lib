@@ -26,36 +26,47 @@ class VulkanModelRenderer;
 
 class VulkanRenderer : public render::Renderer
 {
-    bool m_frame_ready;
+    //  True when frame is ready for draw commands
+    bool m_frame_ready = false;
+    //  True when window was resized and swapchain requires recreation
+    bool m_framebuffer_resized = false;
+    //  The current frame
+    size_t m_current_frame = 0;
+    //  The current swapchain image index
+    uint32_t m_image_index = 0;
 
-    bool m_framebuffer_resized;
-    size_t m_current_frame;
-    uint32_t m_image_index;
+    //  GLFW window
+    GLFWwindow* m_glfw_window = nullptr;
 
-    GLFWwindow* m_glfw_window;
+    //  Vulkan instance
+    VkInstance m_instance = VK_NULL_HANDLE;
 
-    VkInstance m_instance;
-    VkDevice m_device;
-    VkPhysicalDevice m_physical_device;
+    //  Device
+    VkDevice m_device = VK_NULL_HANDLE;
+    //  Physical device
+    VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
 
-    //  Queues
-    VkQueue m_graphics_queue;
-    VkQueue m_present_queue;
+    //  Graphics queue
+    VkQueue m_graphics_queue = VK_NULL_HANDLE;
+    //  Presentation queue
+    VkQueue m_present_queue = VK_NULL_HANDLE;
 
-    VkSurfaceKHR m_surface;
+    VkSurfaceKHR m_surface = VK_NULL_HANDLE;
     VulkanSwapchain m_swapchain;
-    VkRenderPass m_render_pass;
+    VkRenderPass m_render_pass = VK_NULL_HANDLE;
 
     //  Pipeline objects
-    VkPipelineLayout m_pipeline_layout;
-    VkPipeline m_graphics_pipeline;
+    VkPipelineLayout m_pipeline_layout = VK_NULL_HANDLE;
+    VkPipeline m_graphics_pipeline = VK_NULL_HANDLE;
 
-    //  Command objects
-    VkCommandPool m_command_pool;
+    //  Primary command pool
+    VkCommandPool m_command_pool = VK_NULL_HANDLE;
+
+    //  Primary command buffers
     std::vector<VkCommandBuffer> m_command_buffers;
 
     //  Shader objects
-    VkDescriptorPool m_descriptor_pool;
+    VkDescriptorPool m_descriptor_pool = VK_NULL_HANDLE;
     DescriptorSetLayouts m_descriptor_set_layouts;
     DescriptorSets m_descriptor_sets;
 
@@ -69,9 +80,9 @@ class VulkanRenderer : public render::Renderer
     std::vector<Texture> m_textures;
 
     //  Depth buffer objects
-    VkImage m_depth_image;
-    VkDeviceMemory m_depth_image_memory;
-    VkImageView m_depth_image_view;
+    VkImage m_depth_image = VK_NULL_HANDLE;
+    VkDeviceMemory m_depth_image_memory = VK_NULL_HANDLE;
+    VkImageView m_depth_image_view = VK_NULL_HANDLE;
 
     std::unique_ptr<ModelManager> m_model_mgr;
 
@@ -80,7 +91,7 @@ class VulkanRenderer : public render::Renderer
     RenderJobManager m_job_mgr;
 
     //  Debug messenger
-    VkDebugUtilsMessengerEXT m_debug_messenger;
+    VkDebugUtilsMessengerEXT m_debug_messenger = VK_NULL_HANDLE;
 
     //  Renderers
     std::unique_ptr<VulkanModelRenderer> m_model_renderer;

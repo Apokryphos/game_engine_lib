@@ -9,10 +9,10 @@ namespace render_vk
 struct DescriptorSetLayouts
 {
     //  Per-frame (view, projection)
-    VkDescriptorSetLayout frame;
+    VkDescriptorSetLayout frame = VK_NULL_HANDLE;
 
     //  Per-object (model, texture)
-    VkDescriptorSetLayout object;
+    VkDescriptorSetLayout object = VK_NULL_HANDLE;
 };
 
 void create_frame_descriptor_set_layout(

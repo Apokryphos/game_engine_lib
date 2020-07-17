@@ -74,11 +74,7 @@ static void query_extensions() {
 //  ----------------------------------------------------------------------------
 VulkanRenderer::VulkanRenderer()
 : Renderer(RenderApi::Vulkan),
-  m_frame_ready(false),
-  m_framebuffer_resized(false),
-  m_current_frame(0),
-  m_model_mgr(std::make_unique<ModelManager>()),
-  m_debug_messenger(VK_NULL_HANDLE) {
+  m_model_mgr(std::make_unique<ModelManager>()) {
 }
 
 //  ----------------------------------------------------------------------------

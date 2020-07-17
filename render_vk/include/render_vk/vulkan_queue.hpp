@@ -9,11 +9,11 @@ namespace render_vk
 {
 class VulkanQueue
 {
-    VkDevice m_device;
-    VkPhysicalDevice m_physical_device;
+    VkDevice m_device = VK_NULL_HANDLE;
+    VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
 
     std::mutex m_queue_mutex;
-    VkQueue m_queue;
+    VkQueue m_queue = VK_NULL_HANDLE;
 
 public:
     VulkanQueue()

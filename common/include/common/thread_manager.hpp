@@ -37,8 +37,8 @@ class ThreadManager
         TaskFunction func;
     };
 
-    bool m_cancel;
-    uint64_t m_sleep;
+    bool m_cancel = false;
+    uint64_t m_sleep = 200;
 
     std::mutex m_jobs_mutex;
 
@@ -82,10 +82,7 @@ class ThreadManager
     }
 
 public:
-    ThreadManager()
-    : m_cancel(false),
-      m_sleep(200) {
-    }
+    ThreadManager() = default;
 
     ~ThreadManager() {
         cancel();
