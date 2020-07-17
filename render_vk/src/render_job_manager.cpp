@@ -26,12 +26,22 @@ RenderJobManager::~RenderJobManager() {
 
 //  ----------------------------------------------------------------------------
 void RenderJobManager::draw_models(
-    const std::vector<uint32_t>& model_ids,
-    const std::vector<glm::vec3>& positions
+    VkRenderPass render_pass,
+    VkPipelineLayout pipeline_layout,
+    VkPipeline graphics_pipeline,
+    DescriptorSets& descriptor_sets,
+    uint32_t swapchain_image_index,
+    uint32_t object_uniform_align,
+    const std::vector<render::ModelBatch>& batches
 ) {
     DrawModelsArgs args{};
-    args.model_ids = model_ids;
-    args.positions = positions;
+    args.current_image = swapchain_image_index;
+    args.object_uniform_align = object_uniform_align;
+    args.render_pass = render_pass;
+    args.pipeline_layout = pipeline_layout;
+    args.graphics_pipeline = graphics_pipeline;
+    args.descriptor_sets = &descriptor_sets;
+    args.batches = batches;
 
     m_thread_mgr.add_job(RENDER_TASK_DRAW_MODELS, args);
 }

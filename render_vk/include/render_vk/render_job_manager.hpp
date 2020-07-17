@@ -2,6 +2,8 @@
 
 #include "common/asset.hpp"
 #include "common/thread_manager.hpp"
+#include "render/renderers/model_renderer.hpp"
+#include "render_vk/descriptor_sets.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_queue.hpp"
 #include <glm/vec3.hpp>
@@ -36,8 +38,13 @@ public:
     RenderJobManager& operator=(const RenderJobManager&) = delete;
 
     void draw_models(
-        const std::vector<uint32_t>& model_ids,
-        const std::vector<glm::vec3>& positions
+        VkRenderPass render_pass,
+        VkPipelineLayout pipeline_layout,
+        VkPipeline graphics_pipeline,
+        DescriptorSets& descriptor_sets,
+        uint32_t swapchain_image_index,
+        uint32_t object_uniform_align,
+        const std::vector<render::ModelBatch>& batches
     );
 
     void initialize(
