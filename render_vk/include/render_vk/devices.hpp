@@ -14,11 +14,11 @@ bool init_device(
 
 bool create_logical_device(
     VkPhysicalDevice physical_device,
+    const VkSurfaceKHR& surface,
+    const std::vector<const char*>& validation_layers,
+    const std::vector<const char*>& device_extensions,
     VkDevice& device,
     VkQueue& graphics_queue,
-    VkQueue& present_queue,
-    VkSurfaceKHR& surface,
-    const std::vector<const char*> validation_layers,
-    const std::vector<const char*> device_extensions
+    VkQueue& present_queue
 );
 }

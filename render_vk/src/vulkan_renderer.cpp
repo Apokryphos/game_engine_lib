@@ -425,7 +425,9 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
     query_extensions();
 
     const std::vector<const char*> validation_layers = {
+        #ifdef DEBUG
         "VK_LAYER_KHRONOS_validation"
+        #endif
     };
 
     //  Create Vulkan instance
@@ -459,12 +461,12 @@ bool VulkanRenderer::initialize(GLFWwindow* glfw_window) {
     //  Create logical device
     if (!create_logical_device(
         m_physical_device,
-        m_device,
-        m_graphics_queue,
-        m_present_queue,
         m_surface,
         validation_layers,
-        device_extensions
+        device_extensions,
+        m_device,
+        m_graphics_queue,
+        m_present_queue
     )) {
         return false;
     }
@@ -606,7 +608,9 @@ void VulkanRenderer::shutdown() {
 
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
 
-    vkDestroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger, nullptr);
+    if (m_debug_messenger != VK_NULL_HANDLE) {
+        vkDestroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger, nullptr);
+    }
 
     vkDestroyInstance(m_instance, nullptr);
 }

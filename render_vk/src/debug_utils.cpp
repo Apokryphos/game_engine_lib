@@ -50,6 +50,7 @@ void begin_debug_marker(
     const char* name,
     const float color[4]
 ) {
+    #ifdef DEBUG
     VkDebugUtilsLabelEXT info{};
     info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
     info.pNext = NULL;
@@ -57,6 +58,7 @@ void begin_debug_marker(
     memcpy(info.color, &color[0], sizeof(float) * 4);
 
     pfn_vkCmdBeginDebugUtilsLabelEXT(command_buffer, &info);
+    #endif
 }
 
 //  ----------------------------------------------------------------------------
@@ -65,6 +67,7 @@ void begin_debug_marker(
     const char* name,
     const float color[4]
 ) {
+    #ifdef DEBUG
     VkDebugUtilsLabelEXT info{};
     info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
     info.pNext = NULL;
@@ -72,16 +75,21 @@ void begin_debug_marker(
     memcpy(info.color, &color[0], sizeof(float) * 4);
 
     pfn_vkQueueBeginDebugUtilsLabelEXT(queue, &info);
+    #endif
 }
 
 //  ----------------------------------------------------------------------------
 void end_debug_marker(VkCommandBuffer command_buffer) {
+    #ifdef DEBUG
     pfn_vkCmdEndDebugUtilsLabelEXT(command_buffer);
+    #endif
 }
 
 //  ----------------------------------------------------------------------------
 void end_debug_marker(VkQueue queue) {
+    #ifdef DEBUG
     pfn_vkQueueEndDebugUtilsLabelEXT(queue);
+    #endif
 }
 
 //  ----------------------------------------------------------------------------
@@ -90,6 +98,7 @@ void insert_debug_marker(
     const char* name,
     const float color[4]
 ) {
+    #ifdef DEBUG
     VkDebugUtilsLabelEXT info{};
     info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
     info.pNext = NULL;
@@ -97,6 +106,7 @@ void insert_debug_marker(
     memcpy(info.color, &color[0], sizeof(float) * 4);
 
     pfn_vkCmdInsertDebugUtilsLabelEXT(command_buffer, &info);
+    #endif
 }
 
 //  ----------------------------------------------------------------------------
@@ -105,6 +115,7 @@ void insert_debug_marker(
     const char* name,
     const float color[4]
 ) {
+    #ifdef DEBUG
     VkDebugUtilsLabelEXT info{};
     info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
     info.pNext = NULL;
@@ -112,6 +123,7 @@ void insert_debug_marker(
     memcpy(info.color, &color[0], sizeof(float) * 4);
 
     pfn_vkQueueInsertDebugUtilsLabelEXT(queue, &info);
+    #endif
 }
 
 //  ----------------------------------------------------------------------------
@@ -121,6 +133,7 @@ void set_debug_name(
     uint64_t object_handle,
     const char* name
 ) {
+    #ifdef DEBUG
     if (pfn_vkSetDebugUtilsObjectNameEXT) {
         VkDebugUtilsObjectNameInfoEXT info{};
         info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
@@ -131,10 +144,12 @@ void set_debug_name(
 
         pfn_vkSetDebugUtilsObjectNameEXT(device, &info);
     }
+    #endif
 }
 
 //  ----------------------------------------------------------------------------
 bool check_debug_utils_support() {
+    #ifdef DEBUG
     uint32_t extension_count;
     vkEnumerateInstanceExtensionProperties(
         nullptr,
@@ -159,12 +174,14 @@ bool check_debug_utils_support() {
 
     s_debug_utils_exists = false;
     log_debug("%s extension not found.", VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    #endif
 
     return false;
 }
 
 //  ----------------------------------------------------------------------------
 void init_vulkan_debug_utils(VkDevice device) {
+    #ifdef DEBUG
     if (!s_debug_utils_exists) {
         return;
     }
@@ -238,6 +255,7 @@ void init_vulkan_debug_utils(VkDevice device) {
             "vkSetDebugUtilsObjectTagEXT​"
         )
     );
+    #endif
 }
 
 //  ----------------------------------------------------------------------------
@@ -263,11 +281,13 @@ void create_debug_messenger(
     VkInstance instance,
     VkDebugUtilsMessengerEXT& debug_messenger
 ) {
+    #ifdef DEBUG
     VkDebugUtilsMessengerCreateInfoEXT msg_info{};
     make_debug_messenger_create_info(msg_info);
 
     if (vkCreateDebugUtilsMessengerEXT(instance, &msg_info, nullptr, &debug_messenger) != VK_SUCCESS) {
         throw std::runtime_error("Failed to set up debug messenger.");
     }
+    #endif
 }
 }

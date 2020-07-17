@@ -95,6 +95,7 @@ void RenderJobManager::load_texture(common::AssetId id, const std::string& path)
 
 //  ----------------------------------------------------------------------------
 void RenderJobManager::shutdown() {
+    log_debug("Shutting down render job manager...");
     m_thread_mgr.cancel();
 }
 }

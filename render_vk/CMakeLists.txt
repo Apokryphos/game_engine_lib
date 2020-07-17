@@ -42,6 +42,8 @@ add_library(render_vk ${SOURCE_FILES})
 
 set_property(TARGET render_vk PROPERTY CXX_STANDARD 17)
 
+target_compile_definitions(render_vk PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
+
 # Enable experimental GLM extensions
 target_compile_definitions(render_vk PUBLIC GLM_ENABLE_EXPERIMENTAL)
 # Use aligned types by default for vector types

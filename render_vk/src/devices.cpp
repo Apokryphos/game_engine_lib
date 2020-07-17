@@ -118,12 +118,12 @@ bool init_device(
 //  ----------------------------------------------------------------------------
 bool create_logical_device(
     VkPhysicalDevice physical_device,
+    const VkSurfaceKHR& surface,
+    const std::vector<const char*>& validation_layers,
+    const std::vector<const char*>& device_extensions,
     VkDevice& device,
     VkQueue& graphics_queue,
-    VkQueue& present_queue,
-    VkSurfaceKHR& surface,
-    const std::vector<const char*> validation_layers,
-    const std::vector<const char*> device_extensions
+    VkQueue& present_queue
 ) {
     QueueFamilyIndices indices = find_queue_families(physical_device, surface);
 
@@ -150,7 +150,7 @@ bool create_logical_device(
         queue_create_infos.push_back(queue_create_info);
     }
 
-    VkPhysicalDeviceVulkan12Features features_12;
+    VkPhysicalDeviceVulkan12Features features_12{};
     features_12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
     features_12.descriptorIndexing = VK_TRUE;
     features_12.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
