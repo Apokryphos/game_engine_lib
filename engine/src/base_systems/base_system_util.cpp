@@ -61,7 +61,8 @@ ProfileSystem& get_profile_system(SystemManager& sys_mgr) {
 //  ----------------------------------------------------------------------------
 void initialize_base_systems(
     Game& game,
-    const std::string& game_base_name
+    const std::string& game_base_name,
+    const size_t component_count
 ) {
     SystemManager& sys_mgr = game.get_system_manager();
 
@@ -90,7 +91,7 @@ void initialize_base_systems(
     EcsRoot& ecs = game.get_ecs_root();
 
     //  Name system
-    sys_mgr.add_system(std::make_unique<NameSystem>(ecs, 1000));
+    sys_mgr.add_system(std::make_unique<NameSystem>(ecs, component_count));
     debug_gui_system.add_gui(
         std::make_unique<NameSystemDebugPanel>(get_name_system(sys_mgr))
     );

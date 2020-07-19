@@ -27,6 +27,7 @@ ProfileSystem& get_profile_system(SystemManager& sys_mgr);
 
 void initialize_base_systems(
     Game& game,
-    const std::string& game_base_name
+    const std::string& game_base_name,
+    const size_t component_count = 10000
 );
 }

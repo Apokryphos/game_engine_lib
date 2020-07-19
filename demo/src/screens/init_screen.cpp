@@ -27,6 +27,7 @@
 #include "systems/move_system.hpp"
 #include "systems/position_system.hpp"
 #include "systems/system_util.hpp"
+#include <set>
 
 using namespace common;
 using namespace demo;
@@ -35,6 +36,17 @@ using namespace engine;
 using namespace input;
 using namespace render;
 using namespace systems;
+
+namespace glm
+{
+bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
+    if (lhs.y == rhs.y) {
+        return lhs.x < rhs.x;
+    }
+
+    return lhs.y < rhs.y;
+}
+};
 
 namespace demo
 {
@@ -157,14 +169,14 @@ static void init_ecs_systems(Game& game) {
     SystemManager& sys_mgr = game.get_system_manager();
     DebugGuiSystem& debug_gui_system = get_debug_gui_system(sys_mgr);
 
-    sys_mgr.add_system(std::make_unique<PositionSystem>(ecs, 1000));
+    sys_mgr.add_system(std::make_unique<PositionSystem>(ecs, 10000));
     debug_gui_system.add_gui(
         std::make_unique<PositionSystemDebugPanel>(get_position_system(sys_mgr))
     );
 
-    sys_mgr.add_system(std::make_unique<CameraSystem>(ecs, 1000));
-    sys_mgr.add_system(std::make_unique<ModelSystem>(ecs, 1000));
-    sys_mgr.add_system(std::make_unique<MoveSystem>(ecs, 1000));
+    sys_mgr.add_system(std::make_unique<CameraSystem>(ecs, 10000));
+    sys_mgr.add_system(std::make_unique<ModelSystem>(ecs, 10000));
+    sys_mgr.add_system(std::make_unique<MoveSystem>(ecs, 10000));
 
     //  Editors
     EditorSystem& editor_sys = get_editor_system(sys_mgr);
@@ -194,15 +206,29 @@ static void init_entities(Game& game) {
     Entity camera = ecs.create_entity();
     make_camera(game, camera, "camera", glm::vec3(1.0f), 10.0f);
 
-    //  Position distribution
-    Random& random = game.get_random();
-    std::uniform_int_distribution<int> position_dist(-10, 10);
-
     //  Texture ID distribution
     std::uniform_int_distribution<int> texture_id_dist(0, 1);
 
-    const int ENTITY_COUNT = 100;
-    for (int n = 0; n < ENTITY_COUNT; ++n) {
+    //  Position distribution
+    Random& random = game.get_random();
+    std::uniform_int_distribution<int> position_dist(-200, 200);
+
+    std::set<glm::vec3> position_set;
+    while (position_set.size() < 9999) {
+        const glm::vec3 position = {
+            position_dist(random.get_rng()) * 2,
+            position_dist(random.get_rng()) * 2,
+            0.0f
+        };
+
+        position_set.insert(position);
+    }
+
+    std::vector<glm::vec3> positions;
+    std::copy(position_set.begin(), position_set.end(), std::back_inserter(positions));
+
+    const int entity_count = positions.size();
+    for (int n = 0; n < entity_count; ++n) {
         Entity entity = ecs.create_entity();
 
         const std::string name = "entity_" + std::to_string(n);
@@ -211,11 +237,7 @@ static void init_entities(Game& game) {
         const auto name_cmpnt = name_sys.get_component(entity);
         name_sys.set_name(name_cmpnt, name);
 
-        const glm::vec3 position = {
-            position_dist(random.get_rng()) * 2,
-            position_dist(random.get_rng()) * 2,
-            0.0f
-        };
+        const glm::vec3 position = positions[n];
 
         PositionSystem& pos_sys = get_position_system(sys_mgr);
         add_position_component(entity, pos_sys, position);

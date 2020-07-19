@@ -25,7 +25,7 @@ using namespace render;
 
 namespace render_vk
 {
-static const uint32_t MAX_OBJECTS = 100;
+static const uint32_t MAX_OBJECTS = 10000;
 
 //  ----------------------------------------------------------------------------
 static void create_sync_objects(
@@ -274,6 +274,14 @@ VulkanRenderSystem::~VulkanRenderSystem() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::begin_frame() {
+    //  Check that textures exist
+    std::vector<Texture> textures;
+    m_model_mgr->get_textures(textures);
+    if (textures.empty()) {
+        m_frame_status = FrameStatus::Discarded;
+        return;
+    }
+
     static bool first_call = true;
     if (first_call) {
         first_call = false;
@@ -462,13 +470,31 @@ void VulkanRenderSystem::draw_models(
 
     std::lock_guard<std::mutex> lock(m_jobs_mutex);
     m_jobs.push(job);
+
+        //   Build vectors for uniform buffers
+    std::vector<glm::vec3> positions;
+    std::vector<uint32_t> texture_ids;
+    for (const ModelBatch& batch : batches) {
+        positions.insert(
+            positions.end(),
+            batch.positions.begin(),
+            batch.positions.end()
+        );
+
+        texture_ids.insert(
+            texture_ids.end(),
+            batch.texture_ids.begin(),
+            batch.texture_ids.end()
+        );
+    }
+    update_uniform_buffers(view, proj, positions, texture_ids);
 }
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::end_frame() {
     //  Wait for worker threads to complete
     while (m_frame_status == FrameStatus::Busy) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
 
     //  Check that frame is OK to continue with
@@ -784,31 +810,6 @@ void VulkanRenderSystem::thread_draw_models(
 ) {
     assert(!batches.empty());
 
-    //  Check that textures exist
-    std::vector<Texture> textures;
-    m_model_mgr->get_textures(textures);
-    if (textures.empty()) {
-        return;
-    }
-
-    //   Build vectors for uniform buffers
-    std::vector<glm::vec3> positions;
-    std::vector<uint32_t> texture_ids;
-    for (const ModelBatch& batch : batches) {
-        positions.insert(
-            positions.end(),
-            batch.positions.begin(),
-            batch.positions.end()
-        );
-
-        texture_ids.insert(
-            texture_ids.end(),
-            batch.texture_ids.begin(),
-            batch.texture_ids.end()
-        );
-    }
-    update_uniform_buffers(view, proj, positions, texture_ids);
-
     VkCommandBufferInheritanceInfo inherit_info{};
     inherit_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
     inherit_info.renderPass = m_render_pass;
@@ -828,6 +829,18 @@ void VulkanRenderSystem::thread_draw_models(
         command_buffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         m_graphics_pipeline
+    );
+
+    //  Bind per-frame descriptors
+    vkCmdBindDescriptorSets(
+        command_buffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        m_pipeline_layout,
+        0,
+        1,
+        &descriptor.frame_set,
+        0,
+        nullptr
     );
 
     begin_debug_marker(command_buffer, "Draw Model (SECONDARY)", DEBUG_MARKER_COLOR_ORANGE);
@@ -853,18 +866,6 @@ void VulkanRenderSystem::thread_draw_models(
             model->get_index_buffer(),
             0,
             VK_INDEX_TYPE_UINT32
-        );
-
-        //  Bind per-frame descriptors
-        vkCmdBindDescriptorSets(
-            command_buffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            m_pipeline_layout,
-            0,
-            1,
-            &descriptor.frame_set,
-            0,
-            nullptr
         );
 
         //  Draw each object
@@ -941,7 +942,7 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
         Job job{};
         //  Sleep until job is available
         if (!get_job(job)) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            std::this_thread::sleep_for(std::chrono::microseconds(500));
             continue;
         }
 
