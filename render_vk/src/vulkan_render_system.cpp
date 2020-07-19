@@ -604,12 +604,20 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     volkLoadDevice(m_device);
 
     m_graphics_queue.initialize(m_physical_device, m_device, graphics_queue);
+    m_frame_uniform.create(m_physical_device, m_device);
+    m_object_uniform.create(m_physical_device, m_device);
 
     create_descriptor_set_layouts(m_device, m_descriptor_set_layouts);
 
     create_swapchain_objects();
 
+    create_swapchain_dependents();
+
     create_frame_resources();
+
+    m_model_mgr = std::make_unique<ModelManager>();
+
+    start_threads();
 
     return true;
 }
@@ -896,6 +904,13 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
         ThreadFrame& frame = frames.at(m_current_frame);
         switch (job.task_id) {
             case FrameTaskId::DrawModels:
+                thread_draw_models(
+                    job.view,
+                    job.proj,
+                    job.batches,
+                    frame.descriptor,
+                    frame.command.buffer
+                );
                 break;
         }
 
