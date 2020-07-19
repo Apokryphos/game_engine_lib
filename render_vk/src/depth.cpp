@@ -1,3 +1,4 @@
+#include "render_vk/depth.hpp"
 #include "render_vk/image_view.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
@@ -100,6 +101,27 @@ void create_depth_resources(
         1,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+    );
+}
+
+//  ----------------------------------------------------------------------------
+void create_depth_resources(
+    VkPhysicalDevice physical_device,
+    VkDevice device,
+    VulkanQueue& transfer_queue,
+    VkCommandPool command_pool,
+    const VulkanSwapchain& swapchain,
+    DepthImage& depth_image
+) {
+    create_depth_resources(
+        physical_device,
+        device,
+        transfer_queue,
+        command_pool,
+        swapchain,
+        depth_image.image,
+        depth_image.view,
+        depth_image.memory
     );
 }
 }

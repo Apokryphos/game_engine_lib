@@ -27,6 +27,12 @@ void create_command_buffers(
     std::vector<VkCommandBuffer>& command_buffers
 );
 
+void create_secondary_command_buffer(
+    VkDevice device,
+    VkCommandPool command_pool,
+    VkCommandBuffer& command_buffer
+);
+
 void create_secondary_command_buffers(
     VkDevice device,
     VkCommandPool command_pool,

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/asset.hpp"
+#include "render/model_batch.hpp"
 #include "render/render_api.hpp"
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -25,7 +26,12 @@ public:
     Renderer(const Renderer&) = delete;
     Renderer& operator=(const Renderer&) = delete;
     virtual void begin_frame() = 0;
-    virtual void draw_frame(GLFWwindow* glfw_window) = 0;
+    virtual void draw_models(
+        const glm::mat4& view,
+        const glm::mat4& proj,
+        std::vector<ModelBatch>& batches
+    ) = 0;
+    virtual void end_frame() = 0;
 
     RenderApi get_render_api() const {
         return m_render_api;
@@ -41,8 +47,7 @@ public:
         common::AssetId id,
         const std::string& path
     ) = 0;
-    virtual ModelRenderer& get_model_renderer() = 0;
-    virtual void resize(GLFWwindow* glfw_window) = 0;
+    virtual void resize() = 0;
     virtual void shutdown() = 0;
 };
 }

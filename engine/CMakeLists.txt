@@ -43,7 +43,7 @@ target_link_libraries(engine
     imgui
     input
     render
-    render_gl
+    # render_gl
     render_vk
 )
 

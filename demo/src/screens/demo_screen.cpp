@@ -81,14 +81,13 @@ void DemoScreen::on_render(Game& game) {
     demo_sys.batch_models(game, model_batches);
 
     //  Draw entities
-    ModelRenderer& model_renderer = renderer.get_model_renderer();
-    model_renderer.draw_models(
+    renderer.draw_models(
         view,
         proj,
         model_batches
     );
 
-    renderer.draw_frame(window.get_glfw_window());
+    renderer.end_frame();
 }
 
 //  ----------------------------------------------------------------------------

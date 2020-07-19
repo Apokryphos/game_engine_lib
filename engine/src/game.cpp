@@ -15,8 +15,8 @@
 #include "input/input_manager.hpp"
 #include "platform/window.hpp"
 #include "render/renderer.hpp"
-#include "render_vk/vulkan_renderer.hpp"
 #include "render_vk/debug_gui/vulkan_debug_panel.hpp"
+#include "render_vk/vulkan_render_system.hpp"
 #include <cassert>
 
 using namespace common;
@@ -83,7 +83,7 @@ bool Game::initialize(
         get_debug_gui_system(*m_sys_mgr).add_gui(
             "vulkan",
             make_vulkan_debug_panel_function(
-                dynamic_cast<VulkanRenderer&>(renderer).get_instance()
+                dynamic_cast<VulkanRenderSystem&>(renderer).get_instance()
             )
         );
     }

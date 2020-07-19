@@ -24,17 +24,18 @@ set(SOURCE_FILES
     src/mesh.cpp
     src/model_manager.cpp
     src/queue_family.cpp
-    src/render_job_manager.cpp
+    # src/render_job_manager.cpp
     src/render_pass.cpp
-    src/render_tasks/draw_models_task.cpp
+    # src/render_tasks/draw_models_task.cpp
     src/render_tasks/load_model_task.cpp
     src/render_tasks/load_texture_task.cpp
-    src/renderers/vulkan_model_renderer.cpp
+    # src/renderers/vulkan_model_renderer.cpp
     src/texture.cpp
     src/vertex_buffer.cpp
     src/vulkan_model.cpp
     src/vulkan_queue.cpp
-    src/vulkan_renderer.cpp
+    # src/vulkan_renderer.cpp
+    src/vulkan_render_system.cpp
     src/vulkan_swapchain.cpp
 )
 

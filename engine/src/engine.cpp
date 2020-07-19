@@ -8,15 +8,15 @@
 #include "platform/glfw_init.hpp"
 #include "platform/window.hpp"
 #include "platform/window_options.hpp"
-#include "render_gl/gl_renderer.hpp"
-#include "render_vk/vulkan_renderer.hpp"
+// #include "render_gl/gl_renderer.hpp"
+#include "render_vk/vulkan_render_system.hpp"
 #include <cassert>
 
 using namespace common;
 using namespace input;
 using namespace platform;
 using namespace render;
-using namespace render_gl;
+// using namespace render_gl;
 using namespace render_vk;
 
 namespace engine
@@ -135,9 +135,10 @@ bool Engine::initialize(
 
     //  Create renderer for API
     if (render_api == RenderApi::OpenGl) {
-        m_renderer = std::make_unique<GlRenderer>();
+        throw std::runtime_error("Not implemented.");
+        // m_renderer = std::make_unique<GlRenderer>();
     } else if (render_api == RenderApi::Vulkan) {
-        m_renderer = std::make_unique<VulkanRenderer>();
+        m_renderer = std::make_unique<VulkanRenderSystem>();
     } else {
         throw std::runtime_error("Not implemented.");
     }
@@ -178,6 +179,6 @@ void Engine::shutdown() {
 void Engine::window_resized() {
     assert(m_window != nullptr);
     assert(m_renderer != nullptr);
-    m_renderer->resize(m_window->get_glfw_window());
+    m_renderer->resize();
 }
 }
