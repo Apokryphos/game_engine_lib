@@ -184,7 +184,25 @@ void update_object_descriptor_sets(
 }
 
 //  ----------------------------------------------------------------------------
-static void create_command_objects(
+static void create_primary_command_objects(
+    VkDevice device,
+    VkPhysicalDevice physical_device,
+    VulkanQueue& graphics_queue,
+    VulkanSwapchain& swapchain,
+    DepthImage depth_image,
+    VulkanRenderSystem::FrameCommandObjects& frame_command
+) {
+    create_command_pool(device, physical_device, frame_command.pool);
+
+    create_primary_command_buffer(
+        device,
+        frame_command.pool,
+        frame_command.buffer
+    );
+}
+
+//  ----------------------------------------------------------------------------
+static void create_secondary_command_objects(
     VkDevice device,
     VkPhysicalDevice physical_device,
     VulkanQueue& graphics_queue,
@@ -314,7 +332,7 @@ void VulkanRenderSystem::create_frame_resources() {
     m_frames.resize(m_frame_count);
     for (auto n = 0; n < m_frame_count; ++n) {
         create_sync_objects(m_device, m_frames[n].sync);
-        create_command_objects(
+        create_primary_command_objects(
             m_device,
             m_physical_device,
             m_graphics_queue,
@@ -887,7 +905,7 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
     //  Initialize frame objects
     std::vector<ThreadFrame> frames(m_frame_count);
     for (ThreadFrame& frame : frames) {
-        create_command_objects(
+        create_secondary_command_objects(
             m_device,
             m_physical_device,
             m_graphics_queue,

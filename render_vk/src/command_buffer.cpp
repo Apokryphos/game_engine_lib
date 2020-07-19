@@ -78,6 +78,27 @@ void create_command_buffers(
 }
 
 //  ----------------------------------------------------------------------------
+void create_primary_command_buffer(
+    VkDevice device,
+    VkCommandPool command_pool,
+    VkCommandBuffer& command_buffer
+) {
+    VkCommandBufferAllocateInfo alloc_info{};
+    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    alloc_info.commandPool = command_pool;
+    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    alloc_info.commandBufferCount = 1;
+
+    if (vkAllocateCommandBuffers(
+        device,
+        &alloc_info,
+        &command_buffer
+    ) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to allocate command buffers.");
+    }
+}
+
+//  ----------------------------------------------------------------------------
 void create_secondary_command_buffers(
     VkDevice device,
     VkCommandPool command_pool,
