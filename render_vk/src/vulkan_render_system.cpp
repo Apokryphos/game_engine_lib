@@ -460,6 +460,17 @@ void VulkanRenderSystem::end_frame() {
 
     Frame& frame = m_frames.at(m_current_frame);
 
+    //  Record primary command buffers
+    record_primary_command_buffer(
+        m_render_pass,
+        m_pipeline_layout,
+        m_graphics_pipeline,
+        m_swapchain.extent,
+        m_swapchain.framebuffers.at(m_image_index),
+        m_work.at(FrameTaskId::DrawModels),
+        frame.command.buffer
+    );
+
     VkSubmitInfo submit_info{};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submit_info.commandBufferCount = 1;
