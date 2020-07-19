@@ -256,6 +256,12 @@ VulkanRenderSystem::~VulkanRenderSystem() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::begin_frame() {
+    static bool first_call = true;
+    if (first_call) {
+        first_call = false;
+        start_threads();
+    }
+
     m_frame_status = FrameStatus::None;
 
     Frame& frame = m_frames.at(m_current_frame);
@@ -616,8 +622,6 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     create_frame_resources();
 
     m_model_mgr = std::make_unique<ModelManager>();
-
-    start_threads();
 
     return true;
 }
