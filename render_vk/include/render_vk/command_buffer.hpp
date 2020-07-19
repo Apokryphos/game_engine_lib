@@ -52,8 +52,8 @@ void record_primary_command_buffer(
     VkPipeline graphics_pipeline,
     VkExtent2D extent,
     VkFramebuffer framebuffer,
-    VkCommandBuffer& command_buffer,
-    VkCommandBuffer secondary_command_buffer
+    VkCommandBuffer secondary_command_buffer,
+    VkCommandBuffer& command_buffer
 );
 
 // void record_secondary_command_buffer(

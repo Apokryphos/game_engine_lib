@@ -85,7 +85,14 @@ void ModelManager::get_textures(std::vector<Texture>& textures) {
 }
 
 //  ----------------------------------------------------------------------------
-void ModelManager::unload() {
+void ModelManager::unload(VkDevice device) {
+    for (auto& pair : m_models) {
+        pair.second->unload();
+    }
     m_models.clear();
+
+    for (auto& pair : m_textures) {
+        destroy_texture(device, pair.second);
+    }
 }
 }

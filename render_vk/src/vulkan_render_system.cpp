@@ -740,10 +740,22 @@ void VulkanRenderSystem::shutdown() {
     //  Wait for operations to finish
     vkDeviceWaitIdle(m_device);
 
+    cancel_threads();
+
     destroy_frame_resources();
 
     destroy_swapchain();
 
+    vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.frame, nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.object, nullptr);
+
+    m_frame_uniform.destroy();
+    m_object_uniform.destroy();
+
+    //  Unload models
+    m_model_mgr->unload(m_device);
+
+    vkDestroyCommandPool(m_device, m_resource_command_pool, nullptr);
     vkDestroyDevice(m_device, nullptr);
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
 

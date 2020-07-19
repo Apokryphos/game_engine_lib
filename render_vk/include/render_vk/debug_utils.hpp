@@ -2,10 +2,11 @@
 
 #include "render_vk/vulkan.hpp"
 #include <array>
+#include <cstdint>
 
 namespace render_vk
 {
-inline float hex_color(u_int8_t value) {
+inline float hex_color(uint8_t value) {
     return value / 255.0f;
 }
 

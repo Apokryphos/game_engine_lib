@@ -47,6 +47,6 @@ public:
 
     VulkanModel* get_model(const AssetId id);
     void get_textures(std::vector<Texture>& textures);
-    void unload();
+    void unload(VkDevice device);
 };
 }

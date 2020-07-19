@@ -1,3 +1,4 @@
+#include "render_vk/debug_utils.hpp"
 #include "render_vk/depth.hpp"
 #include "render_vk/image_view.hpp"
 #include "render_vk/texture.hpp"
@@ -122,6 +123,27 @@ void create_depth_resources(
         depth_image.image,
         depth_image.view,
         depth_image.memory
+    );
+
+    set_debug_name(
+        device,
+        VK_OBJECT_TYPE_IMAGE,
+        depth_image.image,
+        "depth_image"
+    );
+
+    set_debug_name(
+        device,
+        VK_OBJECT_TYPE_IMAGE_VIEW,
+        depth_image.image,
+        "depth_image_view"
+    );
+
+    set_debug_name(
+        device,
+        VK_OBJECT_TYPE_DEVICE_MEMORY,
+        depth_image.memory,
+        "depth_image_memory"
     );
 }
 }
