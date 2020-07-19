@@ -214,7 +214,7 @@ static void init_entities(Game& game) {
     std::uniform_int_distribution<int> position_dist(-200, 200);
 
     std::set<glm::vec3> position_set;
-    while (position_set.size() < 9999) {
+    while (position_set.size() < 1000) {
         const glm::vec3 position = {
             position_dist(random.get_rng()) * 2,
             position_dist(random.get_rng()) * 2,

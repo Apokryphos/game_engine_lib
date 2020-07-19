@@ -11,6 +11,12 @@ DebugGuiSystemDebugPanel::DebugGuiSystemDebugPanel(DebugGuiSystem& debug_gui_sys
 
 //  ----------------------------------------------------------------------------
 void DebugGuiSystemDebugPanel::on_update(Game& game) {
+    #ifdef DEBUG
+    ImGui::Text("Debug Build");
+    #else
+    ImGui::Text("Release Build");
+    #endif
+
     ImGui::Text(
         "Average %.3f ms/frame (%.1f FPS)",
         1000.0f / ImGui::GetIO().Framerate,
