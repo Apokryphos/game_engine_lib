@@ -279,7 +279,9 @@ void record_primary_command_buffer(
     vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
     //  ImGui
+    begin_debug_marker(command_buffer, "ImGui", DEBUG_MARKER_COLOR_ORANGE);
     imgui_vulkan_render_frame(command_buffer);
+    end_debug_marker(command_buffer);
 
     //  End render pass
     vkCmdEndRenderPass(command_buffer);

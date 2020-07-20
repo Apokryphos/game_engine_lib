@@ -301,6 +301,26 @@ void VulkanRenderSystem::begin_frame() {
         UINT64_MAX
     );
 
+    //  Get next presentable swapchain image index
+    VkResult result = vkAcquireNextImageKHR(
+        m_device,
+        m_swapchain.swapchain,
+        UINT64_MAX,
+        frame.sync.image_acquired,
+        VK_NULL_HANDLE,
+        &m_image_index
+    );
+
+    //  Check if swapchain needs to be recreated
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        //  Surface changed and swapchain is no longer compatible
+        recreate_swapchain();
+        m_frame_status = FrameStatus::Discarded;
+        return;
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("Failed to acquire swapchain image.");
+    }
+
     m_frame_status = FrameStatus::Busy;
 }
 
@@ -463,28 +483,6 @@ void VulkanRenderSystem::draw_models(
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::end_frame() {
-    Frame& frame = m_frames.at(m_current_frame);
-
-    //  Get next presentable swapchain image index
-    VkResult result = vkAcquireNextImageKHR(
-        m_device,
-        m_swapchain.swapchain,
-        UINT64_MAX,
-        frame.sync.image_acquired,
-        VK_NULL_HANDLE,
-        &m_image_index
-    );
-
-    //  Check if swapchain needs to be recreated
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        //  Surface changed and swapchain is no longer compatible
-        recreate_swapchain();
-        m_frame_status = FrameStatus::Discarded;
-        return;
-    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        throw std::runtime_error("Failed to acquire swapchain image.");
-    }
-
     //  Wait for worker threads to complete
     while (m_frame_status == FrameStatus::Busy) {
         std::this_thread::sleep_for(std::chrono::microseconds(100));
@@ -494,6 +492,8 @@ void VulkanRenderSystem::end_frame() {
     if (m_frame_status != FrameStatus::Ready) {
         return;
     }
+
+    Frame& frame = m_frames.at(m_current_frame);
 
     //  Record primary command buffers
     record_primary_command_buffer(
@@ -540,7 +540,7 @@ void VulkanRenderSystem::end_frame() {
 
     //  Submit request to present image to swap chain
     begin_debug_marker(m_present_queue, "Present Frame", DEBUG_MARKER_COLOR_GREEN);
-    result = vkQueuePresentKHR(m_present_queue, &present_info);
+    VkResult result = vkQueuePresentKHR(m_present_queue, &present_info);
     end_debug_marker(m_present_queue);
 
     //  Recreate swapchain if needed
@@ -821,6 +821,8 @@ void VulkanRenderSystem::thread_draw_models(
         throw std::runtime_error("Failed to begin recording command buffer.");
     }
 
+    begin_debug_marker(command_buffer, "Draw Models", DEBUG_MARKER_COLOR_ORANGE);
+
     //  Bind pipeline
     vkCmdBindPipeline(
         command_buffer,
@@ -840,11 +842,8 @@ void VulkanRenderSystem::thread_draw_models(
         nullptr
     );
 
-    begin_debug_marker(command_buffer, "Draw Model (SECONDARY)", DEBUG_MARKER_COLOR_ORANGE);
-
     //  Keep track of model index because of dynamic buffer alignment
     size_t model_index = 0;
-
     for (const ModelBatch& batch : batches) {
         //  Get model
         VulkanModel* model = m_model_mgr->get_model(batch.model_id);
@@ -865,12 +864,14 @@ void VulkanRenderSystem::thread_draw_models(
             VK_INDEX_TYPE_UINT32
         );
 
+        const size_t dynamic_align = m_object_uniform.get_align();
+        const uint32_t index_count = model->get_index_count();
+
         //  Draw each object
-        for (int n = 0; n < batch.positions.size(); ++n) {
+        for (uint32_t n = 0; n < batch.positions.size(); ++n) {
             //  One dynamic offset per dynamic descriptor to offset into the ubo
             //  containing all model matrices
-            const size_t dynamic_align = m_object_uniform.get_align();
-            const uint32_t dynamic_offset = model_index * static_cast<uint32_t>(dynamic_align);
+            const uint32_t dynamic_offset = n * static_cast<uint32_t>(dynamic_align);
 
             //  Bind per-object descriptor set using the dynamic offset
             vkCmdBindDescriptorSets(
@@ -884,12 +885,10 @@ void VulkanRenderSystem::thread_draw_models(
                 &dynamic_offset
             );
 
-            ++model_index;
-
             //  Draw
             vkCmdDrawIndexed(
                 command_buffer,
-                static_cast<uint32_t>(model->get_index_count()),
+                index_count,
                 1,
                 0,
                 0,
@@ -898,11 +897,11 @@ void VulkanRenderSystem::thread_draw_models(
         }
     }
 
-    end_debug_marker(command_buffer);
-
     if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record secondary command buffer.");
     }
+
+    end_debug_marker(command_buffer);
 }
 
 //  ----------------------------------------------------------------------------
@@ -945,6 +944,13 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
 
         //  Process job
         ThreadFrame& frame = frames.at(m_current_frame);
+
+        vkResetCommandPool(
+            m_device,
+            frame.command.pool,
+            VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT
+        );
+
         switch (job.task_id) {
             case FrameTaskId::DrawModels:
                 thread_draw_models(

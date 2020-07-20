@@ -36,7 +36,7 @@ public:
         return m_index_buffer;
     }
 
-    inline u_int32_t get_index_count() const {
+    inline uint32_t get_index_count() const {
         return m_index_count;
     }
 
