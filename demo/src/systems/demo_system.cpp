@@ -33,29 +33,25 @@ void DemoSystem::batch_models(
 
     const size_t entity_count = entities.size();
 
-    std::map<uint32_t, ModelBatch> batches;
+    using Key = std::pair<uint32_t, uint32_t>;
+
+    std::map<Key, ModelBatch> batches;
 
     const PositionSystem& pos_sys = get_position_system(sys_mgr);
     for (size_t n = 0; n < entity_count; ++n) {
         const auto model_cmpnt = model_sys.get_component(entities[n]);
         const uint32_t model_id = model_sys.get_model_id(model_cmpnt);
-        ModelBatch& batch = batches[model_id];
+        const uint32_t texture_id = model_sys.get_texture_id(model_cmpnt);
+
+        ModelBatch& batch = batches[{model_id, texture_id}];
 
         batch.model_id = model_id;
+        batch.texture_id = texture_id;
 
         //  Get positions
         const auto pos_cmpnt = pos_sys.get_component(entities[n]);
         const glm::vec3 position = pos_sys.get_position(pos_cmpnt);
         batch.positions.push_back(position);
-    }
-
-    for (size_t n = 0; n < entity_count; ++n) {
-        const auto model_cmpnt = model_sys.get_component(entities[n]);
-        const uint32_t model_id = model_sys.get_model_id(model_cmpnt);
-        ModelBatch& batch = batches[model_id];
-
-        //  Get texture IDs
-        batch.texture_ids.push_back(model_sys.get_texture_id(model_cmpnt));
     }
 
     for (const auto& pair : batches) {

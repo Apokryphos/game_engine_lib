@@ -877,15 +877,23 @@ void VulkanRenderSystem::thread_draw_models(
             &dynamic_align
         );
 
+        //  Texture ID
+        vkCmdPushConstants(
+            command_buffer,
+            m_pipeline_layout,
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            sizeof(glm::mat4),
+            sizeof(uint32_t),
+            &batch.texture_id
+        );
+
         //  Draw each object
         for (uint32_t n = 0; n < batch.positions.size(); ++n) {
             //  One dynamic offset per dynamic descriptor to offset into the ubo
             //  containing all model matrices
             // const uint32_t dynamic_offset = n * dynamic_align;
 
-            ObjectUbo ubo{};
-            ubo.model = glm::translate(glm::mat4(1.0f), batch.positions[n]);
-            ubo.texture_index = batch.texture_ids[n];
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), batch.positions[n]);
 
             vkCmdPushConstants(
                 command_buffer,
@@ -893,16 +901,7 @@ void VulkanRenderSystem::thread_draw_models(
                 VK_SHADER_STAGE_VERTEX_BIT,
                 0,
                 sizeof(glm::mat4),
-                &ubo.model
-            );
-
-            vkCmdPushConstants(
-                command_buffer,
-                m_pipeline_layout,
-                VK_SHADER_STAGE_FRAGMENT_BIT,
-                sizeof(glm::mat4),
-                sizeof(uint32_t),
-                &ubo.texture_index
+                &model
             );
 
             //  Draw
@@ -1043,11 +1042,7 @@ void VulkanRenderSystem::thread_update_object_uniforms(
             batch.positions.end()
         );
 
-        texture_ids.insert(
-            texture_ids.end(),
-            batch.texture_ids.begin(),
-            batch.texture_ids.end()
-        );
+        texture_ids = std::vector<uint32_t>(positions.size(), batch.texture_id);
     }
 
     assert(positions.size() == texture_ids.size());
