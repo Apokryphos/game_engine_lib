@@ -207,7 +207,7 @@ static void init_entities(Game& game) {
     make_camera(game, camera, "camera", glm::vec3(1.0f), 10.0f);
 
     //  Texture ID distribution
-    std::uniform_int_distribution<int> texture_id_dist(0, 1);
+    std::uniform_int_distribution<int> texture_id_dist(0, 2);
 
     //  Position distribution
     Random& random = game.get_random();
@@ -278,6 +278,7 @@ void InitScreen::on_load(Game& game) {
     asset_mgr.load_model(renderer, "assets/models/model.obj");
     asset_mgr.load_texture(renderer, "assets/textures/model.png");
     asset_mgr.load_texture(renderer, "assets/textures/model2.png");
+    asset_mgr.load_texture(renderer, "assets/textures/model3.png");
 
     //  Next screen
     load_demo_screen(game);

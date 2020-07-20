@@ -59,7 +59,7 @@ void create_descriptor_pool(
     VkDevice device,
     VkDescriptorPool& descriptor_pool
 ) {
-    const uint32_t sampler_count = 2;
+    const uint32_t sampler_count = 3;
     const uint32_t max_sets = 2 + (sampler_count);
 
     std::array<VkDescriptorPoolSize, 3> pool_sizes{};
@@ -724,8 +724,6 @@ void VulkanRenderSystem::post_work(
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::recreate_swapchain() {
-    cancel_threads();
-
     //  Get window size
     int width;
     int height;
@@ -738,6 +736,10 @@ void VulkanRenderSystem::recreate_swapchain() {
     }
 
     vkDeviceWaitIdle(m_device);
+
+    cancel_threads();
+
+    destroy_frame_resources();
 
     //  Destroy all objects related to old swapchain
     destroy_swapchain();
@@ -927,6 +929,8 @@ void VulkanRenderSystem::thread_draw_models(
 void VulkanRenderSystem::thread_main(uint8_t thread_id) {
     log_debug("Thread %d started.", thread_id);
 
+    const std::string thread_name = "thread" + std::to_string(thread_id);
+
     std::vector<Texture> textures;
     m_model_mgr->get_textures(textures);
 
@@ -940,6 +944,20 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
             m_swapchain,
             m_depth_image,
             frame.command
+        );
+
+        set_debug_name(
+            m_device,
+            VK_OBJECT_TYPE_COMMAND_POOL,
+            frame.command.pool,
+            std::string(thread_name + "_command_pool").c_str()
+        );
+
+        set_debug_name(
+            m_device,
+            VK_OBJECT_TYPE_COMMAND_BUFFER,
+            frame.command.buffer,
+            std::string(thread_name + "_command_buffer").c_str()
         );
 
         create_descriptor_objects(
@@ -972,7 +990,7 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
 
         switch (job.task_id) {
             case FrameTaskId::DrawModels:
-                STOPWATCH.start("thread_draw_models");
+                STOPWATCH.start(thread_name+"_draw_models");
                 thread_draw_models(
                     job.view,
                     job.proj,
@@ -980,19 +998,19 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
                     frame.descriptor,
                     frame.command.buffer
                 );
-                STOPWATCH.stop("thread_draw_models");
+                STOPWATCH.stop(thread_name+"_draw_models");
                 break;
 
             case FrameTaskId::UpdateFrameUniforms:
-                STOPWATCH.start("thread_update_frame_uniforms");
+                STOPWATCH.start(thread_name+"_update_frame_uniforms");
                 thread_update_frame_uniforms(job.view, job.proj);
-                STOPWATCH.stop("thread_update_frame_uniforms");
+                STOPWATCH.stop(thread_name+"_update_frame_uniforms");
                 break;
 
             case FrameTaskId::UpdateObjectUniforms:
-                STOPWATCH.start("thread_update_object_uniforms");
+                STOPWATCH.start(thread_name+"_update_object_uniforms");
                 thread_update_object_uniforms(job.batches);
-                STOPWATCH.stop("thread_update_object_uniforms");
+                STOPWATCH.stop(thread_name+"_update_object_uniforms");
                 break;
         }
 

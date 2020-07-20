@@ -44,7 +44,7 @@ void create_object_descriptor_set_layout(
 
     VkDescriptorSetLayoutBinding sampler_layout_binding{};
     sampler_layout_binding.binding = 1;
-    sampler_layout_binding.descriptorCount = 2;
+    sampler_layout_binding.descriptorCount = 3;
     sampler_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     sampler_layout_binding.pImmutableSamplers = nullptr;
     sampler_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
