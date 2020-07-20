@@ -70,10 +70,7 @@ void DemoScreen::on_render(Game& game) {
         50.0f
     );
 
-    Window& window = engine.get_window();
-    renderer.begin_frame();
-
-    glm::mat4 world = glm::mat4(1);
+    renderer.update_frame_uniforms(view, proj);
 
     //  Build draw order
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
@@ -81,13 +78,7 @@ void DemoScreen::on_render(Game& game) {
     demo_sys.batch_models(game, model_batches);
 
     //  Draw entities
-    renderer.draw_models(
-        view,
-        proj,
-        model_batches
-    );
-
-    renderer.end_frame();
+    renderer.draw_models(model_batches);
 }
 
 //  ----------------------------------------------------------------------------

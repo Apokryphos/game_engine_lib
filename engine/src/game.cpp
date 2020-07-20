@@ -98,9 +98,14 @@ void Game::quit() {
 
 //  ----------------------------------------------------------------------------
 void Game::render() {
+    Renderer& renderer = m_engine->get_renderer();
+    renderer.begin_frame();
+
     //  Render screen
     ScreenManager& screen_mgr = m_engine->get_screen_manager();
     screen_mgr.render(*this);
+
+    renderer.end_frame();
 }
 
 //  ----------------------------------------------------------------------------

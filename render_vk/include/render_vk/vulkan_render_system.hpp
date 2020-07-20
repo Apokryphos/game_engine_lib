@@ -26,7 +26,8 @@ public:
     enum class FrameTaskId
     {
         DrawModels,
-        UpdateUniform,
+        UpdateFrameUniforms,
+        UpdateObjectUniforms,
     };
 
     struct FrameDescriptorObjects
@@ -93,6 +94,42 @@ public:
         Discarded,
     };
 
+    class RenderTasks
+    {
+        struct TaskResults
+        {
+            uint32_t count;
+            std::vector<VkCommandBuffer> command_buffers;
+        };
+
+        std::map<FrameTaskId, TaskResults> m_results;
+
+    public:
+        void add_results(FrameTaskId task_id, VkCommandBuffer command_buffer) {
+            TaskResults& results = m_results[task_id];
+            ++results.count;
+            results.command_buffers.push_back(command_buffer);
+        }
+
+        void clear() {
+            m_results.clear();
+        }
+
+        const std::vector<VkCommandBuffer>& get_command_buffers(
+            FrameTaskId task_id
+        ) const {
+            return m_results.at(task_id).command_buffers;
+        }
+
+        uint32_t get_count(FrameTaskId task_id) const {
+            if (m_results.find(task_id) != m_results.end()) {
+                return m_results.at(task_id).count;
+            }
+
+            return 0;
+        }
+    };
+
 private:
     //  Status of current frame.
     FrameStatus m_frame_status          = FrameStatus::None;
@@ -153,9 +190,9 @@ private:
     //  Job queue
     std::queue<Job> m_jobs;
 
-    std::mutex m_work_mutex;
+    std::mutex m_tasks_mutex;
     //  Worker thread secondary commands output
-    std::map<FrameTaskId, VkCommandBuffer> m_work;
+    RenderTasks m_tasks;
 
     std::unique_ptr<ModelManager> m_model_mgr;
 
@@ -187,16 +224,12 @@ private:
     );
     //  Worker thread main function.
     void thread_main(uint8_t thread_id);
-    void thread_update_uniform(
+    void thread_update_frame_uniforms(
         const glm::mat4& view,
-        const glm::mat4& proj,
-        const std::vector<render::ModelBatch>& batches
+        const glm::mat4& proj
     );
-    void update_uniform_buffers(
-        glm::mat4 view,
-        glm::mat4 proj,
-        const std::vector<glm::vec3>& positions,
-        const std::vector<uint32_t>& texture_ids
+    void thread_update_object_uniforms(
+        const std::vector<render::ModelBatch>& batches
     );
 
 public:
@@ -205,8 +238,6 @@ public:
     //  Starts a new frame.
     virtual void begin_frame() override;
     virtual void draw_models(
-        const glm::mat4& view,
-        const glm::mat4& proj,
         std::vector<render::ModelBatch>& batches
     ) override;
     //  Presents the completed frame.
@@ -229,5 +260,9 @@ public:
     ) override;
     //  Framebuffer was resized
     virtual void resize() override;
+    virtual void update_frame_uniforms(
+        const glm::mat4& view,
+        const glm::mat4& proj
+    ) override;
 };
 }

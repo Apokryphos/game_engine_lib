@@ -27,8 +27,6 @@ public:
     Renderer& operator=(const Renderer&) = delete;
     virtual void begin_frame() = 0;
     virtual void draw_models(
-        const glm::mat4& view,
-        const glm::mat4& proj,
         std::vector<ModelBatch>& batches
     ) = 0;
     virtual void end_frame() = 0;
@@ -49,5 +47,9 @@ public:
     ) = 0;
     virtual void resize() = 0;
     virtual void shutdown() = 0;
+    virtual void update_frame_uniforms(
+        const glm::mat4& view,
+        const glm::mat4& proj
+    ) = 0;
 };
 }

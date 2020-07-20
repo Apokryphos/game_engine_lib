@@ -1,4 +1,5 @@
 #include "common/log.hpp"
+#include "common/stopwatch.hpp"
 #include "platform/glfw_init.hpp"
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/command_pool.hpp"
@@ -26,6 +27,7 @@ using namespace render;
 namespace render_vk
 {
 static const uint32_t MAX_OBJECTS = 10000;
+static Stopwatch STOPWATCH;
 
 //  ----------------------------------------------------------------------------
 static void create_sync_objects(
@@ -274,6 +276,8 @@ VulkanRenderSystem::~VulkanRenderSystem() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::begin_frame() {
+    STOPWATCH.start("begin_frame");
+
     //  Check that textures exist
     std::vector<Texture> textures;
     m_model_mgr->get_textures(textures);
@@ -322,6 +326,8 @@ void VulkanRenderSystem::begin_frame() {
     }
 
     m_frame_status = FrameStatus::Busy;
+
+    STOPWATCH.stop("begin_frame");
 }
 
 //  ----------------------------------------------------------------------------
@@ -458,23 +464,12 @@ void VulkanRenderSystem::destroy_swapchain() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::draw_models(
-    const glm::mat4& view,
-    const glm::mat4& proj,
     std::vector<ModelBatch>& batches
 ) {
     //  Draw models
     Job job{};
     job.task_id = FrameTaskId::DrawModels;
-    job.view = view;
-    job.proj = proj;
     job.batches = batches;
-    {
-        std::lock_guard<std::mutex> lock(m_jobs_mutex);
-        m_jobs.push(job);
-    }
-
-    //  Update uniform data
-    job.task_id = FrameTaskId::UpdateUniform;
     {
         std::lock_guard<std::mutex> lock(m_jobs_mutex);
         m_jobs.push(job);
@@ -502,7 +497,7 @@ void VulkanRenderSystem::end_frame() {
         m_graphics_pipeline,
         m_swapchain.extent,
         m_swapchain.framebuffers.at(m_image_index),
-        m_work.at(FrameTaskId::DrawModels),
+        m_tasks.get_command_buffers(FrameTaskId::DrawModels).at(0),
         frame.command.buffer
     );
 
@@ -524,9 +519,11 @@ void VulkanRenderSystem::end_frame() {
     vkResetFences(m_device, 1, &frame.sync.frame_complete);
 
     //  Submit draw commands
+    STOPWATCH.start("queue_submit");
     if (m_graphics_queue.submit(1, submit_info, frame.sync.frame_complete) != VK_SUCCESS) {
         throw std::runtime_error("Failed to submit draw command buffer.");
     }
+    STOPWATCH.stop("queue_submit");
 
     //  Presentation
     VkPresentInfoKHR present_info{};
@@ -540,7 +537,9 @@ void VulkanRenderSystem::end_frame() {
 
     //  Submit request to present image to swap chain
     begin_debug_marker(m_present_queue, "Present Frame", DEBUG_MARKER_COLOR_GREEN);
+    STOPWATCH.start("queue_present");
     VkResult result = vkQueuePresentKHR(m_present_queue, &present_info);
+    STOPWATCH.stop("queue_present");
     end_debug_marker(m_present_queue);
 
     //  Recreate swapchain if needed
@@ -557,7 +556,7 @@ void VulkanRenderSystem::end_frame() {
     //  Advance frame counter
     m_current_frame = (m_current_frame + 1) % m_frame_count;
 
-    m_work.clear();
+    m_tasks.clear();
 }
 
 //  ----------------------------------------------------------------------------
@@ -712,11 +711,12 @@ void VulkanRenderSystem::post_work(
     FrameTaskId task_id,
     VkCommandBuffer command_buffer
 ) {
-    std::lock_guard<std::mutex> lock(m_work_mutex);
-    m_work[task_id] = command_buffer;
+    std::lock_guard<std::mutex> lock(m_tasks_mutex);
 
-    if (m_work.count(FrameTaskId::DrawModels) &&
-        m_work.count(FrameTaskId::UpdateUniform)
+    m_tasks.add_results(task_id, command_buffer);
+
+    if (m_tasks.get_count(FrameTaskId::DrawModels) &&
+        m_tasks.get_count(FrameTaskId::UpdateFrameUniforms)
     ) {
         m_frame_status = FrameStatus::Ready;
     }
@@ -843,7 +843,6 @@ void VulkanRenderSystem::thread_draw_models(
     );
 
     //  Keep track of model index because of dynamic buffer alignment
-    size_t model_index = 0;
     for (const ModelBatch& batch : batches) {
         //  Get model
         VulkanModel* model = m_model_mgr->get_model(batch.model_id);
@@ -864,25 +863,46 @@ void VulkanRenderSystem::thread_draw_models(
             VK_INDEX_TYPE_UINT32
         );
 
-        const size_t dynamic_align = m_object_uniform.get_align();
+        const uint32_t dynamic_align = static_cast<uint32_t>(m_object_uniform.get_align());
         const uint32_t index_count = model->get_index_count();
+
+        vkCmdBindDescriptorSets(
+            command_buffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_pipeline_layout,
+            1,
+            1,
+            &descriptor.object_set,
+            1,
+            &dynamic_align
+        );
 
         //  Draw each object
         for (uint32_t n = 0; n < batch.positions.size(); ++n) {
             //  One dynamic offset per dynamic descriptor to offset into the ubo
             //  containing all model matrices
-            const uint32_t dynamic_offset = n * static_cast<uint32_t>(dynamic_align);
+            // const uint32_t dynamic_offset = n * dynamic_align;
 
-            //  Bind per-object descriptor set using the dynamic offset
-            vkCmdBindDescriptorSets(
+            ObjectUbo ubo{};
+            ubo.model = glm::translate(glm::mat4(1.0f), batch.positions[n]);
+            ubo.texture_index = batch.texture_ids[n];
+
+            vkCmdPushConstants(
                 command_buffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
                 m_pipeline_layout,
-                1,
-                1,
-                &descriptor.object_set,
-                1,
-                &dynamic_offset
+                VK_SHADER_STAGE_VERTEX_BIT,
+                0,
+                sizeof(glm::mat4),
+                &ubo.model
+            );
+
+            vkCmdPushConstants(
+                command_buffer,
+                m_pipeline_layout,
+                VK_SHADER_STAGE_FRAGMENT_BIT,
+                sizeof(glm::mat4),
+                sizeof(uint32_t),
+                &ubo.texture_index
             );
 
             //  Draw
@@ -892,7 +912,7 @@ void VulkanRenderSystem::thread_draw_models(
                 1,
                 0,
                 0,
-                0
+                1
             );
         }
     }
@@ -953,6 +973,7 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
 
         switch (job.task_id) {
             case FrameTaskId::DrawModels:
+                STOPWATCH.start("thread_draw_models");
                 thread_draw_models(
                     job.view,
                     job.proj,
@@ -960,14 +981,19 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
                     frame.descriptor,
                     frame.command.buffer
                 );
+                STOPWATCH.stop("thread_draw_models");
                 break;
 
-            case FrameTaskId::UpdateUniform:
-                thread_update_uniform(
-                    job.view,
-                    job.proj,
-                    job.batches
-                );
+            case FrameTaskId::UpdateFrameUniforms:
+                STOPWATCH.start("thread_update_frame_uniforms");
+                thread_update_frame_uniforms(job.view, job.proj);
+                STOPWATCH.stop("thread_update_frame_uniforms");
+                break;
+
+            case FrameTaskId::UpdateObjectUniforms:
+                STOPWATCH.start("thread_update_object_uniforms");
+                thread_update_object_uniforms(job.batches);
+                STOPWATCH.stop("thread_update_object_uniforms");
                 break;
         }
 
@@ -987,10 +1013,25 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanRenderSystem::thread_update_uniform(
+void VulkanRenderSystem::thread_update_frame_uniforms(
     const glm::mat4& view,
-    const glm::mat4& proj,
-    const std::vector<ModelBatch>& batches
+    const glm::mat4& proj
+) {
+    //  Update frame UBO
+    FrameUbo frame_ubo{};
+    frame_ubo.view = view;
+    frame_ubo.proj = proj;
+
+    //  GLM (OpenGL) uses inverted Y clip coordinate
+    frame_ubo.proj[1][1] *= -1;
+
+    //  Copy frame UBO struct to uniform buffer
+    m_frame_uniform.copy(frame_ubo);
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanRenderSystem::thread_update_object_uniforms(
+    const std::vector<render::ModelBatch>& batches
 ) {
     //   Build vectors for uniform buffers
     std::vector<glm::vec3> positions;
@@ -1008,30 +1049,9 @@ void VulkanRenderSystem::thread_update_uniform(
             batch.texture_ids.end()
         );
     }
-    update_uniform_buffers(view, proj, positions, texture_ids);
-}
 
-//  ----------------------------------------------------------------------------
-void VulkanRenderSystem::update_uniform_buffers(
-    glm::mat4 view,
-    glm::mat4 proj,
-    const std::vector<glm::vec3>& positions,
-    const std::vector<uint32_t>& texture_ids
-) {
     assert(positions.size() == texture_ids.size());
 
-    //  Update frame UBO
-    FrameUbo frame_ubo{};
-    frame_ubo.view = view;
-    frame_ubo.proj = proj;
-
-    //  GLM (OpenGL) uses inverted Y clip coordinate
-    frame_ubo.proj[1][1] *= -1;
-
-    //  Copy frame UBO struct to uniform buffer
-    m_frame_uniform.copy(frame_ubo);
-
-    //  Update all UBO structs once per frame
     const size_t object_count = positions.size();
     assert(object_count > 0);
 
@@ -1043,5 +1063,22 @@ void VulkanRenderSystem::update_uniform_buffers(
 
     //  Copy object UBO structs to dynamic uniform buffer
     m_object_uniform.copy(data);
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanRenderSystem::update_frame_uniforms(
+    const glm::mat4& view,
+    const glm::mat4& proj
+) {
+    //  Update uniform data
+    Job job{};
+    job.task_id = FrameTaskId::UpdateFrameUniforms;
+    job.view = view;
+    job.proj = proj;
+
+    {
+        std::lock_guard<std::mutex> lock(m_jobs_mutex);
+        m_jobs.push(job);
+    }
 }
 }

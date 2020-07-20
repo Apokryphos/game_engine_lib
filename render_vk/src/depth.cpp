@@ -135,7 +135,7 @@ void create_depth_resources(
     set_debug_name(
         device,
         VK_OBJECT_TYPE_IMAGE_VIEW,
-        depth_image.image,
+        depth_image.view,
         "depth_image_view"
     );
 

@@ -1,5 +1,6 @@
 #include "common/log.hpp"
 #include "render_vk/descriptor_set_layout.hpp"
+#include "render_vk/ubo.hpp"
 #include "render_vk/vertex.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
@@ -198,13 +199,23 @@ void create_graphics_pipeline(
         descriptor_set_layouts.object,
     };
 
+    //  Push constants
+    std::array<VkPushConstantRange, 2> push_constant_range;
+    push_constant_range[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    push_constant_range[0].offset = 0;
+    push_constant_range[0].size = sizeof(glm::mat4);
+
+    push_constant_range[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    push_constant_range[1].offset = sizeof(glm::mat4);
+    push_constant_range[1].size = sizeof(uint32_t);
+
     //  Pipeline layout
     VkPipelineLayoutCreateInfo pipeline_layout_info{};
     pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipeline_layout_info.setLayoutCount = static_cast<uint32_t>(set_layouts.size());
     pipeline_layout_info.pSetLayouts = &set_layouts[0];
-    pipeline_layout_info.pushConstantRangeCount = 0; // Optional
-    pipeline_layout_info.pPushConstantRanges = nullptr; // Optional
+    pipeline_layout_info.pushConstantRangeCount = static_cast<uint32_t>(push_constant_range.size());
+    pipeline_layout_info.pPushConstantRanges = push_constant_range.data();
 
     if (vkCreatePipelineLayout(
         device,
