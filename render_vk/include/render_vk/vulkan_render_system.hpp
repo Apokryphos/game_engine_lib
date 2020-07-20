@@ -216,8 +216,6 @@ private:
     //  Starts worker threads.
     void start_threads();
     void thread_draw_models(
-        const glm::mat4 view,
-        const glm::mat4 proj,
         const std::vector<render::ModelBatch>& batches,
         const FrameDescriptorObjects& descriptor,
         VkCommandBuffer command_buffer

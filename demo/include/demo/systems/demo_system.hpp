@@ -23,6 +23,8 @@ public:
     DemoSystem();
     void batch_models(
         engine::Game& game,
+        glm::mat4 view,
+        glm::mat4 proj,
         std::vector<render::ModelBatch>& batches
     );
 };

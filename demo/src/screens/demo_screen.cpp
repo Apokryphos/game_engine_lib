@@ -67,7 +67,7 @@ void DemoScreen::on_render(Game& game) {
         glm::radians(90.0f),
         aspect_ratio,
         0.1f,
-        50.0f
+        256.0f
     );
 
     renderer.update_frame_uniforms(view, proj);
@@ -75,7 +75,7 @@ void DemoScreen::on_render(Game& game) {
     //  Build draw order
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
     std::vector<ModelBatch> model_batches;
-    demo_sys.batch_models(game, model_batches);
+    demo_sys.batch_models(game, view, proj, model_batches);
 
     //  Draw entities
     renderer.draw_models(model_batches);

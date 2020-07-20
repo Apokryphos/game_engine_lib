@@ -801,14 +801,10 @@ void VulkanRenderSystem::start_threads() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::thread_draw_models(
-    const glm::mat4 view,
-    const glm::mat4 proj,
     const std::vector<ModelBatch>& batches,
     const FrameDescriptorObjects& descriptor,
     VkCommandBuffer command_buffer
 ) {
-    assert(!batches.empty());
-
     VkCommandBufferInheritanceInfo inherit_info{};
     inherit_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
     inherit_info.renderPass = m_render_pass;
@@ -819,11 +815,19 @@ void VulkanRenderSystem::thread_draw_models(
     begin_info.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
     begin_info.pInheritanceInfo = &inherit_info;
 
+    begin_debug_marker(command_buffer, "Draw Models", DEBUG_MARKER_COLOR_ORANGE);
     if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
         throw std::runtime_error("Failed to begin recording command buffer.");
     }
 
-    begin_debug_marker(command_buffer, "Draw Models", DEBUG_MARKER_COLOR_ORANGE);
+    //  Check if batches are empty
+    if (batches.empty()) {
+        if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to record secondary command buffer.");
+        }
+        end_debug_marker(command_buffer);
+        return;
+    }
 
     //  Bind pipeline
     vkCmdBindPipeline(
@@ -992,8 +996,6 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
             case FrameTaskId::DrawModels:
                 STOPWATCH.start(thread_name+"_draw_models");
                 thread_draw_models(
-                    job.view,
-                    job.proj,
                     job.batches,
                     frame.descriptor,
                     frame.command.buffer
