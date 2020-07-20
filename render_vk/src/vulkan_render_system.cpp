@@ -462,32 +462,23 @@ void VulkanRenderSystem::draw_models(
     const glm::mat4& proj,
     std::vector<ModelBatch>& batches
 ) {
+    //  Draw models
     Job job{};
     job.task_id = FrameTaskId::DrawModels;
     job.view = view;
     job.proj = proj;
     job.batches = batches;
-
-    std::lock_guard<std::mutex> lock(m_jobs_mutex);
-    m_jobs.push(job);
-
-        //   Build vectors for uniform buffers
-    std::vector<glm::vec3> positions;
-    std::vector<uint32_t> texture_ids;
-    for (const ModelBatch& batch : batches) {
-        positions.insert(
-            positions.end(),
-            batch.positions.begin(),
-            batch.positions.end()
-        );
-
-        texture_ids.insert(
-            texture_ids.end(),
-            batch.texture_ids.begin(),
-            batch.texture_ids.end()
-        );
+    {
+        std::lock_guard<std::mutex> lock(m_jobs_mutex);
+        m_jobs.push(job);
     }
-    update_uniform_buffers(view, proj, positions, texture_ids);
+
+    //  Update uniform data
+    job.task_id = FrameTaskId::UpdateUniform;
+    {
+        std::lock_guard<std::mutex> lock(m_jobs_mutex);
+        m_jobs.push(job);
+    }
 }
 
 //  ----------------------------------------------------------------------------
@@ -565,6 +556,8 @@ void VulkanRenderSystem::end_frame() {
 
     //  Advance frame counter
     m_current_frame = (m_current_frame + 1) % m_frame_count;
+
+    m_work.clear();
 }
 
 //  ----------------------------------------------------------------------------
@@ -722,7 +715,11 @@ void VulkanRenderSystem::post_work(
     std::lock_guard<std::mutex> lock(m_work_mutex);
     m_work[task_id] = command_buffer;
 
-    m_frame_status = FrameStatus::Ready;
+    if (m_work.count(FrameTaskId::DrawModels) &&
+        m_work.count(FrameTaskId::UpdateUniform)
+    ) {
+        m_frame_status = FrameStatus::Ready;
+    }
 }
 
 //  ----------------------------------------------------------------------------
@@ -958,6 +955,14 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
                     frame.command.buffer
                 );
                 break;
+
+            case FrameTaskId::UpdateUniform:
+                thread_update_uniform(
+                    job.view,
+                    job.proj,
+                    job.batches
+                );
+                break;
         }
 
         //  Post completed work
@@ -973,6 +978,31 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
     }
 
     log_debug("Thread %d exited.", thread_id);
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanRenderSystem::thread_update_uniform(
+    const glm::mat4& view,
+    const glm::mat4& proj,
+    const std::vector<ModelBatch>& batches
+) {
+    //   Build vectors for uniform buffers
+    std::vector<glm::vec3> positions;
+    std::vector<uint32_t> texture_ids;
+    for (const ModelBatch& batch : batches) {
+        positions.insert(
+            positions.end(),
+            batch.positions.begin(),
+            batch.positions.end()
+        );
+
+        texture_ids.insert(
+            texture_ids.end(),
+            batch.texture_ids.begin(),
+            batch.texture_ids.end()
+        );
+    }
+    update_uniform_buffers(view, proj, positions, texture_ids);
 }
 
 //  ----------------------------------------------------------------------------

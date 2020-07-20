@@ -26,6 +26,7 @@ public:
     enum class FrameTaskId
     {
         DrawModels,
+        UpdateUniform,
     };
 
     struct FrameDescriptorObjects
@@ -186,6 +187,11 @@ private:
     );
     //  Worker thread main function.
     void thread_main(uint8_t thread_id);
+    void thread_update_uniform(
+        const glm::mat4& view,
+        const glm::mat4& proj,
+        const std::vector<render::ModelBatch>& batches
+    );
     void update_uniform_buffers(
         glm::mat4 view,
         glm::mat4 proj,
