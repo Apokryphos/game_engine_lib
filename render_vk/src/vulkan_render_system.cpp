@@ -301,26 +301,6 @@ void VulkanRenderSystem::begin_frame() {
         UINT64_MAX
     );
 
-    //  Get next presentable swapchain image index
-    VkResult result = vkAcquireNextImageKHR(
-        m_device,
-        m_swapchain.swapchain,
-        UINT64_MAX,
-        frame.sync.image_acquired,
-        VK_NULL_HANDLE,
-        &m_image_index
-    );
-
-    //  Check if swapchain needs to be recreated
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        //  Surface changed and swapchain is no longer compatible
-        recreate_swapchain();
-        m_frame_status = FrameStatus::Discarded;
-        return;
-    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        throw std::runtime_error("Failed to acquire swapchain image.");
-    }
-
     m_frame_status = FrameStatus::Busy;
 }
 
@@ -483,6 +463,28 @@ void VulkanRenderSystem::draw_models(
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::end_frame() {
+    Frame& frame = m_frames.at(m_current_frame);
+
+    //  Get next presentable swapchain image index
+    VkResult result = vkAcquireNextImageKHR(
+        m_device,
+        m_swapchain.swapchain,
+        UINT64_MAX,
+        frame.sync.image_acquired,
+        VK_NULL_HANDLE,
+        &m_image_index
+    );
+
+    //  Check if swapchain needs to be recreated
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        //  Surface changed and swapchain is no longer compatible
+        recreate_swapchain();
+        m_frame_status = FrameStatus::Discarded;
+        return;
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("Failed to acquire swapchain image.");
+    }
+
     //  Wait for worker threads to complete
     while (m_frame_status == FrameStatus::Busy) {
         std::this_thread::sleep_for(std::chrono::microseconds(100));
@@ -492,8 +494,6 @@ void VulkanRenderSystem::end_frame() {
     if (m_frame_status != FrameStatus::Ready) {
         return;
     }
-
-    Frame& frame = m_frames.at(m_current_frame);
 
     //  Record primary command buffers
     record_primary_command_buffer(
@@ -540,7 +540,7 @@ void VulkanRenderSystem::end_frame() {
 
     //  Submit request to present image to swap chain
     begin_debug_marker(m_present_queue, "Present Frame", DEBUG_MARKER_COLOR_GREEN);
-    VkResult result = vkQueuePresentKHR(m_present_queue, &present_info);
+    result = vkQueuePresentKHR(m_present_queue, &present_info);
     end_debug_marker(m_present_queue);
 
     //  Recreate swapchain if needed
@@ -939,7 +939,7 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
         Job job{};
         //  Sleep until job is available
         if (!get_job(job)) {
-            std::this_thread::sleep_for(std::chrono::microseconds(500));
+            std::this_thread::sleep_for(std::chrono::microseconds(250));
             continue;
         }
 
