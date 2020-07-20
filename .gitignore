@@ -5,4 +5,5 @@ extlibs/*
 
 !assets/config/
 !assets/shaders/
+!assets/CMakeLists.txt
 !extlibs/CMakeLists.txt
