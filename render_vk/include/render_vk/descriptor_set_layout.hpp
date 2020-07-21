@@ -13,20 +13,14 @@ struct DescriptorSetLayouts
 
     //  Per-object (model, texture)
     VkDescriptorSetLayout object = VK_NULL_HANDLE;
+
+    //  Textures
+    VkDescriptorSetLayout texture_sampler = VK_NULL_HANDLE;
 };
 
-void create_frame_descriptor_set_layout(
-    VkDevice device,
-    VkDescriptorSetLayout& layout
-);
-
-void create_object_descriptor_set_layout(
-    VkDevice device,
-    VkDescriptorSetLayout& layout
-);
-
 void create_descriptor_set_layouts(
-    VkDevice device,
+    const VkDevice device,
+    const uint32_t sampler_count,
     DescriptorSetLayouts& layouts
 );
 }

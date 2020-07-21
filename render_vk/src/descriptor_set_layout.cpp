@@ -9,28 +9,6 @@ using namespace common;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-void create_frame_descriptor_set_layout(
-    VkDevice device,
-    VkDescriptorSetLayout& layout
-) {
-    VkDescriptorSetLayoutBinding frame_ubo_layout_binding{};
-    frame_ubo_layout_binding.binding = 0;
-    frame_ubo_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    frame_ubo_layout_binding.descriptorCount = 1;
-    frame_ubo_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    frame_ubo_layout_binding.pImmutableSamplers = nullptr;
-
-    VkDescriptorSetLayoutCreateInfo layout_info{};
-    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layout_info.bindingCount = 1;
-    layout_info.pBindings = &frame_ubo_layout_binding;
-
-    if (vkCreateDescriptorSetLayout(device, &layout_info, nullptr, &layout) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create descriptor set layout.");
-    }
-}
-
-//  ----------------------------------------------------------------------------
 void create_object_descriptor_set_layout(
     VkDevice device,
     VkDescriptorSetLayout& layout
@@ -65,53 +43,79 @@ void create_object_descriptor_set_layout(
 }
 
 //  ----------------------------------------------------------------------------
-void create_descriptor_set_layouts(
+void make_frame_descriptor_set_layout_binding(
+    const uint32_t binding,
+    VkDescriptorSetLayoutBinding& layout_binding
+) {
+    layout_binding.binding = binding;
+    layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    layout_binding.descriptorCount = 1;
+    layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    layout_binding.pImmutableSamplers = nullptr;
+}
+
+//  ----------------------------------------------------------------------------
+void make_sampler_descriptor_set_layout_binding(
+    const uint32_t binding,
+    const uint32_t sampler_count,
+    VkDescriptorSetLayoutBinding& layout_binding
+) {
+    layout_binding.binding = binding;
+    layout_binding.descriptorCount = sampler_count;
+    layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    layout_binding.pImmutableSamplers = nullptr;
+    layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+}
+
+//  ----------------------------------------------------------------------------
+void create_descriptor_set_layout(
+    const VkDevice device,
+    const std::vector<VkDescriptorSetLayoutBinding>& bindings,
+    VkDescriptorSetLayout& layout
+) {
+    VkDescriptorSetLayoutCreateInfo layout_info{};
+    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layout_info.bindingCount = static_cast<uint32_t>(bindings.size());
+    layout_info.pBindings = bindings.data();
+
+    if (vkCreateDescriptorSetLayout(device, &layout_info, nullptr, &layout) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create descriptor set layout.");
+    }
+}
+
+//  ----------------------------------------------------------------------------
+void create_frame_descriptor_set_layout(
     VkDevice device,
+    VkDescriptorSetLayout& layout
+) {
+    VkDescriptorSetLayoutBinding frame_ubo_layout_binding{};
+    make_frame_descriptor_set_layout_binding(0, frame_ubo_layout_binding);
+    create_descriptor_set_layout(device, { frame_ubo_layout_binding }, layout);
+}
+
+//  ----------------------------------------------------------------------------
+void create_sampler_descriptor_set_layout(
+    const VkDevice device,
+    const uint32_t sampler_count,
+    VkDescriptorSetLayout& layout
+) {
+    VkDescriptorSetLayoutBinding sampler_layout_binding{};
+    make_sampler_descriptor_set_layout_binding(
+        0,
+        sampler_count,
+        sampler_layout_binding
+    );
+    create_descriptor_set_layout(device, { sampler_layout_binding }, layout);
+}
+
+//  ----------------------------------------------------------------------------
+void create_descriptor_set_layouts(
+    const VkDevice device,
+    const uint32_t sampler_count,
     DescriptorSetLayouts& layouts
 ) {
     create_frame_descriptor_set_layout(device, layouts.frame);
     create_object_descriptor_set_layout(device, layouts.object);
+    create_sampler_descriptor_set_layout(device, sampler_count, layouts.texture_sampler);
 }
-
-//  ----------------------------------------------------------------------------
-// void create_descriptor_set_layout(
-//     VkDevice device,
-//     VkDescriptorSetLayout& layout
-// ) {
-//     VkDescriptorSetLayoutBinding frame_ubo_layout_binding{};
-//     frame_ubo_layout_binding.binding = 0;
-//     frame_ubo_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-//     frame_ubo_layout_binding.descriptorCount = 1;
-//     frame_ubo_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-//     frame_ubo_layout_binding.pImmutableSamplers = nullptr;
-
-//     VkDescriptorSetLayoutBinding object_ubo_layout_binding{};
-//     object_ubo_layout_binding.binding = 1;
-//     object_ubo_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-//     object_ubo_layout_binding.descriptorCount = 1;
-//     object_ubo_layout_binding.pImmutableSamplers = nullptr;
-//     object_ubo_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-
-//     VkDescriptorSetLayoutBinding sampler_layout_binding{};
-//     sampler_layout_binding.binding = 2;
-//     sampler_layout_binding.descriptorCount = 2;
-//     sampler_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-//     sampler_layout_binding.pImmutableSamplers = nullptr;
-//     sampler_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-//     std::array<VkDescriptorSetLayoutBinding, 3> bindings = {
-//         frame_ubo_layout_binding,
-//         object_ubo_layout_binding,
-//         sampler_layout_binding,
-//     };
-
-//     VkDescriptorSetLayoutCreateInfo layout_info{};
-//     layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-//     layout_info.bindingCount = static_cast<uint32_t>(bindings.size());
-//     layout_info.pBindings = bindings.data();
-
-//     if (vkCreateDescriptorSetLayout(device, &layout_info, nullptr, &layout) != VK_SUCCESS) {
-//         throw std::runtime_error("Failed to create descriptor set layout.");
-//     }
-// }
 }

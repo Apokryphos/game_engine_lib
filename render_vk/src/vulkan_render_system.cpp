@@ -27,6 +27,7 @@ using namespace render;
 namespace render_vk
 {
 static const uint32_t MAX_OBJECTS = 10000;
+static const uint32_t MAX_TEXTURES = 4096;
 static Stopwatch STOPWATCH;
 
 //  ----------------------------------------------------------------------------
@@ -660,7 +661,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     m_frame_uniform.create(m_physical_device, m_device);
     m_object_uniform.create(m_physical_device, m_device);
 
-    create_descriptor_set_layouts(m_device, m_descriptor_set_layouts);
+    create_descriptor_set_layouts(m_device, MAX_TEXTURES, m_descriptor_set_layouts);
 
     create_swapchain_objects();
 
@@ -773,6 +774,7 @@ void VulkanRenderSystem::shutdown() {
 
     vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.frame, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.object, nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.texture_sampler, nullptr);
 
     m_frame_uniform.destroy();
     m_object_uniform.destroy();
