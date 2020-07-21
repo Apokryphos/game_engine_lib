@@ -10,7 +10,8 @@ namespace render_vk
 struct DescriptorSets
 {
     std::vector<VkDescriptorSet> frame_sets;
-    std::vector<VkDescriptorSet> object_sets;
+    // std::vector<VkDescriptorSet> object_sets;
+    std::vector<VkDescriptorSet> texture_sets;
     const static uint32_t SET_COUNT = 2;
 };
 

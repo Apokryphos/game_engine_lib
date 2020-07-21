@@ -105,7 +105,28 @@ void create_sampler_descriptor_set_layout(
         sampler_count,
         sampler_layout_binding
     );
-    create_descriptor_set_layout(device, { sampler_layout_binding }, layout);
+
+    VkDescriptorBindingFlagsEXT bind_flag = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT;
+
+    VkDescriptorSetLayoutBindingFlagsCreateInfoEXT extended_info{};
+    extended_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT;
+    extended_info.pNext = nullptr;
+    extended_info.bindingCount = 1u;
+    extended_info.pBindingFlags = &bind_flag;
+
+    std::array<VkDescriptorSetLayoutBinding, 1> bindings {
+        sampler_layout_binding
+    };
+
+    VkDescriptorSetLayoutCreateInfo layout_info{};
+    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layout_info.bindingCount = static_cast<uint32_t>(bindings.size());
+    layout_info.pBindings = bindings.data();
+    layout_info.pNext = &extended_info;
+
+    if (vkCreateDescriptorSetLayout(device, &layout_info, nullptr, &layout) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create descriptor set layout.");
+    }
 }
 
 //  ----------------------------------------------------------------------------
@@ -115,7 +136,7 @@ void create_descriptor_set_layouts(
     DescriptorSetLayouts& layouts
 ) {
     create_frame_descriptor_set_layout(device, layouts.frame);
-    create_object_descriptor_set_layout(device, layouts.object);
+    // create_object_descriptor_set_layout(device, layouts.object);
     create_sampler_descriptor_set_layout(device, sampler_count, layouts.texture_sampler);
 }
 }

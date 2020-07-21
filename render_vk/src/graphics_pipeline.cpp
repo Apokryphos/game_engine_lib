@@ -184,7 +184,7 @@ void create_graphics_pipeline(
     // depth_stencil.back{}; // Optional
 
     //  Dynamic state
-    VkDynamicState dynamicStates[] = {
+    VkDynamicState dynamic_states[] = {
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_LINE_WIDTH
     };
@@ -192,11 +192,12 @@ void create_graphics_pipeline(
     VkPipelineDynamicStateCreateInfo dynamic_state{};
     dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamic_state.dynamicStateCount = 2;
-    dynamic_state.pDynamicStates = dynamicStates;
+    dynamic_state.pDynamicStates = dynamic_states;
 
     std::array<VkDescriptorSetLayout, 2> set_layouts = {
         descriptor_set_layouts.frame,
-        descriptor_set_layouts.object,
+        // descriptor_set_layouts.object,
+        descriptor_set_layouts.texture_sampler,
     };
 
     //  Push constants
@@ -213,7 +214,7 @@ void create_graphics_pipeline(
     VkPipelineLayoutCreateInfo pipeline_layout_info{};
     pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipeline_layout_info.setLayoutCount = static_cast<uint32_t>(set_layouts.size());
-    pipeline_layout_info.pSetLayouts = &set_layouts[0];
+    pipeline_layout_info.pSetLayouts = set_layouts.data();
     pipeline_layout_info.pushConstantRangeCount = static_cast<uint32_t>(push_constant_range.size());
     pipeline_layout_info.pPushConstantRanges = push_constant_range.data();
 

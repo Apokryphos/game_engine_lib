@@ -152,7 +152,9 @@ bool create_logical_device(
 
     VkPhysicalDeviceVulkan12Features features_12{};
     features_12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+    features_12.descriptorBindingPartiallyBound = VK_TRUE;
     features_12.descriptorIndexing = VK_TRUE;
+    features_12.runtimeDescriptorArray = VK_TRUE;
     features_12.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
 
     VkPhysicalDeviceFeatures2 device_features{};

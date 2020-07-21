@@ -12,7 +12,7 @@ struct DescriptorSetLayouts
     VkDescriptorSetLayout frame = VK_NULL_HANDLE;
 
     //  Per-object (model, texture)
-    VkDescriptorSetLayout object = VK_NULL_HANDLE;
+    // VkDescriptorSetLayout object = VK_NULL_HANDLE;
 
     //  Textures
     VkDescriptorSetLayout texture_sampler = VK_NULL_HANDLE;

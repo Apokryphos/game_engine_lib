@@ -48,10 +48,18 @@ void create_descriptor_sets(
     create_descriptor_sets(
         device,
         swapchain_image_count,
-        descriptor_set_layouts.object,
+        descriptor_set_layouts.frame,
         descriptor_pool,
-        descriptor_sets.object_sets
+        descriptor_sets.texture_sets
     );
+
+    // create_descriptor_sets(
+    //     device,
+    //     swapchain_image_count,
+    //     descriptor_set_layouts.object,
+    //     descriptor_pool,
+    //     descriptor_sets.object_sets
+    // );
 }
 
 //  ----------------------------------------------------------------------------
@@ -147,6 +155,44 @@ void update_object_descriptor_sets(
 }
 
 //  ----------------------------------------------------------------------------
+void update_sampler_descriptor_sets(
+    VkDevice device,
+    const uint32_t swapchain_image_count,
+    std::vector<Texture>& textures,
+    std::vector<VkDescriptorSet>& descriptor_sets
+) {
+    for (size_t n = 0; n < swapchain_image_count; n++) {
+        std::vector<VkDescriptorImageInfo> image_infos(textures.size());
+        for (size_t n = 0; n < image_infos.size(); ++n) {
+            image_infos[n].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            image_infos[n].imageView = textures[n].view;
+            image_infos[n].sampler = textures[n].sampler;
+        }
+
+        std::array<VkWriteDescriptorSet, 1> descriptor_writes{};
+
+        //  Combined texture sampler
+        descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptor_writes[0].dstSet = descriptor_sets[n];
+        descriptor_writes[0].dstBinding = 1;
+        descriptor_writes[0].dstArrayElement = 0;
+        descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_writes[0].descriptorCount = static_cast<uint32_t>(image_infos.size());
+        descriptor_writes[0].pBufferInfo = nullptr;
+        descriptor_writes[0].pImageInfo = image_infos.data();
+        descriptor_writes[0].pTexelBufferView = nullptr;
+
+        vkUpdateDescriptorSets(
+            device,
+            static_cast<uint32_t>(descriptor_writes.size()),
+            descriptor_writes.data(),
+            0,
+            nullptr
+        );
+    }
+}
+
+//  ----------------------------------------------------------------------------
 void update_descriptor_sets(
     VkDevice device,
     const uint32_t swapchain_image_count,
@@ -164,13 +210,20 @@ void update_descriptor_sets(
         descriptor_sets.frame_sets
     );
 
-    update_object_descriptor_sets(
+    update_sampler_descriptor_sets(
         device,
         swapchain_image_count,
         textures,
-        object_uniform_buffer,
-        descriptor_sets.object_sets
+        descriptor_sets.texture_sets
     );
+
+    // update_object_descriptor_sets(
+    //     device,
+    //     swapchain_image_count,
+    //     textures,
+    //     object_uniform_buffer,
+    //     descriptor_sets.object_sets
+    // );
 }
 
 //  ----------------------------------------------------------------------------

@@ -37,7 +37,9 @@ public:
         //  The per-frame descriptor set for this frame.
         VkDescriptorSet frame_set  = VK_NULL_HANDLE;
         //  The per-object descriptor set for this frame.
-        VkDescriptorSet object_set = VK_NULL_HANDLE;
+        // VkDescriptorSet object_set = VK_NULL_HANDLE;
+        //  The texture array descriptor set for this frame.
+        VkDescriptorSet texture_set = VK_NULL_HANDLE;
     };
 
     struct FrameCommandObjects

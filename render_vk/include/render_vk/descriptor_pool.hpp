@@ -8,6 +8,7 @@ namespace render_vk
 void create_descriptor_pool(
     VkDevice device,
     const uint32_t swapchain_image_count,
+    const uint32_t sampler_count,
     VkDescriptorPool& descriptor_pool
 );
 }

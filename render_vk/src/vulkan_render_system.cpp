@@ -82,16 +82,16 @@ void create_descriptor_pool(
     VkDevice device,
     VkDescriptorPool& descriptor_pool
 ) {
-    const uint32_t sampler_count = 3;
+    const uint32_t sampler_count = MAX_TEXTURES;
     const uint32_t max_sets = 2 + (sampler_count);
 
-    std::array<VkDescriptorPoolSize, 3> pool_sizes{};
+    std::array<VkDescriptorPoolSize, 2> pool_sizes{};
     pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     pool_sizes[0].descriptorCount = 1;
-    pool_sizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    pool_sizes[1].descriptorCount = 1;
-    pool_sizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    pool_sizes[2].descriptorCount = sampler_count;
+    // pool_sizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    // pool_sizes[1].descriptorCount = 1;
+    pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    pool_sizes[1].descriptorCount = sampler_count;
 
     VkDescriptorPoolCreateInfo pool_info{};
     pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -153,6 +153,41 @@ void update_frame_descriptor_sets(
     descriptor_writes[0].descriptorCount = 1;
     descriptor_writes[0].pBufferInfo = &frame_buffer_info;
     descriptor_writes[0].pImageInfo = nullptr;
+    descriptor_writes[0].pTexelBufferView = nullptr;
+
+    vkUpdateDescriptorSets(
+        device,
+        static_cast<uint32_t>(descriptor_writes.size()),
+        descriptor_writes.data(),
+        0,
+        nullptr
+    );
+}
+
+//  ----------------------------------------------------------------------------
+void update_texture_descriptor_sets(
+    VkDevice device,
+    const std::vector<Texture>& textures,
+    VkDescriptorSet& descriptor_set
+) {
+    std::vector<VkDescriptorImageInfo> image_infos(textures.size());
+    for (size_t n = 0; n < image_infos.size(); ++n) {
+        image_infos[n].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        image_infos[n].imageView = textures[n].view;
+        image_infos[n].sampler = textures[n].sampler;
+    }
+
+    std::array<VkWriteDescriptorSet, 1> descriptor_writes{};
+
+    //  Combined texture sampler
+    descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[0].dstSet = descriptor_set;
+    descriptor_writes[0].dstBinding = 0;
+    descriptor_writes[0].dstArrayElement = 0;
+    descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptor_writes[0].descriptorCount = static_cast<uint32_t>(image_infos.size());
+    descriptor_writes[0].pBufferInfo = nullptr;
+    descriptor_writes[0].pImageInfo = image_infos.data();
     descriptor_writes[0].pTexelBufferView = nullptr;
 
     vkUpdateDescriptorSets(
@@ -287,11 +322,19 @@ static void create_descriptor_objects(
 
     create_descriptor_set(
         device,
-        descriptor_set_layouts.object,
+        descriptor_set_layouts.texture_sampler,
         descriptor.pool,
-        name_prefix + "_object_descriptor_set",
-        descriptor.object_set
+        name_prefix + "_texture_sampler_descriptor_set",
+        descriptor.texture_set
     );
+
+    // create_descriptor_set(
+    //     device,
+    //     descriptor_set_layouts.object,
+    //     descriptor.pool,
+    //     name_prefix + "_object_descriptor_set",
+    //     descriptor.object_set
+    // );
 
     update_frame_descriptor_sets(
         device,
@@ -300,12 +343,18 @@ static void create_descriptor_objects(
         descriptor.frame_set
     );
 
-    update_object_descriptor_sets(
+    update_texture_descriptor_sets(
         device,
         textures,
-        object_uniform.get_buffer(),
-        descriptor.object_set
+        descriptor.texture_set
     );
+
+    // update_object_descriptor_sets(
+    //     device,
+    //     textures,
+    //     object_uniform.get_buffer(),
+    //     descriptor.object_set
+    // );
 }
 
 //  ----------------------------------------------------------------------------
@@ -824,7 +873,7 @@ void VulkanRenderSystem::shutdown() {
     destroy_swapchain();
 
     vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.frame, nullptr);
-    vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.object, nullptr);
+    // vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.object, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.texture_sampler, nullptr);
 
     m_frame_uniform.destroy();
@@ -900,6 +949,18 @@ void VulkanRenderSystem::thread_draw_models(
         nullptr
     );
 
+    //  Bind texture descriptors
+    vkCmdBindDescriptorSets(
+        command_buffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        m_pipeline_layout,
+        1,
+        1,
+        &descriptor.texture_set,
+        0,
+        nullptr
+    );
+
     //  Keep track of model index because of dynamic buffer alignment
     for (const ModelBatch& batch : batches) {
         //  Get model
@@ -921,19 +982,19 @@ void VulkanRenderSystem::thread_draw_models(
             VK_INDEX_TYPE_UINT32
         );
 
-        const uint32_t dynamic_align = static_cast<uint32_t>(m_object_uniform.get_align());
+        // const uint32_t dynamic_align = static_cast<uint32_t>(m_object_uniform.get_align());
         const uint32_t index_count = model->get_index_count();
 
-        vkCmdBindDescriptorSets(
-            command_buffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            m_pipeline_layout,
-            1,
-            1,
-            &descriptor.object_set,
-            1,
-            &dynamic_align
-        );
+        // vkCmdBindDescriptorSets(
+        //     command_buffer,
+        //     VK_PIPELINE_BIND_POINT_GRAPHICS,
+        //     m_pipeline_layout,
+        //     1,
+        //     1,
+        //     &descriptor.object_set,
+        //     1,
+        //     &dynamic_align
+        // );
 
         //  Texture ID
         vkCmdPushConstants(

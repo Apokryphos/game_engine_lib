@@ -11,7 +11,7 @@ layout(push_constant) uniform FragmentPushConstants {
 //     uint texture_index;
 // } obj_ubo;
 
-layout(set = 1, binding = 1) uniform sampler2D texSampler[2];
+layout(set = 1, binding = 0) uniform sampler2D texSampler[];
 
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
