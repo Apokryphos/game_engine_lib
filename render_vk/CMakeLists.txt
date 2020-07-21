@@ -27,6 +27,7 @@ set(SOURCE_FILES
     # src/render_job_manager.cpp
     src/render_pass.cpp
     src/render_tasks/task_draw_models.cpp
+    src/render_tasks/task_update_uniforms.cpp
     # src/renderers/vulkan_model_renderer.cpp
     src/texture.cpp
     src/vertex_buffer.cpp

@@ -219,13 +219,6 @@ private:
     void start_threads();
     //  Worker thread main function.
     void thread_main(uint8_t thread_id);
-    void thread_update_frame_uniforms(
-        const glm::mat4& view,
-        const glm::mat4& proj
-    );
-    void thread_update_object_uniforms(
-        const std::vector<render::ModelBatch>& batches
-    );
 
 public:
     VulkanRenderSystem();

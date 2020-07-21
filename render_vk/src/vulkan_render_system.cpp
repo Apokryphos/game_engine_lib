@@ -14,6 +14,7 @@
 #include "render_vk/model_manager.hpp"
 #include "render_vk/render_pass.hpp"
 #include "render_vk/render_tasks/task_draw_models.hpp"
+#include "render_vk/render_tasks/task_update_uniforms.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_render_system.hpp"
@@ -973,13 +974,13 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
 
             case FrameTaskId::UpdateFrameUniforms:
                 STOPWATCH.start(thread_name+"_update_frame_uniforms");
-                thread_update_frame_uniforms(job.view, job.proj);
+                task_update_frame_uniforms(job.view, job.proj, m_frame_uniform);
                 STOPWATCH.stop(thread_name+"_update_frame_uniforms");
                 break;
 
             case FrameTaskId::UpdateObjectUniforms:
                 STOPWATCH.start(thread_name+"_update_object_uniforms");
-                thread_update_object_uniforms(job.batches);
+                task_update_object_uniforms(job.batches, m_object_uniform);
                 STOPWATCH.stop(thread_name+"_update_object_uniforms");
                 break;
         }
@@ -997,55 +998,6 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
     }
 
     log_debug("Thread %d exited.", thread_id);
-}
-
-//  ----------------------------------------------------------------------------
-void VulkanRenderSystem::thread_update_frame_uniforms(
-    const glm::mat4& view,
-    const glm::mat4& proj
-) {
-    //  Update frame UBO
-    FrameUbo frame_ubo{};
-    frame_ubo.view = view;
-    frame_ubo.proj = proj;
-
-    //  GLM (OpenGL) uses inverted Y clip coordinate
-    frame_ubo.proj[1][1] *= -1;
-
-    //  Copy frame UBO struct to uniform buffer
-    m_frame_uniform.copy(frame_ubo);
-}
-
-//  ----------------------------------------------------------------------------
-void VulkanRenderSystem::thread_update_object_uniforms(
-    const std::vector<render::ModelBatch>& batches
-) {
-    //   Build vectors for uniform buffers
-    std::vector<glm::vec3> positions;
-    std::vector<uint32_t> texture_ids;
-    for (const ModelBatch& batch : batches) {
-        positions.insert(
-            positions.end(),
-            batch.positions.begin(),
-            batch.positions.end()
-        );
-
-        texture_ids = std::vector<uint32_t>(positions.size(), batch.texture_id);
-    }
-
-    assert(positions.size() == texture_ids.size());
-
-    const size_t object_count = positions.size();
-    assert(object_count > 0);
-
-    std::vector<ObjectUbo> data(object_count);
-    for (size_t n = 0; n < object_count; ++n)  {
-        data[n].texture_index = texture_ids[n];
-        data[n].model = glm::translate(glm::mat4(1.0f), positions[n]);
-    }
-
-    //  Copy object UBO structs to dynamic uniform buffer
-    m_object_uniform.copy(data);
 }
 
 //  ----------------------------------------------------------------------------
