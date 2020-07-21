@@ -217,21 +217,21 @@ static void create_secondary_command_objects(
     VulkanQueue& graphics_queue,
     VulkanSwapchain& swapchain,
     DepthImage depth_image,
-    const std::string& thread_name,
+    const std::string& name_prefix,
     VulkanRenderSystem::FrameCommandObjects& frame_command
 ) {
     create_command_pool(
         device,
         physical_device,
         frame_command.pool,
-        (thread_name + "_command_pool").c_str()
+        (name_prefix + "_command_pool").c_str()
     );
 
     create_secondary_command_buffer(
         device,
         frame_command.pool,
         frame_command.buffer,
-        (thread_name + "_command_buffer").c_str()
+        (name_prefix + "_command_buffer").c_str()
     );
 }
 
@@ -956,30 +956,20 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
     m_model_mgr->get_textures(textures);
 
     //  Initialize frame objects
+    uint32_t frame_index = 0;
     std::vector<ThreadFrame> frames(m_frame_count);
     for (ThreadFrame& frame : frames) {
+        const std::string frame_name =
+            thread_name + "_frame" + std::to_string(++frame_index);
+
         create_secondary_command_objects(
             m_device,
             m_physical_device,
             m_graphics_queue,
             m_swapchain,
             m_depth_image,
-            thread_name,
+            frame_name,
             frame.command
-        );
-
-        set_debug_name(
-            m_device,
-            VK_OBJECT_TYPE_COMMAND_POOL,
-            frame.command.pool,
-            std::string(thread_name + "_command_pool").c_str()
-        );
-
-        set_debug_name(
-            m_device,
-            VK_OBJECT_TYPE_COMMAND_BUFFER,
-            frame.command.buffer,
-            std::string(thread_name + "_command_buffer").c_str()
         );
 
         create_descriptor_objects(

@@ -35,8 +35,8 @@ void create_primary_command_buffer(
 );
 
 void create_secondary_command_buffer(
-    VkDevice device,
-    VkCommandPool command_pool,
+    const VkDevice device,
+    const VkCommandPool command_pool,
     VkCommandBuffer& command_buffer,
     const char* debug_name
 );
