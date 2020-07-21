@@ -217,11 +217,6 @@ private:
     void shutdown();
     //  Starts worker threads.
     void start_threads();
-    void thread_draw_models(
-        const std::vector<render::ModelBatch>& batches,
-        const FrameDescriptorObjects& descriptor,
-        VkCommandBuffer command_buffer
-    );
     //  Worker thread main function.
     void thread_main(uint8_t thread_id);
     void thread_update_frame_uniforms(
