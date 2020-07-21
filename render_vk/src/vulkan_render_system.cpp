@@ -84,9 +84,10 @@ void create_descriptor_pool(
 
 //  ----------------------------------------------------------------------------
 static void create_descriptor_set(
-    VkDevice device,
-    VkDescriptorSetLayout descriptor_set_layout,
-    VkDescriptorPool descriptor_pool,
+    const VkDevice device,
+    const VkDescriptorSetLayout descriptor_set_layout,
+    const VkDescriptorPool descriptor_pool,
+    const std::string& debug_name,
     VkDescriptorSet& descriptor_set
 ) {
     VkDescriptorSetAllocateInfo alloc_info{};
@@ -98,6 +99,13 @@ static void create_descriptor_set(
     if (vkAllocateDescriptorSets(device, &alloc_info, &descriptor_set) != VK_SUCCESS) {
         throw std::runtime_error("Failed to allocate descriptor set.");
     }
+
+    set_debug_name(
+        device,
+        VK_OBJECT_TYPE_DESCRIPTOR_SET,
+        descriptor_set,
+        debug_name.c_str()
+    );
 }
 
 //  ----------------------------------------------------------------------------
@@ -242,6 +250,7 @@ static void create_descriptor_objects(
     const std::vector<Texture>& textures,
     const UniformBuffer<FrameUbo>& frame_uniform,
     const DynamicUniformBuffer<ObjectUbo>& object_uniform,
+    const std::string& name_prefix,
     VulkanRenderSystem::FrameDescriptorObjects& descriptor
 ) {
     create_descriptor_pool(device, descriptor.pool);
@@ -250,6 +259,7 @@ static void create_descriptor_objects(
         device,
         descriptor_set_layouts.frame,
         descriptor.pool,
+        name_prefix + "_frame_descriptor_set",
         descriptor.frame_set
     );
 
@@ -257,6 +267,7 @@ static void create_descriptor_objects(
         device,
         descriptor_set_layouts.object,
         descriptor.pool,
+        name_prefix + "_object_descriptor_set",
         descriptor.object_set
     );
 
@@ -978,6 +989,7 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
             textures,
             m_frame_uniform,
             m_object_uniform,
+            frame_name,
             frame.descriptor
         );
     }
