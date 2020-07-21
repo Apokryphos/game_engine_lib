@@ -7,6 +7,7 @@ namespace render_vk
 void create_command_pool(
     VkDevice device,
     VkPhysicalDevice physical_device,
-    VkCommandPool& command_pool
+    VkCommandPool& command_pool,
+    const char* debug_name
 );
 }

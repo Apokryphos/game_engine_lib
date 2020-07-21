@@ -195,10 +195,9 @@ static void create_primary_command_objects(
     DepthImage depth_image,
     VulkanRenderSystem::FrameCommandObjects& frame_command
 ) {
-    create_command_pool(device, physical_device, frame_command.pool);
-    set_debug_name(
+    create_command_pool(
         device,
-        VK_OBJECT_TYPE_COMMAND_POOL,
+        physical_device,
         frame_command.pool,
         "primary_command_pool"
     );
@@ -223,9 +222,15 @@ static void create_secondary_command_objects(
     VulkanQueue& graphics_queue,
     VulkanSwapchain& swapchain,
     DepthImage depth_image,
+    const std::string& thread_name,
     VulkanRenderSystem::FrameCommandObjects& frame_command
 ) {
-    create_command_pool(device, physical_device, frame_command.pool);
+    create_command_pool(
+        device,
+        physical_device,
+        frame_command.pool,
+        (thread_name + "_command_pool").c_str()
+    );
 
     create_secondary_command_buffer(
         device,
@@ -396,11 +401,6 @@ void VulkanRenderSystem::create_swapchain_dependents() {
     create_command_pool(
         m_device,
         m_physical_device,
-        m_resource_command_pool
-    );
-    set_debug_name(
-        m_device,
-        VK_OBJECT_TYPE_COMMAND_POOL,
         m_resource_command_pool,
         "resource_command_pool"
     );
@@ -968,6 +968,7 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
             m_graphics_queue,
             m_swapchain,
             m_depth_image,
+            thread_name,
             frame.command
         );
 
