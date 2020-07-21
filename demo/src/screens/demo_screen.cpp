@@ -60,8 +60,8 @@ void DemoScreen::on_render(Game& game) {
     glm::mat4 view = camera_sys.get_view_matrix(camera_cmpnt);
 
     Engine& engine = game.get_engine();
-    Renderer& renderer = engine.get_renderer();
-    const float aspect_ratio = renderer.get_aspect_ratio();
+    Renderer& render_sys = engine.get_render_system();
+    const float aspect_ratio = render_sys.get_aspect_ratio();
 
     glm::mat4 proj = glm::perspective(
         glm::radians(90.0f),
@@ -70,7 +70,7 @@ void DemoScreen::on_render(Game& game) {
         256.0f
     );
 
-    renderer.update_frame_uniforms(view, proj);
+    render_sys.update_frame_uniforms(view, proj);
 
     //  Build draw order
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
@@ -78,7 +78,7 @@ void DemoScreen::on_render(Game& game) {
     demo_sys.batch_models(game, view, proj, model_batches);
 
     //  Draw entities
-    renderer.draw_models(model_batches);
+    render_sys.draw_models(model_batches);
 }
 
 //  ----------------------------------------------------------------------------

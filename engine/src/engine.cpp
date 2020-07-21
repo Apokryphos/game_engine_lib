@@ -34,7 +34,7 @@ static void framebuffer_size_callback(
 //  ----------------------------------------------------------------------------
 Engine::Engine()
 : m_input_mgr(nullptr),
-  m_renderer(nullptr),
+  m_render_sys(nullptr),
   m_screen_mgr(std::make_unique<ScreenManager>()),
   m_ui_state_mgr(std::make_unique<UiStateManager>()),
   m_window(nullptr) {
@@ -57,9 +57,9 @@ InputManager& Engine::get_input_manager() {
 }
 
 //  ----------------------------------------------------------------------------
-Renderer& Engine::get_renderer() {
-    assert(m_renderer != nullptr);
-    return *m_renderer;
+Renderer& Engine::get_render_system() {
+    assert(m_render_sys != nullptr);
+    return *m_render_sys;
 }
 
 //  ----------------------------------------------------------------------------
@@ -130,21 +130,21 @@ bool Engine::initialize(
     m_input_mgr = std::make_unique<InputManager>(glfw_window);
 
     //  Initialize ImGui (GLFW) before renderer
-    //  Renderer will setup ImGui rendering specifics
+    //  Render system will setup ImGui rendering specifics
     imgui_init(glfw_window, render_api);
 
-    //  Create renderer for API
+    //  Create render system for API
     if (render_api == RenderApi::OpenGl) {
         throw std::runtime_error("Not implemented.");
-        // m_renderer = std::make_unique<GlRenderer>();
+        // m_render_sys = std::make_unique<GlRenderer>();
     } else if (render_api == RenderApi::Vulkan) {
-        m_renderer = std::make_unique<VulkanRenderSystem>();
+        m_render_sys = std::make_unique<VulkanRenderSystem>();
     } else {
         throw std::runtime_error("Not implemented.");
     }
 
-    //  Initialize renderer
-    if (!m_renderer->initialize(glfw_window)) {
+    //  Initialize render system
+    if (!m_render_sys->initialize(glfw_window)) {
         log_error("Failed to initialize renderer.");
         glfw_shutdown(glfw_window);
         return false;
@@ -161,12 +161,12 @@ bool Engine::initialize(
 
 //  ----------------------------------------------------------------------------
 void Engine::shutdown() {
-    if (m_renderer != nullptr) {
-        m_renderer->shutdown();
+    if (m_render_sys != nullptr) {
+        m_render_sys->shutdown();
     }
 
     //  Shutdown ImGui after renderer (GLFW)
-    //  Renderer will destroy ImGui rendering specifics
+    //  Render system will destroy ImGui rendering specifics
     imgui_shutdown();
 
     if (m_window != nullptr) {
@@ -178,7 +178,7 @@ void Engine::shutdown() {
 //  ----------------------------------------------------------------------------
 void Engine::window_resized() {
     assert(m_window != nullptr);
-    assert(m_renderer != nullptr);
-    m_renderer->resize();
+    assert(m_render_sys != nullptr);
+    m_render_sys->resize();
 }
 }

@@ -274,11 +274,11 @@ void InitScreen::on_load(Game& game) {
 
     //  Load assets
     AssetManager& asset_mgr = engine.get_asset_manager();
-    Renderer& renderer = engine.get_renderer();
-    asset_mgr.load_model(renderer, "assets/models/model.obj");
-    asset_mgr.load_texture(renderer, "assets/textures/model.png");
-    asset_mgr.load_texture(renderer, "assets/textures/model2.png");
-    asset_mgr.load_texture(renderer, "assets/textures/model3.png");
+    Renderer& render_sys = engine.get_render_system();
+    asset_mgr.load_model(render_sys, "assets/models/model.obj");
+    asset_mgr.load_texture(render_sys, "assets/textures/model.png");
+    asset_mgr.load_texture(render_sys, "assets/textures/model2.png");
+    asset_mgr.load_texture(render_sys, "assets/textures/model3.png");
 
     //  Next screen
     load_demo_screen(game);

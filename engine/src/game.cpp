@@ -77,13 +77,13 @@ bool Game::initialize(
         return false;
     }
 
-    //  Add Vulkan renderer debug GUI panel
-    Renderer& renderer = m_engine->get_renderer();
-    if (renderer.get_render_api() == RenderApi::Vulkan) {
+    //  Add Vulkan render system debug GUI panel
+    Renderer& render_sys = m_engine->get_render_system();
+    if (render_sys.get_render_api() == RenderApi::Vulkan) {
         get_debug_gui_system(*m_sys_mgr).add_gui(
             "vulkan",
             make_vulkan_debug_panel_function(
-                dynamic_cast<VulkanRenderSystem&>(renderer).get_instance()
+                dynamic_cast<VulkanRenderSystem&>(render_sys).get_instance()
             )
         );
     }
@@ -98,14 +98,14 @@ void Game::quit() {
 
 //  ----------------------------------------------------------------------------
 void Game::render() {
-    Renderer& renderer = m_engine->get_renderer();
-    renderer.begin_frame();
+    Renderer& render_sys = m_engine->get_render_system();
+    render_sys.begin_frame();
 
     //  Render screen
     ScreenManager& screen_mgr = m_engine->get_screen_manager();
     screen_mgr.render(*this);
 
-    renderer.end_frame();
+    render_sys.end_frame();
 }
 
 //  ----------------------------------------------------------------------------
@@ -154,7 +154,7 @@ void Game::update() {
 
     //  Start a new ImGui frame. This shoud be called as early as possible,
     //  but ImGui GUI calls should be restricted to DebugGuiSystem.
-    const RenderApi render_api = m_engine->get_renderer().get_render_api();
+    const RenderApi render_api = m_engine->get_render_system().get_render_api();
     imgui_new_frame(render_api);
 
     //  Update debug GUI
