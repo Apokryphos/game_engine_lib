@@ -196,11 +196,23 @@ static void create_primary_command_objects(
     VulkanRenderSystem::FrameCommandObjects& frame_command
 ) {
     create_command_pool(device, physical_device, frame_command.pool);
+    set_debug_name(
+        device,
+        VK_OBJECT_TYPE_COMMAND_POOL,
+        frame_command.pool,
+        "primary_command_pool"
+    );
 
     create_primary_command_buffer(
         device,
         frame_command.pool,
         frame_command.buffer
+    );
+    set_debug_name(
+        device,
+        VK_OBJECT_TYPE_COMMAND_BUFFER,
+        frame_command.buffer,
+        "primary_command_buffer"
     );
 }
 
@@ -386,6 +398,12 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         m_physical_device,
         m_resource_command_pool
     );
+    set_debug_name(
+        m_device,
+        VK_OBJECT_TYPE_COMMAND_POOL,
+        m_resource_command_pool,
+        "resource_command_pool"
+    );
 
     create_graphics_pipeline(
         m_device,
@@ -437,6 +455,8 @@ void VulkanRenderSystem::destroy_frame_resources() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::destroy_swapchain() {
+    vkDestroyCommandPool(m_device, m_resource_command_pool, nullptr);
+
     //  Depth testing
     vkDestroyImageView(m_device, m_depth_image.view, nullptr);
     vkDestroyImage(m_device, m_depth_image.image, nullptr);
@@ -782,7 +802,6 @@ void VulkanRenderSystem::shutdown() {
     //  Unload models
     m_model_mgr->unload(m_device);
 
-    vkDestroyCommandPool(m_device, m_resource_command_pool, nullptr);
     vkDestroyDevice(m_device, nullptr);
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
 
