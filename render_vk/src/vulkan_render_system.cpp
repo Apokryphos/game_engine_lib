@@ -205,11 +205,6 @@ static void create_primary_command_objects(
     create_primary_command_buffer(
         device,
         frame_command.pool,
-        frame_command.buffer
-    );
-    set_debug_name(
-        device,
-        VK_OBJECT_TYPE_COMMAND_BUFFER,
         frame_command.buffer,
         "primary_command_buffer"
     );
@@ -235,7 +230,8 @@ static void create_secondary_command_objects(
     create_secondary_command_buffer(
         device,
         frame_command.pool,
-        frame_command.buffer
+        frame_command.buffer,
+        (thread_name + "_command_buffer").c_str()
     );
 }
 
