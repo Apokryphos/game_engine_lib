@@ -189,6 +189,9 @@ bool create_logical_device(
     vkGetDeviceQueue(device, indices.graphics_family.value(), 0, &graphics_queue);
     vkGetDeviceQueue(device, indices.present_family.value(), 0, &present_queue);
 
+    set_debug_name(device, VK_OBJECT_TYPE_QUEUE, graphics_queue, "graphics_queue");
+    set_debug_name(device, VK_OBJECT_TYPE_QUEUE, present_queue, "present_queue");
+
     return true;
 }
 }

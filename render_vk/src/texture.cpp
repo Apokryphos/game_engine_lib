@@ -391,7 +391,7 @@ void create_texture_image(
         device,
         VK_OBJECT_TYPE_IMAGE,
         texture_image,
-        filename.c_str()
+        (filename + "_image").c_str()
     );
 
     //  Prepare texture for staging buffer copy
@@ -513,8 +513,20 @@ void create_texture(
     );
 
     create_texture_image_view(device, texture.mip_levels, texture.image, texture.view);
+    set_debug_name(
+        device,
+        VK_OBJECT_TYPE_IMAGE_VIEW,
+        texture.view,
+        (filename + "_image_view").c_str()
+    );
 
     create_texture_sampler(device, texture.mip_levels, texture.sampler);
+    set_debug_name(
+        device,
+        VK_OBJECT_TYPE_SAMPLER,
+        texture.sampler,
+        (filename + "_sampler").c_str()
+    );
 }
 
 //  ----------------------------------------------------------------------------

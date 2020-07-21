@@ -33,6 +33,7 @@ static Stopwatch STOPWATCH;
 //  ----------------------------------------------------------------------------
 static void create_sync_objects(
     VkDevice device,
+    const std::string& name_prefix,
     VulkanRenderSystem::FrameSyncObjects& sync
 ) {
     VkSemaphoreCreateInfo semaphore_info{};
@@ -42,9 +43,23 @@ static void create_sync_objects(
         throw std::runtime_error("Failed to create semaphore");
     }
 
+    set_debug_name(
+        device,
+        VK_OBJECT_TYPE_SEMAPHORE,
+        sync.image_acquired,
+        (name_prefix + "_image_acquired_semaphore").c_str()
+    );
+
     if (vkCreateSemaphore(device, &semaphore_info, nullptr, &sync.present_ready) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create semaphore");
     }
+
+    set_debug_name(
+        device,
+        VK_OBJECT_TYPE_SEMAPHORE,
+        sync.present_ready,
+        (name_prefix + "_present_ready_semaphore").c_str()
+    );
 
     VkFenceCreateInfo fence_info{};
     fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -53,6 +68,13 @@ static void create_sync_objects(
     if (vkCreateFence(device, &fence_info, nullptr, &sync.frame_complete) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create fence.");
     }
+
+    set_debug_name(
+        device,
+        VK_OBJECT_TYPE_FENCE,
+        sync.frame_complete,
+        (name_prefix + "_frame_complete_fence").c_str()
+    );
 }
 
 //  ----------------------------------------------------------------------------
@@ -370,7 +392,9 @@ void VulkanRenderSystem::create_frame_resources() {
     //  Create frame resources
     m_frames.resize(m_frame_count);
     for (auto n = 0; n < m_frame_count; ++n) {
-        create_sync_objects(m_device, m_frames[n].sync);
+        const std::string frame_name = "frame" + std::to_string(n);
+
+        create_sync_objects(m_device, frame_name, m_frames[n].sync);
         create_primary_command_objects(
             m_device,
             m_physical_device,
