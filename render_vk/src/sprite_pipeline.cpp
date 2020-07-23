@@ -1,28 +1,22 @@
-#include "common/log.hpp"
-#include "render_vk/descriptor_set_layout.hpp"
 #include "render_vk/shader.hpp"
-#include "render_vk/ubo.hpp"
+#include "render_vk/sprite_pipeline.hpp"
 #include "render_vk/vertex.hpp"
-#include "render_vk/vulkan.hpp"
-#include "render_vk/vulkan_swapchain.hpp"
-#include <fstream>
+#include <cstdint>
 #include <stdexcept>
-#include <vector>
 
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-void create_graphics_pipeline(
+void create_sprite_pipeline(
     VkDevice device,
     const VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
     const DescriptorSetLayouts& descriptor_set_layouts,
-    VkPipelineLayout& pipeline_layout,
-    VkPipeline& graphics_pipeline
+    SpritePipeline& sprite_pipeline
 ) {
     //  Shaders
-    auto vert_shader_code = read_file("assets/shaders/vk/model_vert.spv");
-    auto frag_shader_code = read_file("assets/shaders/vk/model_frag.spv");
+    auto vert_shader_code = read_file("assets/shaders/vk/sprite_vert.spv");
+    auto frag_shader_code = read_file("assets/shaders/vk/sprite_frag.spv");
 
     VkShaderModule vert_shader_module = create_shader_module(device, vert_shader_code);
     VkShaderModule frag_shader_module = create_shader_module(device, frag_shader_code);
@@ -116,14 +110,6 @@ void create_graphics_pipeline(
     color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
     color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
 
-    // color_blend_attachment.blendEnable = VK_TRUE;
-    // color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-    // color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-    // color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-    // color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    // color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-    // color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
-
     VkPipelineColorBlendStateCreateInfo color_blending{};
     color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     color_blending.logicOpEnable = VK_FALSE;
@@ -145,8 +131,6 @@ void create_graphics_pipeline(
     depth_stencil.minDepthBounds = 0.0f; // Optional
     depth_stencil.maxDepthBounds = 1.0f; // Optional
     depth_stencil.stencilTestEnable = VK_FALSE;
-    // depth_stencil.front{}; // Optional
-    // depth_stencil.back{}; // Optional
 
     //  Dynamic state
     VkDynamicState dynamic_states[] = {
@@ -187,7 +171,7 @@ void create_graphics_pipeline(
         device,
         &pipeline_layout_info,
         nullptr,
-        &pipeline_layout
+        &sprite_pipeline.layout
     ) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create pipeline layout.");
     }
@@ -204,7 +188,7 @@ void create_graphics_pipeline(
     pipeline_info.pDepthStencilState = &depth_stencil;
     pipeline_info.pColorBlendState = &color_blending;
     pipeline_info.pDynamicState = nullptr; // Optional
-    pipeline_info.layout = pipeline_layout;
+    pipeline_info.layout = sprite_pipeline.layout;
     pipeline_info.renderPass = render_pass;
     pipeline_info.subpass = 0;
     pipeline_info.basePipelineHandle = VK_NULL_HANDLE; // Optional
@@ -215,7 +199,7 @@ void create_graphics_pipeline(
         VK_NULL_HANDLE, 1,
         &pipeline_info,
         nullptr,
-        &graphics_pipeline) != VK_SUCCESS
+        &sprite_pipeline.pipeline) != VK_SUCCESS
     ) {
         throw std::runtime_error("Failed to create graphics pipeline.");
     }
