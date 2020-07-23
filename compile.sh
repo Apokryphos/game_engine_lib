@@ -9,3 +9,6 @@ OUTPUT_PATH=build/demo/assets/shaders/vk
 mkdir -p $OUTPUT_PATH
 $VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/model.vert -o $OUTPUT_PATH/vert.spv
 $VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/model.frag -o $OUTPUT_PATH/frag.spv
+
+$VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/sprite.vert -o $OUTPUT_PATH/sprite_vert.spv
+$VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/sprite.frag -o $OUTPUT_PATH/sprite_frag.spv
