@@ -2,12 +2,15 @@
 #include "render_vk/vertex_buffer.hpp"
 #include "render_vk/mesh.hpp"
 #include "tiny_obj_loader.h"
+#include <filesystem>
 #include <stdexcept>
+
+namespace fs = std::filesystem;
 
 namespace render_vk
 {
 // -----------------------------------------------------------------------------
-void load_mesh(Mesh& mesh, const std::string& path) {
+static void load_obj(Mesh& mesh, const std::string& path) {
    tinyobj::attrib_t attrib;
    std::vector<tinyobj::shape_t> shapes;
    std::vector<tinyobj::material_t> materials;
@@ -38,5 +41,17 @@ void load_mesh(Mesh& mesh, const std::string& path) {
          mesh.indices.push_back(mesh.indices.size());
       }
    }
+}
+
+// -----------------------------------------------------------------------------
+void load_mesh(Mesh& mesh, const std::string& path) {
+    const std::string extension = fs::path(path).extension();
+    if (extension == ".glb") {
+        throw std::runtime_error("Not implemented.");
+    } else if (extension == ".obj") {
+       load_obj(mesh, path);
+    } else {
+        throw std::runtime_error("Not supported.");
+    }
 }
 }
