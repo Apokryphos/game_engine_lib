@@ -15,6 +15,7 @@ set(SOURCE_FILES
     src/devices.cpp
     src/dynamic_uniform_buffer.cpp
     src/framebuffers.cpp
+    src/gltf.cpp
     src/image_view.cpp
     src/imgui/imgui_vk.cpp
     src/index_buffer.cpp
@@ -68,6 +69,7 @@ target_link_libraries(render_vk
     platform
     render
     tinyobjloader
+    tinygltf
     volk
     vulkan
 )

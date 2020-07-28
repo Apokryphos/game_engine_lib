@@ -24,6 +24,11 @@ project(lodepng)
 add_library(lodepng lodepng/lodepng.cpp)
 target_include_directories(lodepng PUBLIC lodepng)
 
+# tinyglft
+project(tinygltf)
+add_library(tinygltf INTERFACE)
+target_include_directories(tinygltf INTERFACE tinygltf)
+
 # tinyobjloader
 project(tinyobjloader)
 add_library(tinyobjloader INTERFACE)
