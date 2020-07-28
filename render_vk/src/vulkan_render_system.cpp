@@ -375,6 +375,32 @@ VulkanRenderSystem::~VulkanRenderSystem() {
 }
 
 //  ----------------------------------------------------------------------------
+void VulkanRenderSystem::add_job(Job& job) {
+    //  Can't post jobs if frame isn't in busy state.
+    if (m_frame_status != FrameStatus::Busy) {
+        //  Don't add job. Frame may have been discarded.
+        return;
+    }
+
+    //  Check that a valid task ID was assigned
+    if (job.task_id == FrameTaskId::None) {
+        throw std::runtime_error("Invalid job task ID.");
+    }
+
+    //  Track task call
+    {
+        std::lock_guard<std::mutex> lock(m_tasks_mutex);
+        m_tasks.add_call(job.task_id);
+    }
+
+    //  Enqueue job
+    {
+        std::lock_guard<std::mutex> lock(m_jobs_mutex);
+        m_jobs.push(job);
+    }
+}
+
+//  ----------------------------------------------------------------------------
 void VulkanRenderSystem::begin_frame() {
     STOPWATCH.start("begin_frame");
 
@@ -438,6 +464,26 @@ void VulkanRenderSystem::cancel_threads() {
     }
     m_threads.clear();
     m_cancel_threads = false;
+}
+
+//  ----------------------------------------------------------------------------
+bool VulkanRenderSystem::check_render_tasks_complete() {
+    if (m_frame_status != FrameStatus::Busy) {
+        //  Worker threads are not processing tasks this frame
+        return true;
+    }
+
+    if (m_tasks.is_complete(FrameTaskId::DrawModels) &&
+        m_tasks.is_complete(FrameTaskId::DrawSprites) &&
+        m_tasks.is_complete(FrameTaskId::UpdateFrameUniforms)
+    ) {
+        //  Worker threads have completed all tasks for this frame
+        m_frame_status = FrameStatus::Ready;
+        return true;
+    }
+
+    //  Worker threads are still processing tasks for this frame
+    return false;
 }
 
 //  ----------------------------------------------------------------------------
@@ -585,10 +631,7 @@ void VulkanRenderSystem::draw_models(
     Job job{};
     job.task_id = FrameTaskId::DrawModels;
     job.batches = batches;
-    {
-        std::lock_guard<std::mutex> lock(m_jobs_mutex);
-        m_jobs.push(job);
-    }
+    add_job(job);
 }
 
 //  ----------------------------------------------------------------------------
@@ -598,16 +641,13 @@ void VulkanRenderSystem::draw_sprites(
     Job job{};
     job.task_id = FrameTaskId::DrawSprites;
     job.sprite_batches = batches;
-    {
-        std::lock_guard<std::mutex> lock(m_jobs_mutex);
-        m_jobs.push(job);
-    }
+    add_job(job);
 }
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::end_frame() {
     //  Wait for worker threads to complete
-    while (m_frame_status == FrameStatus::Busy) {
+    while (!check_render_tasks_complete()) {
         std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
 
@@ -851,20 +891,12 @@ void VulkanRenderSystem::load_texture(const AssetId id, const std::string& path)
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanRenderSystem::post_work(
+void VulkanRenderSystem::post_results(
     FrameTaskId task_id,
     VkCommandBuffer command_buffer
 ) {
     std::lock_guard<std::mutex> lock(m_tasks_mutex);
-
     m_tasks.add_results(task_id, command_buffer);
-
-    if (m_tasks.get_count(FrameTaskId::DrawModels) &&
-        m_tasks.get_count(FrameTaskId::DrawSprites) &&
-        m_tasks.get_count(FrameTaskId::UpdateFrameUniforms)
-    ) {
-        m_frame_status = FrameStatus::Ready;
-    }
 }
 
 //  ----------------------------------------------------------------------------
@@ -1041,7 +1073,7 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
         }
 
         //  Post completed work
-        post_work(job.task_id, frame.command.buffer);
+        post_results(job.task_id, frame.command.buffer);
     }
 
     //  Release frame objects
@@ -1069,10 +1101,6 @@ void VulkanRenderSystem::update_frame_uniforms(
     job.frame_ubo.proj = proj;
     job.frame_ubo.ortho_view = ortho_view;
     job.frame_ubo.ortho_proj = ortho_proj;
-
-    {
-        std::lock_guard<std::mutex> lock(m_jobs_mutex);
-        m_jobs.push(job);
-    }
+    add_job(job);
 }
 }

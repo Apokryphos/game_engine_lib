@@ -26,6 +26,7 @@ class VulkanRenderSystem : public render::Renderer
 public:
     enum class FrameTaskId
     {
+        None,
         DrawModels,
         DrawSprites,
         UpdateFrameUniforms,
@@ -78,8 +79,8 @@ public:
 
     struct Job
     {
-        FrameTaskId task_id;
-        void* args;
+        FrameTaskId task_id{FrameTaskId::None};
+        void* args{nullptr};
 
         FrameUbo frame_ubo;
         std::vector<render::ModelBatch> batches;
@@ -102,17 +103,23 @@ public:
     {
         struct TaskResults
         {
-            uint32_t count;
+            uint32_t called;
+            uint32_t complete;
             std::vector<VkCommandBuffer> command_buffers;
         };
 
         std::map<FrameTaskId, TaskResults> m_results;
 
     public:
+        void add_call(FrameTaskId task_id) {
+            TaskResults& results = m_results[task_id];
+            ++results.called;
+        }
+
         void add_results(FrameTaskId task_id, VkCommandBuffer command_buffer) {
             TaskResults& results = m_results[task_id];
-            ++results.count;
             results.command_buffers.push_back(command_buffer);
+            ++results.complete;
         }
 
         void clear() {
@@ -125,12 +132,13 @@ public:
             return m_results.at(task_id).command_buffers;
         }
 
-        uint32_t get_count(FrameTaskId task_id) const {
-            if (m_results.find(task_id) != m_results.end()) {
-                return m_results.at(task_id).count;
+        uint32_t is_complete(FrameTaskId task_id) const {
+            const auto& find = m_results.find(task_id);
+            if (find == m_results.end()) {
+                return true;
             }
 
-            return 0;
+            return find->second.called == find->second.complete;
         }
     };
 
@@ -203,8 +211,13 @@ private:
 
     std::unique_ptr<ModelManager> m_model_mgr;
 
+    //  Adds a new job for a worker thread to process.
+    void add_job(Job& job);
     //  Stops worker threads.
     void cancel_threads();
+    //  Checks the status of the current frame's rendering tasks.
+    //  This function should only be called from end_frame.
+    bool check_render_tasks_complete();
     //  Creates frame objects.
     void create_frame_resources();
     //  Creates swapchain and render pass.
@@ -215,7 +228,7 @@ private:
     //  Checks if a worker thread job is available.
     bool get_job(Job& job);
     //  Called by worker threads when work is completed.
-    void post_work(FrameTaskId task_id, VkCommandBuffer comand_buffer);
+    void post_results(FrameTaskId task_id, VkCommandBuffer comand_buffer);
     //  Recreates swapchain and dependent objects.
     void recreate_swapchain();
     //  Releases objects.
