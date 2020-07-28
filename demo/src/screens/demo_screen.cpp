@@ -62,6 +62,7 @@ void DemoScreen::on_render(Game& game) {
     Engine& engine = game.get_engine();
     Renderer& render_sys = engine.get_render_system();
     const float aspect_ratio = render_sys.get_aspect_ratio();
+    const glm::vec2 size = render_sys.get_size();
 
     const glm::mat4 proj = glm::perspective(
         glm::radians(90.0f),
@@ -72,9 +73,9 @@ void DemoScreen::on_render(Game& game) {
 
     const glm::mat4 ortho_proj = glm::ortho(
         0.0f,
-        static_cast<float>(1400),
+        size.x,
         0.0f,
-        static_cast<float>(1400),
+        size.y,
         0.0f,
         1.0f
     );

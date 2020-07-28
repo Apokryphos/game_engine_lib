@@ -239,6 +239,7 @@ public:
     //  Presents the completed frame.
     virtual void end_frame() override;
     virtual float get_aspect_ratio() const override;
+    virtual glm::vec2 get_size() const override;
 
     VkInstance get_instance() const {
         return m_instance;

@@ -698,6 +698,11 @@ float VulkanRenderSystem::get_aspect_ratio() const {
 }
 
 //  ----------------------------------------------------------------------------
+glm::vec2 VulkanRenderSystem::get_size() const {
+    return { m_swapchain.extent.width, m_swapchain.extent.height };
+}
+
+//  ----------------------------------------------------------------------------
 bool VulkanRenderSystem::get_job(Job& job) {
     std::lock_guard<std::mutex> lock(m_jobs_mutex);
 

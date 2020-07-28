@@ -5,6 +5,7 @@
 #include "render/render_api.hpp"
 #include "render/sprite_batch.hpp"
 #include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <memory>
 #include <string>
@@ -40,6 +41,7 @@ public:
     }
 
     virtual float get_aspect_ratio() const = 0;
+    virtual glm::vec2 get_size() const = 0;
     virtual bool initialize(GLFWwindow* glfw_window) = 0;
     virtual void load_model(
         common::AssetId id,
