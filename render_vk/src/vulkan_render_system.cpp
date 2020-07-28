@@ -404,6 +404,9 @@ void VulkanRenderSystem::add_job(Job& job) {
 void VulkanRenderSystem::begin_frame() {
     STOPWATCH.start("begin_frame");
 
+    //  Ensure task results are clear
+    m_tasks.clear();
+
     //  Check that textures exist
     std::vector<Texture> textures;
     m_model_mgr->get_textures(textures);
@@ -722,6 +725,7 @@ void VulkanRenderSystem::end_frame() {
     ) {
         m_framebuffer_resized = false;
         recreate_swapchain();
+        m_tasks.clear();
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Failed to present swap chain image.");
     }
