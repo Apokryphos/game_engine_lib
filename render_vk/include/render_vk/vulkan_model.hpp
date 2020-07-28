@@ -19,7 +19,7 @@ class VulkanModel
     VkDeviceMemory m_index_buffer_memory;
 
 public:
-    VulkanModel(const common::AssetId id, const std::string& path)
+    VulkanModel(const common::AssetId id)
     : m_id(id),
       m_device(nullptr) {
     }

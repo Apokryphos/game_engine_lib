@@ -20,6 +20,7 @@ class ModelManager
     std::mutex m_textures_mutex;
     std::map<common::AssetId, std::unique_ptr<VulkanModel>> m_models;
     std::map<common::AssetId, Texture> m_textures;
+    std::unique_ptr<VulkanModel> m_quad;
 
 public:
     ModelManager();
@@ -36,6 +37,12 @@ public:
         return changed;
     }
 
+    void initialize(
+        VkPhysicalDevice physical_device,
+        VkDevice device,
+        VkQueue graphics_queue,
+        VkCommandPool command_pool
+    );
     void load_model(
         const AssetId id,
         const std::string& path,
@@ -46,6 +53,7 @@ public:
     );
 
     VulkanModel* get_model(const AssetId id);
+    VulkanModel& get_quad();
     void get_textures(std::vector<Texture>& textures);
     void unload(VkDevice device);
 };

@@ -3,6 +3,7 @@
 #include "common/asset.hpp"
 #include "render/model_batch.hpp"
 #include "render/render_api.hpp"
+#include "render/sprite_batch.hpp"
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <memory>
@@ -28,6 +29,9 @@ public:
     virtual void begin_frame() = 0;
     virtual void draw_models(
         std::vector<ModelBatch>& batches
+    ) = 0;
+    virtual void draw_sprites(
+        std::vector<render::SpriteBatch>& batches
     ) = 0;
     virtual void end_frame() = 0;
 

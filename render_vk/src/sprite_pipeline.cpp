@@ -145,7 +145,6 @@ void create_sprite_pipeline(
 
     std::array<VkDescriptorSetLayout, 2> set_layouts = {
         descriptor_set_layouts.frame,
-        // descriptor_set_layouts.object,
         descriptor_set_layouts.texture_sampler,
     };
 

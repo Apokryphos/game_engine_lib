@@ -1,7 +1,8 @@
 #pragma once
 
 #include "common/system.hpp"
-#include "render/renderers/model_renderer.hpp"
+#include "render/model_batch.hpp"
+#include "render/sprite_batch.hpp"
 #include "systems/system_ids.hpp"
 #include <glm/mat4x4.hpp>
 #include <vector>
@@ -26,6 +27,12 @@ public:
         glm::mat4 view,
         glm::mat4 proj,
         std::vector<render::ModelBatch>& batches
+    );
+    void batch_sprites(
+        engine::Game& game,
+        glm::mat4 view,
+        glm::mat4 proj,
+        std::vector<render::SpriteBatch>& sprite_batches
     );
 };
 }

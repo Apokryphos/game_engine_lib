@@ -38,6 +38,51 @@ void ModelManager::add_texture(
 }
 
 //  ----------------------------------------------------------------------------
+void ModelManager::initialize(
+    VkPhysicalDevice physical_device,
+    VkDevice device,
+    VkQueue graphics_queue,
+    VkCommandPool command_pool
+) {
+    Mesh mesh;
+
+    mesh.vertices = {
+        {
+            { -1.0f, -1.0f, 0.0f },
+            {  1.0f,  1.0f, 1.0f },
+            {  0.0f,  0.0f, },
+        },
+        {
+            {  1.0f, -1.0f, 0.0f },
+            {  1.0f,  1.0f, 1.0f },
+            {  0.0f,  0.0f, },
+        },
+        {
+            {  1.0f,  1.0f, 0.0f },
+            {  1.0f,  1.0f, 1.0f },
+            {  0.0f,  0.0f, },
+        },
+        {
+            { -1.0f,  1.0f, 0.0f },
+            {  1.0f,  1.0f, 1.0f },
+            {  0.0f,  0.0f, },
+        }
+    };
+
+    mesh.indices = { 0, 1, 3, 1, 2, 3 };
+
+    m_quad = std::make_unique<VulkanModel>(0);
+
+    m_quad->load(
+        physical_device,
+        device,
+        graphics_queue,
+        command_pool,
+        mesh
+    );
+}
+
+//  ----------------------------------------------------------------------------
 void ModelManager::load_model(
     const AssetId id,
     const std::string& path,
@@ -49,7 +94,7 @@ void ModelManager::load_model(
     Mesh mesh;
     load_mesh(mesh, path);
 
-    auto model = std::make_unique<VulkanModel>(id, path);
+    auto model = std::make_unique<VulkanModel>(id);
     model->load(
         physical_device,
         device,
@@ -75,6 +120,11 @@ VulkanModel* ModelManager::get_model(const AssetId id) {
 }
 
 //  ----------------------------------------------------------------------------
+VulkanModel& ModelManager::get_quad() {
+    return *m_quad;
+}
+
+//  ----------------------------------------------------------------------------
 void ModelManager::get_textures(std::vector<Texture>& textures) {
     textures.clear();
 
@@ -86,6 +136,9 @@ void ModelManager::get_textures(std::vector<Texture>& textures) {
 
 //  ----------------------------------------------------------------------------
 void ModelManager::unload(VkDevice device) {
+    m_quad->unload();
+    m_quad = nullptr;
+
     for (auto& pair : m_models) {
         pair.second->unload();
     }

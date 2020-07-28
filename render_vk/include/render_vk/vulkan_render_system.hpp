@@ -5,6 +5,7 @@
 #include "render_vk/descriptor_sets.hpp"
 #include "render_vk/depth.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
+#include "render_vk/sprite_pipeline.hpp"
 #include "render_vk/uniform_buffer.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
@@ -26,6 +27,7 @@ public:
     enum class FrameTaskId
     {
         DrawModels,
+        DrawSprites,
         UpdateFrameUniforms,
         UpdateObjectUniforms,
     };
@@ -82,6 +84,7 @@ public:
         glm::mat4 view;
         glm::mat4 proj;
         std::vector<render::ModelBatch> batches;
+        std::vector<render::SpriteBatch> sprite_batches;
     };
 
     enum class FrameStatus
@@ -158,6 +161,7 @@ private:
     VkQueue m_present_queue             = VK_NULL_HANDLE;
 
     VkRenderPass m_render_pass          = VK_NULL_HANDLE;
+
     VkPipelineLayout m_pipeline_layout  = VK_NULL_HANDLE;
     VkPipeline m_graphics_pipeline      = VK_NULL_HANDLE;
 
@@ -180,6 +184,8 @@ private:
     UniformBuffer<FrameUbo> m_frame_uniform;
     //  Per-object dynamic uniform buffer
     DynamicUniformBuffer<ObjectUbo> m_object_uniform;
+
+    SpritePipeline m_sprite_pipeline;
 
     //  Main thread frame objects
     std::vector<Frame> m_frames;
@@ -227,6 +233,9 @@ public:
     virtual void begin_frame() override;
     virtual void draw_models(
         std::vector<render::ModelBatch>& batches
+    ) override;
+    virtual void draw_sprites(
+        std::vector<render::SpriteBatch>& batches
     ) override;
     //  Presents the completed frame.
     virtual void end_frame() override;

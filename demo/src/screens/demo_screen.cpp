@@ -63,22 +63,39 @@ void DemoScreen::on_render(Game& game) {
     Renderer& render_sys = engine.get_render_system();
     const float aspect_ratio = render_sys.get_aspect_ratio();
 
-    glm::mat4 proj = glm::perspective(
+    const glm::mat4 proj = glm::perspective(
         glm::radians(90.0f),
         aspect_ratio,
         0.1f,
         256.0f
     );
 
-    render_sys.update_frame_uniforms(view, proj);
+    const glm::mat4 ortho_proj = glm::ortho(
+        0.0f,
+        static_cast<float>(1400),
+        0.0f,
+        static_cast<float>(1400),
+        0.0f,
+        1.0f
+    );
 
-    //  Build draw order
+    const glm::mat4 ortho_view = glm::mat4(1.0f);
+
+    render_sys.update_frame_uniforms(ortho_view, ortho_proj);
+
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
+
+    //  Batch models
     std::vector<ModelBatch> model_batches;
     demo_sys.batch_models(game, view, proj, model_batches);
 
-    //  Draw entities
-    render_sys.draw_models(model_batches);
+    //  Batch sprites
+    std::vector<SpriteBatch> sprite_batches;
+    demo_sys.batch_sprites(game, ortho_view, ortho_proj, sprite_batches);
+
+    //  Draw batches
+    // render_sys.draw_models(model_batches);
+    render_sys.draw_sprites(sprite_batches);
 }
 
 //  ----------------------------------------------------------------------------

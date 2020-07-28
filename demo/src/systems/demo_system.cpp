@@ -2,8 +2,10 @@
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
 #include "render/frustum.hpp"
+#include "render/sprite_batch.hpp"
 #include "systems/model_system.hpp"
 #include "systems/position_system.hpp"
+#include "systems/sprite_system.hpp"
 #include "systems/system_util.hpp"
 #include <glm/glm.hpp>
 #include <map>
@@ -78,6 +80,66 @@ void DemoSystem::batch_models(
 
     for (const auto& pair : batches) {
         model_batches.push_back(pair.second);
+    }
+}
+
+//  ----------------------------------------------------------------------------
+void DemoSystem::batch_sprites(
+    Game& game,
+    glm::mat4 view,
+    glm::mat4 proj,
+    std::vector<SpriteBatch>& sprite_batches
+) {
+    SystemManager& sys_mgr = game.get_system_manager();
+
+    //  Get drawable entities
+    const SpriteSystem& sprite_sys = get_sprite_system(sys_mgr);
+    std::vector<Entity> entities;
+    sprite_sys.get_entities(entities);
+
+    const size_t entity_count = entities.size();
+
+    std::map<uint32_t, SpriteBatch> batches;
+
+    Frustum frustum(proj * view);
+
+    const PositionSystem& pos_sys = get_position_system(sys_mgr);
+    for (size_t n = 0; n < entity_count; ++n) {
+        //  Get positions
+        const auto pos_cmpnt = pos_sys.get_component(entities[n]);
+        glm::vec3 position = pos_sys.get_position(pos_cmpnt);
+        // position.z = 0;
+
+        //  Sprite bounding box
+        // const float size = 1.0f;
+        // const glm::vec3 maxp(
+        //     position.x + size,
+        //     position.y + size,
+        //     position.z + size
+        // );
+
+        // const glm::vec3 minp(
+        //     position.x - size,
+        //     position.y - size,
+        //     position.z - size
+        // );
+
+        //  Skip models outside frustum
+        // if (!frustum.is_box_visible(minp, maxp)) {
+        //     continue;
+        // }
+
+        const auto sprite_cmpnt = sprite_sys.get_component(entities[n]);
+        const uint32_t texture_id = sprite_sys.get_texture_id(sprite_cmpnt);
+
+        SpriteBatch& batch = batches[texture_id];
+        batch.texture_id = texture_id;
+        batch.positions.push_back(position);
+        batch.sizes.push_back(glm::vec2(1.0f));
+    }
+
+    for (const auto& pair : batches) {
+        sprite_batches.push_back(pair.second);
     }
 }
 }

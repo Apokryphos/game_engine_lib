@@ -26,6 +26,7 @@
 #include "systems/model_system.hpp"
 #include "systems/move_system.hpp"
 #include "systems/position_system.hpp"
+#include "systems/sprite_system.hpp"
 #include "systems/system_util.hpp"
 #include <set>
 
@@ -177,6 +178,7 @@ static void init_ecs_systems(Game& game) {
     sys_mgr.add_system(std::make_unique<CameraSystem>(ecs, 10000));
     sys_mgr.add_system(std::make_unique<ModelSystem>(ecs, 10000));
     sys_mgr.add_system(std::make_unique<MoveSystem>(ecs, 10000));
+    sys_mgr.add_system(std::make_unique<SpriteSystem>(ecs, 10000));
 
     //  Editors
     EditorSystem& editor_sys = get_editor_system(sys_mgr);
@@ -246,6 +248,13 @@ static void init_entities(Game& game) {
             entity,
             model_sys,
             model_id_dist(random.get_rng()),
+            texture_id_dist(random.get_rng())
+        );
+
+        SpriteSystem& sprite_sys = get_sprite_system(sys_mgr);
+        add_sprite_component(
+            entity,
+            sprite_sys,
             texture_id_dist(random.get_rng())
         );
     }

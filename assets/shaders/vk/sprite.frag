@@ -3,7 +3,7 @@
 #extension GL_EXT_nonuniform_qualifier : enable
 
 layout(push_constant) uniform FragmentPushConstants {
-    layout(offset = 72) uint texture_index;
+    layout(offset = 64) uint texture_index;
 } fpc;
 
 layout(set = 1, binding = 0) uniform sampler2D texSampler[];

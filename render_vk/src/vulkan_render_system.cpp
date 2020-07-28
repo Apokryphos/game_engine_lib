@@ -14,7 +14,9 @@
 #include "render_vk/model_manager.hpp"
 #include "render_vk/render_pass.hpp"
 #include "render_vk/render_tasks/task_draw_models.hpp"
+#include "render_vk/render_tasks/task_draw_sprites.hpp"
 #include "render_vk/render_tasks/task_update_uniforms.hpp"
+#include "render_vk/sprite_pipeline.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_render_system.hpp"
@@ -496,6 +498,14 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         m_graphics_pipeline
     );
 
+    create_sprite_pipeline(
+        m_device,
+        m_swapchain,
+        m_render_pass,
+        m_descriptor_set_layouts,
+        m_sprite_pipeline
+    );
+
     create_depth_resources(
         m_physical_device,
         m_device,
@@ -552,6 +562,9 @@ void VulkanRenderSystem::destroy_swapchain() {
     vkDestroyPipeline(m_device, m_graphics_pipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_pipeline_layout, nullptr);
 
+    vkDestroyPipeline(m_device, m_sprite_pipeline.pipeline, nullptr);
+    vkDestroyPipelineLayout(m_device, m_sprite_pipeline.layout, nullptr);
+
     imgui_vulkan_cleanup_swapchain(m_device);
 
     //  Destroy swapchain image views
@@ -569,10 +582,22 @@ void VulkanRenderSystem::destroy_swapchain() {
 void VulkanRenderSystem::draw_models(
     std::vector<ModelBatch>& batches
 ) {
-    //  Draw models
     Job job{};
     job.task_id = FrameTaskId::DrawModels;
     job.batches = batches;
+    {
+        std::lock_guard<std::mutex> lock(m_jobs_mutex);
+        m_jobs.push(job);
+    }
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanRenderSystem::draw_sprites(
+    std::vector<SpriteBatch>& batches
+) {
+    Job job{};
+    job.task_id = FrameTaskId::DrawSprites;
+    job.sprite_batches = batches;
     {
         std::lock_guard<std::mutex> lock(m_jobs_mutex);
         m_jobs.push(job);
@@ -600,7 +625,7 @@ void VulkanRenderSystem::end_frame() {
         m_graphics_pipeline,
         m_swapchain.extent,
         m_swapchain.framebuffers.at(m_image_index),
-        m_tasks.get_command_buffers(FrameTaskId::DrawModels).at(0),
+        m_tasks.get_command_buffers(FrameTaskId::DrawSprites).at(0),
         frame.command.buffer
     );
 
@@ -772,6 +797,12 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     create_frame_resources();
 
     m_model_mgr = std::make_unique<ModelManager>();
+    m_model_mgr->initialize(
+        m_physical_device,
+        m_device,
+        m_graphics_queue.get_queue(),
+        m_resource_command_pool
+    );
 
     return true;
 }
@@ -781,7 +812,7 @@ void VulkanRenderSystem::load_model(const AssetId id, const std::string& path) {
     Mesh mesh;
     load_mesh(mesh, path);
 
-    auto model = std::make_unique<VulkanModel>(id, path);
+    auto model = std::make_unique<VulkanModel>(id);
     model->load(
         m_physical_device,
         m_device,
@@ -818,7 +849,7 @@ void VulkanRenderSystem::post_work(
 
     m_tasks.add_results(task_id, command_buffer);
 
-    if (m_tasks.get_count(FrameTaskId::DrawModels) &&
+    if (m_tasks.get_count(FrameTaskId::DrawSprites) &&
         m_tasks.get_count(FrameTaskId::UpdateFrameUniforms)
     ) {
         m_frame_status = FrameStatus::Ready;
@@ -970,6 +1001,19 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
                     frame.command.buffer
                 );
                 STOPWATCH.stop(thread_name+"_draw_models");
+                break;
+
+            case FrameTaskId::DrawSprites:
+                STOPWATCH.start(thread_name+"_draw_sprites");
+                task_draw_sprites(
+                    m_render_pass,
+                    m_sprite_pipeline,
+                    *m_model_mgr,
+                    frame.descriptor,
+                    job.sprite_batches,
+                    frame.command.buffer
+                );
+                STOPWATCH.stop(thread_name+"_draw_sprites");
                 break;
 
             case FrameTaskId::UpdateFrameUniforms:
