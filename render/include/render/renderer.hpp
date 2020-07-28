@@ -53,7 +53,8 @@ public:
     virtual void shutdown() = 0;
     virtual void update_frame_uniforms(
         const glm::mat4& view,
-        const glm::mat4& proj
+        const glm::mat4& proj,
+        const glm::mat4& ortho
     ) = 0;
 };
 }

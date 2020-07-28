@@ -9,6 +9,7 @@ layout(push_constant) uniform VertexPushConstants {
 layout(set = 0, binding = 0) uniform FrameUniformBufferObject {
     mat4 view;
     mat4 proj;
+    mat4 ortho;
 } frame_ubo;
 
 layout(location = 0) in vec3 inPosition;
@@ -20,7 +21,7 @@ layout(location = 1) out vec2 fragTexCoord;
 
 void main() {
     gl_Position =
-        frame_ubo.proj * frame_ubo.view * vpc.model *
+        frame_ubo.ortho * vpc.model *
         (vec4(inPosition, 1.0) * vec4(8.0, 8.0, 1.0, 1.0));
     fragColor = inColor;
     fragTexCoord = inTexCoord;

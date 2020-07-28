@@ -11,6 +11,7 @@ struct FrameUbo
 {
     glm::mat4 view;
     glm::mat4 proj;
+    glm::mat4 ortho;
 };
 
 //  Per-object UBO data (updated every object, every frame)

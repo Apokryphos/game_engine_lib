@@ -9,8 +9,7 @@
 namespace render_vk
 {
 void task_update_frame_uniforms(
-    const glm::mat4 view,
-    const glm::mat4 proj,
+    FrameUbo frame_ubo,
     UniformBuffer<FrameUbo>& frame_uniform
 );
 

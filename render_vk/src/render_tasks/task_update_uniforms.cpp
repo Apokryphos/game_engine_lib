@@ -12,17 +12,12 @@ namespace render_vk
 {
 //  ----------------------------------------------------------------------------
 void task_update_frame_uniforms(
-    const glm::mat4 view,
-    const glm::mat4 proj,
+    FrameUbo frame_ubo,
     UniformBuffer<FrameUbo>& frame_uniform
 ) {
-    //  Update frame UBO
-    FrameUbo frame_ubo{};
-    frame_ubo.view = view;
-    frame_ubo.proj = proj;
-
     //  GLM (OpenGL) uses inverted Y clip coordinate
     frame_ubo.proj[1][1] *= -1;
+    frame_ubo.ortho[1][1] *= -1;
 
     //  Copy frame UBO struct to uniform buffer
     frame_uniform.copy(frame_ubo);

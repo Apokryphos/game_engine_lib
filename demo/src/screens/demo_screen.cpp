@@ -81,7 +81,7 @@ void DemoScreen::on_render(Game& game) {
 
     const glm::mat4 ortho_view = glm::mat4(1.0f);
 
-    render_sys.update_frame_uniforms(ortho_view, ortho_proj);
+    render_sys.update_frame_uniforms(view, proj, ortho_proj);
 
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
 
@@ -94,7 +94,7 @@ void DemoScreen::on_render(Game& game) {
     demo_sys.batch_sprites(game, ortho_view, ortho_proj, sprite_batches);
 
     //  Draw batches
-    // render_sys.draw_models(model_batches);
+    render_sys.draw_models(model_batches);
     render_sys.draw_sprites(sprite_batches);
 }
 

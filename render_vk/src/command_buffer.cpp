@@ -162,7 +162,7 @@ void record_primary_command_buffer(
     VkPipeline graphics_pipeline,
     VkExtent2D extent,
     VkFramebuffer framebuffer,
-    VkCommandBuffer secondary_command_buffer,
+    const std::vector<VkCommandBuffer>& secondary_command_buffers,
     VkCommandBuffer& command_buffer
 ) {
     //  Record command buffer
@@ -194,9 +194,12 @@ void record_primary_command_buffer(
     //  Begin render pass
     vkCmdBeginRenderPass(command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
-    //  Execute secondary command buffer
-    VkCommandBuffer secondary_command_buffers = { secondary_command_buffer };
-    vkCmdExecuteCommands(command_buffer, 1, &secondary_command_buffers);
+    //  Execute secondary command buffers
+    vkCmdExecuteCommands(
+        command_buffer,
+        static_cast<uint32_t>(secondary_command_buffers.size()),
+        secondary_command_buffers.data()
+        );
 
     //  Start next subpass for ImGui
     vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);

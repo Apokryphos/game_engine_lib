@@ -618,6 +618,11 @@ void VulkanRenderSystem::end_frame() {
 
     Frame& frame = m_frames.at(m_current_frame);
 
+    std::vector<VkCommandBuffer> secondary_command_buffers{
+        m_tasks.get_command_buffers(FrameTaskId::DrawModels).at(0),
+        m_tasks.get_command_buffers(FrameTaskId::DrawSprites).at(0),
+    };
+
     //  Record primary command buffers
     record_primary_command_buffer(
         m_render_pass,
@@ -625,7 +630,7 @@ void VulkanRenderSystem::end_frame() {
         m_graphics_pipeline,
         m_swapchain.extent,
         m_swapchain.framebuffers.at(m_image_index),
-        m_tasks.get_command_buffers(FrameTaskId::DrawSprites).at(0),
+        secondary_command_buffers,
         frame.command.buffer
     );
 
@@ -849,7 +854,8 @@ void VulkanRenderSystem::post_work(
 
     m_tasks.add_results(task_id, command_buffer);
 
-    if (m_tasks.get_count(FrameTaskId::DrawSprites) &&
+    if (m_tasks.get_count(FrameTaskId::DrawModels) &&
+        m_tasks.get_count(FrameTaskId::DrawSprites) &&
         m_tasks.get_count(FrameTaskId::UpdateFrameUniforms)
     ) {
         m_frame_status = FrameStatus::Ready;
@@ -1018,7 +1024,7 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
 
             case FrameTaskId::UpdateFrameUniforms:
                 STOPWATCH.start(thread_name+"_update_frame_uniforms");
-                task_update_frame_uniforms(job.view, job.proj, m_frame_uniform);
+                task_update_frame_uniforms(job.frame_ubo, m_frame_uniform);
                 STOPWATCH.stop(thread_name+"_update_frame_uniforms");
                 break;
 
@@ -1047,13 +1053,15 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::update_frame_uniforms(
     const glm::mat4& view,
-    const glm::mat4& proj
+    const glm::mat4& proj,
+    const glm::mat4& ortho
 ) {
     //  Update uniform data
     Job job{};
     job.task_id = FrameTaskId::UpdateFrameUniforms;
-    job.view = view;
-    job.proj = proj;
+    job.frame_ubo.view = view;
+    job.frame_ubo.proj = proj;
+    job.frame_ubo.ortho = ortho;
 
     {
         std::lock_guard<std::mutex> lock(m_jobs_mutex);

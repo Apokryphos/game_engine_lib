@@ -81,8 +81,7 @@ public:
         FrameTaskId task_id;
         void* args;
 
-        glm::mat4 view;
-        glm::mat4 proj;
+        FrameUbo frame_ubo;
         std::vector<render::ModelBatch> batches;
         std::vector<render::SpriteBatch> sprite_batches;
     };
@@ -259,7 +258,8 @@ public:
     virtual void resize() override;
     virtual void update_frame_uniforms(
         const glm::mat4& view,
-        const glm::mat4& proj
+        const glm::mat4& proj,
+        const glm::mat4& ortho
     ) override;
 };
 }

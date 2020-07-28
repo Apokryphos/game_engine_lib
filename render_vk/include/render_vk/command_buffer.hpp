@@ -54,7 +54,7 @@ void record_primary_command_buffer(
     VkPipeline graphics_pipeline,
     VkExtent2D extent,
     VkFramebuffer framebuffer,
-    VkCommandBuffer secondary_command_buffer,
+    const std::vector<VkCommandBuffer>& secondary_command_buffers,
     VkCommandBuffer& command_buffer
 );
 }
