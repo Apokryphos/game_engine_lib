@@ -28,7 +28,9 @@ void task_draw_sprites(
     //  Record secondary command buffer
     VkCommandBufferBeginInfo begin_info{};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    begin_info.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+    begin_info.flags =
+        VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT |
+        VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
     begin_info.pInheritanceInfo = &inherit_info;
 
     begin_debug_marker(command_buffer, "Draw Sprites", DEBUG_MARKER_COLOR_ORANGE);

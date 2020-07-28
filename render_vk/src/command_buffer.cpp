@@ -168,7 +168,7 @@ void record_primary_command_buffer(
     //  Record command buffer
     VkCommandBufferBeginInfo begin_info{};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    begin_info.flags = 0; // Optional
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
     begin_info.pInheritanceInfo = nullptr; // Optional
 
     if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
