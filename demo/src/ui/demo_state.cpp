@@ -5,6 +5,7 @@
 #include "engine/base_systems/base_system_util.hpp"
 #include "engine/base_systems/debug_gui_system.hpp"
 #include "engine/base_systems/editor_system.hpp"
+#include "engine/base_systems/name_system.hpp"
 #include "engine/engine.hpp"
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
@@ -106,13 +107,33 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
         case INPUT_ACTION_ID_CANCEL:
             break;
 
-        case INPUT_ACTION_ID_MOVE_BACKWARD:
-            move_sys.move_backward(move_cmpnt, std::abs(event.get_analog_value()));
-            break;
+        case INPUT_ACTION_ID_MOVE_BACKWARD: {
+            float amount = std::abs(event.get_analog_value());
 
-        case INPUT_ACTION_ID_MOVE_FORWARD:
-            move_sys.move_forward(move_cmpnt, std::abs(event.get_analog_value()));
+            //  Flip sign if camera is orthographic
+            const Entity camera = camera_sys.get_active_camera();
+            const auto camera_cmpnt = camera_sys.get_component(camera);
+            if (camera_sys.is_ortho(camera_cmpnt)) {
+                amount *= -1;
+            }
+
+            move_sys.move_backward(move_cmpnt, amount);
             break;
+        }
+
+        case INPUT_ACTION_ID_MOVE_FORWARD: {
+            float amount = std::abs(event.get_analog_value());
+
+            //  Flip sign if camera is orthographic
+            const Entity camera = camera_sys.get_active_camera();
+            const auto camera_cmpnt = camera_sys.get_component(camera);
+            if (camera_sys.is_ortho(camera_cmpnt)) {
+                amount *= -1;
+            }
+
+            move_sys.move_forward(move_cmpnt, amount);
+            break;
+        }
 
         case INPUT_ACTION_ID_MOVE_RIGHT:
             move_sys.move_right(move_cmpnt, std::abs(event.get_analog_value()));
@@ -145,6 +166,22 @@ void DemoState::on_process_event(Game& game, const InputEvent& event) {
 
         case INPUT_ACTION_ID_ZOOM_OUT:
             camera_sys.zoom_out(camera_cmpnt, event.get_analog_value());
+            break;
+
+        case INPUT_ACTION_ID_TOGGLE_CAMERA:
+            const Entity active_camera = camera_sys.get_active_camera();
+            NameSystem& name_sys = get_name_system(sys_mgr);
+            const auto active_camera_name_cmpnt = name_sys.get_component(active_camera);
+            const std::string& active_camera_name = name_sys.get_name(active_camera_name_cmpnt);
+            if (active_camera_name == "camera") {
+                const Entity camera = name_sys.get_entity("ortho_camera");
+                const auto camera_cmpnt = camera_sys.get_component(camera);
+                camera_sys.activate(camera_cmpnt);
+            } else {
+                const Entity camera = name_sys.get_entity("camera");
+                const auto camera_cmpnt = camera_sys.get_component(camera);
+                camera_sys.activate(camera_cmpnt);
+            }
             break;
     }
 }

@@ -70,6 +70,7 @@ static void init_input_actions(InputManager& input_mgr) {
     action_set.add_action(INPUT_ACTION_ID_AIM_HORZ, "Aim X", InputType::Analog, InputEventType::Delta);
     action_set.add_action(INPUT_ACTION_ID_AIM_VERT, "Aim Y", InputType::Analog, InputEventType::Delta);
     action_set.add_action(INPUT_ACTION_ID_FIRE, "Fire", InputType::Digital, InputEventType::Delta);
+    action_set.add_action(INPUT_ACTION_ID_TOGGLE_CAMERA, "Toggle Active Camera", InputType::Digital, InputEventType::Pressed);
     action_set.add_action(INPUT_ACTION_ID_ZOOM_IN, "Zoom In", InputType::Analog, InputEventType::Down);
     action_set.add_action(INPUT_ACTION_ID_ZOOM_OUT, "Zoom Out", InputType::Analog, InputEventType::Down);
     action_set.add_action(INPUT_ACTION_ID_ROTATE_CW, "Rotate Left", InputType::Analog, InputEventType::Down);
@@ -92,6 +93,7 @@ static void init_default_key_binds(InputManager& input_mgr) {
     bind_map.bind_key(INPUT_ACTION_ID_MOVE_LEFT, GLFW_KEY_LEFT);
     bind_map.bind_key(INPUT_ACTION_ID_ROTATE_CW, GLFW_KEY_END);
     bind_map.bind_key(INPUT_ACTION_ID_ROTATE_CCW, GLFW_KEY_HOME);
+    bind_map.bind_key(INPUT_ACTION_ID_TOGGLE_CAMERA, GLFW_KEY_TAB);
     bind_map.bind_key(INPUT_ACTION_ID_ZOOM_IN, GLFW_KEY_EQUAL);
     bind_map.bind_key(INPUT_ACTION_ID_ZOOM_OUT, GLFW_KEY_MINUS);
 }
