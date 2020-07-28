@@ -55,21 +55,22 @@ void ModelManager::initialize(
         {
             {  1.0f, -1.0f, 0.0f },
             {  1.0f,  1.0f, 1.0f },
-            {  0.0f,  0.0f, },
+            {  1.0f,  0.0f, },
         },
         {
             {  1.0f,  1.0f, 0.0f },
             {  1.0f,  1.0f, 1.0f },
-            {  0.0f,  0.0f, },
+            {  1.0f,  1.0f, },
         },
         {
             { -1.0f,  1.0f, 0.0f },
             {  1.0f,  1.0f, 1.0f },
-            {  0.0f,  0.0f, },
+            {  0.0f,  1.0f, },
         }
     };
 
-    mesh.indices = { 0, 1, 3, 1, 2, 3 };
+    //  Counter-clockwise order
+    mesh.indices = { 0, 3, 1, 1, 3, 2 };
 
     m_quad = std::make_unique<VulkanModel>(0);
 
