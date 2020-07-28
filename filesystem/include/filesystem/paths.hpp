@@ -5,4 +5,5 @@
 namespace filesystem
 {
 std::filesystem::path get_game_base_path(const std::string& game_base_dir_name);
+std::filesystem::path get_game_log_path(const std::string& game_base_dir_name);
 }

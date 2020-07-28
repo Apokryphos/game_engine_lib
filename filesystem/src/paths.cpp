@@ -67,4 +67,21 @@ fs::path get_game_base_path(const std::string& game_base_dir_name) {
 
     return base_path;
 }
+
+//  ----------------------------------------------------------------------------
+fs::path get_game_log_path(const std::string& game_base_dir_name) {
+    const fs::path base_path = get_home_path() / game_base_dir_name;
+
+    if (!fs::exists(base_path)) {
+        if (!fs::create_directories(base_path)) {
+            throw std::runtime_error(
+                "Could not create directory '" + base_path.string() + "'."
+            );
+        }
+
+        log_info("Created save directory '%s'.", base_path.c_str());
+    }
+
+    return base_path / "log.txt";
+}
 }

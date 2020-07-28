@@ -2,17 +2,56 @@
 
 #include "common/string.hpp"
 #include <rang.hpp>
+#include <fstream>
 #include <iostream>
+#include <memory>
+#include <mutex>
 
 namespace common
 {
+struct Log
+{
+    std::ofstream file;
+};
+
+extern std::unique_ptr<Log> s_log;
+
+void initialize_log(const std::string& path);
+
+inline void log(
+    const std::string& str,
+    rang::fg color,
+    rang::style style,
+    bool error = false
+) {
+    //  Standard output / error
+    static std::mutex cout_mutex;
+    {
+        std::lock_guard<std::mutex> lock(cout_mutex);
+
+        (error ? std::cerr : std::cout) <<
+            style << color << str <<
+            rang::style::reset << rang::fg::reset <<
+            "\n";
+    }
+
+    if (s_log == nullptr) {
+        return;
+    }
+
+    //  Log file
+    static std::mutex file_mutex;
+    {
+        std::lock_guard<std::mutex> lock(file_mutex);
+
+        //  Write to file and flush immediately in case application locks up.
+        s_log->file << str << std::endl;
+    }
+}
+
 inline void log_debug(const std::string& str) {
     #ifdef DEBUG
-    std::cout <<
-        rang::style::bold << rang::fg::black <<
-        str <<
-        rang::style::reset << rang::fg::reset <<
-        "\n";
+    log(str, rang::fg::black, rang::style::bold);
     #endif
 }
 
@@ -24,11 +63,7 @@ inline void log_debug(const char* format, Args... args) {
 }
 
 inline void log_error(const std::string& str) {
-    std::cerr <<
-        rang::fg::red <<
-        str <<
-        rang::fg::reset <<
-        "\n";
+    log(str, rang::fg::red, rang::style::bold, true);
 }
 
 template <typename... Args>
@@ -37,7 +72,7 @@ inline void log_error(const char* format, Args... args) {
 }
 
 inline void log_help(const std::string& str) {
-    std::cout << str << "\n";
+    log(str, rang::fg::gray, rang::style::dim);
 }
 
 template <typename... Args>
@@ -46,15 +81,20 @@ inline void log_help(const char* format, Args... args) {
 }
 
 inline void log_info(const std::string& str) {
-    std::cout <<
-        rang::fg::green <<
-        str <<
-        rang::fg::reset <<
-        "\n";
+    log(str, rang::fg::green, rang::style::bold);
 }
 
 template <typename... Args>
 inline void log_info(const char* format, Args... args) {
     log_info(stringf(format, args...));
+}
+
+inline void log_warn(const std::string& str) {
+    log(str, rang::fg::yellow, rang::style::bold);
+}
+
+template <typename... Args>
+inline void log_warn(const char* format, Args... args) {
+    log_warn(stringf(format, args...));
 }
 }

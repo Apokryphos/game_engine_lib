@@ -12,6 +12,7 @@
 #include "engine/base_systems/profile_system.hpp"
 #include "engine/time.hpp"
 #include "engine/ui/ui_state_manager.hpp"
+#include "filesystem/paths.hpp"
 #include "input/input_manager.hpp"
 #include "platform/window.hpp"
 #include "render/renderer.hpp"
@@ -21,6 +22,7 @@
 
 using namespace common;
 using namespace ecs;
+using namespace filesystem;
 using namespace input;
 using namespace platform;
 using namespace render;
@@ -34,6 +36,9 @@ Game::Game(const std::string& game_base_name)
   m_ecs_root(std::make_unique<EcsRoot>()),
   m_engine(std::make_unique<Engine>()),
   m_sys_mgr(nullptr) {
+    //  Any log calls before here will not be written to the log file.
+    initialize_log(get_game_log_path(game_base_name));
+
     m_sys_mgr = std::make_unique<SystemManager>(*m_ecs_root);
 
     initialize_base_systems(*this, game_base_name);
