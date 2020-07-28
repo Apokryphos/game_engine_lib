@@ -93,6 +93,10 @@ public:
         return get_component_data(cmpnt).view;
     }
 
+    bool is_ortho(const Component cmpnt) const {
+        return get_component_data(cmpnt).ortho;
+    }
+
     static const common::SystemId Id = SYSTEM_ID_CAMERA;
 
     void set_mode(const Component cmpnt, CameraMode mode) {
