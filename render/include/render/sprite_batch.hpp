@@ -11,6 +11,6 @@ struct SpriteBatch
 {
     uint32_t texture_id;
     std::vector<glm::vec3> positions;
-    std::vector<glm::vec2> sizes;
+    std::vector<glm::vec3> sizes;
 };
 }

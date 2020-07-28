@@ -109,32 +109,32 @@ void DemoSystem::batch_sprites(
         const auto pos_cmpnt = pos_sys.get_component(entities[n]);
         glm::vec3 position = pos_sys.get_position(pos_cmpnt);
 
-        //  Sprite bounding box
-        // const float size = 1.0f;
-        // const glm::vec3 maxp(
-        //     position.x + size,
-        //     position.y + size,
-        //     position.z + size
-        // );
-
-        // const glm::vec3 minp(
-        //     position.x - size,
-        //     position.y - size,
-        //     position.z - size
-        // );
-
-        //  Skip models outside frustum
-        // if (!frustum.is_box_visible(minp, maxp)) {
-        //     continue;
-        // }
-
         const auto sprite_cmpnt = sprite_sys.get_component(entities[n]);
         const uint32_t texture_id = sprite_sys.get_texture_id(sprite_cmpnt);
+        const glm::vec2 size = sprite_sys.get_size(sprite_cmpnt);
+
+        //  Sprite bounding box
+        const glm::vec3 maxp(
+            position.x + size.x,
+            position.y + size.y,
+            1.0f
+        );
+
+        const glm::vec3 minp(
+            position.x - size.x,
+            position.y - size.y,
+            0.0f
+        );
+
+        //  Skip models outside frustum
+        if (!frustum.is_box_visible(minp, maxp)) {
+            continue;
+        }
 
         SpriteBatch& batch = batches[texture_id];
         batch.texture_id = texture_id;
         batch.positions.push_back(position);
-        batch.sizes.push_back(glm::vec2(1.0f));
+        batch.sizes.push_back({size.x, size.y, 1.0f});
     }
 
     for (const auto& pair : batches) {

@@ -260,6 +260,7 @@ static void init_sprites(Game& game) {
     NameSystem& name_sys = get_name_system(sys_mgr);
     PositionSystem& pos_sys = get_position_system(sys_mgr);
 
+    std::uniform_real_distribution<float> size_dist(0.5f, 1.0f);
     std::uniform_int_distribution<int> x_dist(0, 3000);
     std::uniform_int_distribution<int> y_dist(0, 2000);
 
@@ -295,7 +296,15 @@ static void init_sprites(Game& game) {
         add_position_component(entity, pos_sys, position);
 
         SpriteSystem& sprite_sys = get_sprite_system(sys_mgr);
-        add_sprite_component(entity, sprite_sys, 3);
+        add_sprite_component(
+            entity,
+            sprite_sys,
+            3,
+            glm::vec2(
+                102 * size_dist(random.get_rng()),
+                100 * size_dist(random.get_rng())
+            )
+        );
     }
 }
 

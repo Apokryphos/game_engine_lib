@@ -108,7 +108,9 @@ void task_draw_sprites(
 
         //  Draw each object
         for (uint32_t n = 0; n < batch.positions.size(); ++n) {
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), batch.positions[n]);
+            glm::mat4 model =
+                glm::translate(glm::mat4(1.0f), batch.positions[n]) *
+                glm::scale(glm::mat4(1.0f), batch.sizes[n]);
 
             vkCmdPushConstants(
                 command_buffer,

@@ -3,6 +3,7 @@
 //  Include base systems util for convenience since there
 //  are few base systems.
 #include "engine/base_systems/base_system_util.hpp"
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
 namespace engine
@@ -46,7 +47,8 @@ void add_position_component(
 void add_sprite_component(
     const ecs::Entity entity,
     SpriteSystem& sprite_sys,
-    uint32_t texture_id
+    uint32_t texture_id,
+    const glm::vec2 size
 );
 
 CameraSystem& get_camera_system(engine::SystemManager& sys_mgr);

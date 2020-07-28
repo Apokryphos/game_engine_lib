@@ -74,7 +74,8 @@ void add_position_component(
 void add_sprite_component(
     const Entity entity,
     SpriteSystem& sprite_sys,
-    uint32_t texture_id
+    uint32_t texture_id,
+    const glm::vec2 size
 ) {
     if (!sprite_sys.has_component(entity)) {
         sprite_sys.add_component(entity);
@@ -82,6 +83,7 @@ void add_sprite_component(
 
     const auto sprite_cmpnt = sprite_sys.get_component(entity);
     sprite_sys.set_texture_id(sprite_cmpnt, texture_id);
+    sprite_sys.set_size(sprite_cmpnt, size);
 }
 
 //  ----------------------------------------------------------------------------
