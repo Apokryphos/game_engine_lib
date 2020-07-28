@@ -3,6 +3,7 @@
 #include "systems/model_system.hpp"
 #include "systems/move_system.hpp"
 #include "systems/position_system.hpp"
+#include "systems/sprite_system.hpp"
 #include "systems/system_util.hpp"
 #include <glm/vec3.hpp>
 
@@ -70,6 +71,20 @@ void add_position_component(
 }
 
 //  ----------------------------------------------------------------------------
+void add_sprite_component(
+    const Entity entity,
+    SpriteSystem& sprite_sys,
+    uint32_t texture_id
+) {
+    if (!sprite_sys.has_component(entity)) {
+        sprite_sys.add_component(entity);
+    }
+
+    const auto sprite_cmpnt = sprite_sys.get_component(entity);
+    sprite_sys.set_texture_id(sprite_cmpnt, texture_id);
+}
+
+//  ----------------------------------------------------------------------------
 CameraSystem& get_camera_system(SystemManager& sys_mgr) {
     return sys_mgr.get_system<CameraSystem>(SYSTEM_ID_CAMERA);
 }
@@ -87,5 +102,10 @@ MoveSystem& get_move_system(SystemManager& sys_mgr) {
 //  ----------------------------------------------------------------------------
 PositionSystem& get_position_system(SystemManager& sys_mgr) {
     return sys_mgr.get_system<PositionSystem>(SYSTEM_ID_POSITION);
+}
+
+//  ----------------------------------------------------------------------------
+SpriteSystem& get_sprite_system(engine::SystemManager& sys_mgr) {
+    return sys_mgr.get_system<SpriteSystem>(SYSTEM_ID_SPRITE);
 }
 }

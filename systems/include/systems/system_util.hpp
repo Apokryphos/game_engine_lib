@@ -16,6 +16,7 @@ class CameraSystem;
 class PositionSystem;
 class ModelSystem;
 class MoveSystem;
+class SpriteSystem;
 
 void add_camera_component(
     const ecs::Entity entity,
@@ -42,8 +43,15 @@ void add_position_component(
     const glm::vec3 position
 );
 
+void add_sprite_component(
+    const ecs::Entity entity,
+    SpriteSystem& sprite_sys,
+    uint32_t texture_id
+);
+
 CameraSystem& get_camera_system(engine::SystemManager& sys_mgr);
 ModelSystem& get_model_system(engine::SystemManager& sys_mgr);
 MoveSystem& get_move_system(engine::SystemManager& sys_mgr);
 PositionSystem& get_position_system(engine::SystemManager& sys_mgr);
+SpriteSystem& get_sprite_system(engine::SystemManager& sys_mgr);
 }
