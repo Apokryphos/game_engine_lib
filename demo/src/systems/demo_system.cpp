@@ -8,6 +8,7 @@
 #include "systems/sprite_system.hpp"
 #include "systems/system_util.hpp"
 #include <glm/glm.hpp>
+#include <glm/gtx/norm.hpp>
 #include <map>
 
 using namespace ecs;
@@ -17,6 +18,47 @@ using namespace systems;
 
 namespace demo
 {
+struct EntitySort
+{
+    Entity entity;
+    //  Squared distance from origin
+    float distance;
+    glm::vec3 position;
+};
+
+//  ----------------------------------------------------------------------------
+static void sort_entities(
+    const std::vector<Entity>& entities,
+    const glm::vec3 origin,
+    PositionSystem& pos_sys,
+    std::vector<EntitySort>& sorted
+) {
+    sorted.resize(entities.size());
+
+    //  Populate
+    const size_t entity_count = entities.size();
+    for (size_t n = 0; n < entity_count; ++n) {
+        sorted[n].entity = entities[n];
+
+        const auto pos_cmpnt = pos_sys.get_component(entities[n]);
+        sorted[n].position = pos_sys.get_position(pos_cmpnt);
+
+        sorted[n].distance = glm::distance2(
+            origin,
+            sorted[n].position
+        );
+    }
+
+    //  Sort by squared distance from origin
+    std::sort(
+        sorted.begin(),
+        sorted.end(),
+        [](EntitySort& a, EntitySort& b) {
+            return a.distance < b.distance;
+        }
+    );
+}
+
 //  ----------------------------------------------------------------------------
 DemoSystem::DemoSystem()
 : System(SYSTEM_ID_DEMO, "demo_system") {
