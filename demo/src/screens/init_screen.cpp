@@ -51,6 +51,9 @@ bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
 
 namespace demo
 {
+const int MODEL_COUNT = 5000;
+const int SPRITE_COUNT = 100;
+
 //  ----------------------------------------------------------------------------
 static void init_input_actions(InputManager& input_mgr) {
     log_debug("Initializing input actions...");
@@ -197,16 +200,12 @@ static void init_ecs_systems(Game& game) {
 }
 
 //  ----------------------------------------------------------------------------
-static void init_entities(Game& game) {
+static void init_models(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
 
     NameSystem& name_sys = get_name_system(sys_mgr);
     PositionSystem& pos_sys = get_position_system(sys_mgr);
-
-    //  Camera
-    Entity camera = ecs.create_entity();
-    make_camera(game, camera, "camera", glm::vec3(1.0f), 10.0f);
 
     std::uniform_int_distribution<int> model_id_dist(0, 2);
     std::uniform_int_distribution<int> texture_id_dist(0, 2);
@@ -215,7 +214,7 @@ static void init_entities(Game& game) {
     Random& random = game.get_random();
 
     std::set<glm::vec3> position_set;
-    while (position_set.size() < 5000) {
+    while (position_set.size() < MODEL_COUNT) {
         const glm::vec3 position = {
             position_dist(random.get_rng()) * 2,
             position_dist(random.get_rng()) * 2,
@@ -232,7 +231,7 @@ static void init_entities(Game& game) {
     for (int n = 0; n < entity_count; ++n) {
         Entity entity = ecs.create_entity();
 
-        const std::string name = "entity_" + std::to_string(n);
+        const std::string name = "entity_" + std::to_string(entity.id);
 
         name_sys.add_component(entity);
         const auto name_cmpnt = name_sys.get_component(entity);
@@ -250,14 +249,70 @@ static void init_entities(Game& game) {
             model_id_dist(random.get_rng()),
             texture_id_dist(random.get_rng())
         );
+    }
+}
+
+//  ----------------------------------------------------------------------------
+static void init_sprites(Game& game) {
+    EcsRoot& ecs = game.get_ecs_root();
+    SystemManager& sys_mgr = game.get_system_manager();
+
+    NameSystem& name_sys = get_name_system(sys_mgr);
+    PositionSystem& pos_sys = get_position_system(sys_mgr);
+
+    std::uniform_int_distribution<int> x_dist(0, 3000);
+    std::uniform_int_distribution<int> y_dist(0, 2000);
+
+    Random& random = game.get_random();
+
+    std::set<glm::vec3> position_set;
+    while (position_set.size() < SPRITE_COUNT) {
+        const glm::vec3 position = {
+            x_dist(random.get_rng()),
+            y_dist(random.get_rng()),
+            0.0f
+        };
+
+        position_set.insert(position);
+    }
+
+    std::vector<glm::vec3> positions;
+    std::copy(position_set.begin(), position_set.end(), std::back_inserter(positions));
+
+    const int entity_count = positions.size();
+    for (int n = 0; n < entity_count; ++n) {
+        Entity entity = ecs.create_entity();
+
+        const std::string name = "entity_" + std::to_string(entity.id);
+
+        name_sys.add_component(entity);
+        const auto name_cmpnt = name_sys.get_component(entity);
+        name_sys.set_name(name_cmpnt, name);
+
+        const glm::vec3 position = positions[n];
+
+        PositionSystem& pos_sys = get_position_system(sys_mgr);
+        add_position_component(entity, pos_sys, position);
 
         SpriteSystem& sprite_sys = get_sprite_system(sys_mgr);
-        add_sprite_component(
-            entity,
-            sprite_sys,
-            texture_id_dist(random.get_rng())
-        );
+        add_sprite_component(entity, sprite_sys, 3);
     }
+}
+
+//  ----------------------------------------------------------------------------
+static void init_entities(Game& game) {
+    EcsRoot& ecs = game.get_ecs_root();
+    SystemManager& sys_mgr = game.get_system_manager();
+
+    NameSystem& name_sys = get_name_system(sys_mgr);
+    PositionSystem& pos_sys = get_position_system(sys_mgr);
+
+    //  Camera
+    Entity camera = ecs.create_entity();
+    make_camera(game, camera, "camera", glm::vec3(1.0f), 10.0f);
+
+    init_models(game);
+    init_sprites(game);
 }
 
 //  ----------------------------------------------------------------------------
@@ -293,6 +348,7 @@ void InitScreen::on_load(Game& game) {
     asset_mgr.load_texture(render_sys, "assets/textures/model.png");
     asset_mgr.load_texture(render_sys, "assets/textures/model2.png");
     asset_mgr.load_texture(render_sys, "assets/textures/model3.png");
+    asset_mgr.load_texture(render_sys, "assets/textures/sprite.png");
 
     //  Next screen
     load_demo_screen(game);

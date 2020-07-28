@@ -108,7 +108,6 @@ void DemoSystem::batch_sprites(
         //  Get positions
         const auto pos_cmpnt = pos_sys.get_component(entities[n]);
         glm::vec3 position = pos_sys.get_position(pos_cmpnt);
-        // position.z = 0;
 
         //  Sprite bounding box
         // const float size = 1.0f;

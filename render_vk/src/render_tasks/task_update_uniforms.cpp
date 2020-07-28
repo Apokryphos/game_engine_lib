@@ -17,7 +17,6 @@ void task_update_frame_uniforms(
 ) {
     //  GLM (OpenGL) uses inverted Y clip coordinate
     frame_ubo.proj[1][1] *= -1;
-    frame_ubo.ortho[1][1] *= -1;
 
     //  Copy frame UBO struct to uniform buffer
     frame_uniform.copy(frame_ubo);
