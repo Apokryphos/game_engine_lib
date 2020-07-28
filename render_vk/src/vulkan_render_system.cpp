@@ -1059,14 +1059,16 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
 void VulkanRenderSystem::update_frame_uniforms(
     const glm::mat4& view,
     const glm::mat4& proj,
-    const glm::mat4& ortho
+    const glm::mat4& ortho_view,
+    const glm::mat4& ortho_proj
 ) {
     //  Update uniform data
     Job job{};
     job.task_id = FrameTaskId::UpdateFrameUniforms;
     job.frame_ubo.view = view;
     job.frame_ubo.proj = proj;
-    job.frame_ubo.ortho = ortho;
+    job.frame_ubo.ortho_view = ortho_view;
+    job.frame_ubo.ortho_proj = ortho_proj;
 
     {
         std::lock_guard<std::mutex> lock(m_jobs_mutex);

@@ -128,7 +128,7 @@ void DemoSystem::batch_sprites(
 
         //  Skip models outside frustum
         if (!frustum.is_box_visible(minp, maxp)) {
-            continue;
+            // continue;
         }
 
         SpriteBatch& batch = batches[texture_id];

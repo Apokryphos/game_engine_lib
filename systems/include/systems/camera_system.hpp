@@ -25,6 +25,7 @@ enum class CameraMode
 //  Requires the entity to have a position component.
 struct CameraComponentData
 {
+    bool ortho;
     CameraMode mode;
     //  Distance between camera and target
     float distance;
@@ -42,6 +43,7 @@ struct CameraComponentData
     template <typename Archive>
     void archive(Archive& ar) {
         ar(
+            ortho,
             mode,
             distance,
             zoom_direction,
@@ -100,6 +102,10 @@ public:
         if (mode == CameraMode::Orbit) {
             data.distance = 3.0f;
         }
+    }
+
+    void set_ortho(const Component cmpnt, bool ortho) {
+        get_component_data(cmpnt).ortho = ortho;
     }
 
     void set_target(const Component cmpnt, const glm::vec3& target) {

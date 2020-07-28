@@ -16,6 +16,7 @@ void make_camera(
     const ecs::Entity entity,
     const std::string& name,
     glm::vec3 position,
-    float move_speed
+    float move_speed,
+    bool ortho = false
 );
 }

@@ -16,6 +16,7 @@ namespace systems
 {
 //  ----------------------------------------------------------------------------
 void CameraSystem::initialize_component_data(size_t index, CameraComponentData& data) {
+    data.ortho = false;
     data.zoom_speed = 10.0f;
 }
 
@@ -58,24 +59,34 @@ void CameraSystem::update(Game& game) {
             target_pos = data.target;
         }
 
+        //  Calculate camera up vector
+        glm::vec3 camera_up{0.0f, 0.0f, 1.0f};
+
+        //  Ortho camera
+        if (data.ortho) {
+            camera_pos = {
+                camera_pos.x,
+                camera_pos.y,
+                0.0f
+            };
+            target_pos = {
+                camera_pos.x,
+                camera_pos.y,
+                -1.0f
+            };
+            camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
+        }
+
         //  Camera mode logic
         if (data.mode == CameraMode::Aim) {
             //  Position and target are used to calculate view matrix.
             //  Neither is modified.
-            data.view = glm::lookAt(
-                camera_pos,
-                target_pos,
-                glm::vec3(0.0f, 0.0f, 1.0f)
-            );
+            data.view = glm::lookAt(camera_pos, target_pos, camera_up);
         } else if (data.mode == CameraMode::Orbit) {
             glm::vec3 eye = camera_pos - facing * data.distance;
             eye.z += data.distance;
 
-            data.view = glm::lookAt(
-                eye,
-                camera_pos,
-                glm::vec3(0.0f, 0.0f, 1.0f)
-            );
+            data.view = glm::lookAt(eye, camera_pos, camera_up);
         } else {
             throw std::runtime_error("Not implemented.");
         }

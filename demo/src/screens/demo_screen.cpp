@@ -2,6 +2,7 @@
 #include "demo/screens/demo_screen.hpp"
 #include "demo/ui/demo_state.hpp"
 #include "demo/systems/demo_system.hpp"
+#include "engine/base_systems/name_system.hpp"
 #include "engine/engine.hpp"
 #include "engine/game.hpp"
 #include "engine/time.hpp"
@@ -48,6 +49,7 @@ void DemoScreen::on_render(Game& game) {
     // const float elapsed_seconds = get_total_elapsed_seconds();
 
     SystemManager& sys_mgr = game.get_system_manager();
+    NameSystem& name_sys = get_name_system(sys_mgr);
 
     //  Get active camera
     CameraSystem& camera_sys = get_camera_system(sys_mgr);
@@ -55,7 +57,8 @@ void DemoScreen::on_render(Game& game) {
         return;
     }
 
-    const Entity camera = camera_sys.get_active_camera();
+    //  Perspective camera
+    const Entity camera = name_sys.get_entity("camera");
     const auto camera_cmpnt = camera_sys.get_component(camera);
     glm::mat4 view = camera_sys.get_view_matrix(camera_cmpnt);
 
@@ -71,6 +74,10 @@ void DemoScreen::on_render(Game& game) {
         256.0f
     );
 
+    //  Orthographic camera
+    const Entity ortho_camera = name_sys.get_entity("ortho_camera");
+    const auto ortho_camera_cmpnt = camera_sys.get_component(ortho_camera);
+    const glm::mat4 ortho_view = camera_sys.get_view_matrix(ortho_camera_cmpnt);
     const glm::mat4 ortho_proj = glm::ortho(
         0.0f,
         size.x,
@@ -80,9 +87,7 @@ void DemoScreen::on_render(Game& game) {
         1.0f
     );
 
-    const glm::mat4 ortho_view = glm::mat4(1.0f);
-
-    render_sys.update_frame_uniforms(view, proj, ortho_proj);
+    render_sys.update_frame_uniforms(view, proj, ortho_view, ortho_proj);
 
     DemoSystem& demo_sys = sys_mgr.get_system<DemoSystem>(SYSTEM_ID_DEMO);
 

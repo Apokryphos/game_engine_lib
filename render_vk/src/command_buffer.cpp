@@ -199,7 +199,7 @@ void record_primary_command_buffer(
         command_buffer,
         static_cast<uint32_t>(secondary_command_buffers.size()),
         secondary_command_buffers.data()
-        );
+    );
 
     //  Start next subpass for ImGui
     vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);

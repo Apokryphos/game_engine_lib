@@ -13,6 +13,12 @@ using namespace engine;
 namespace systems
 {
 //  ----------------------------------------------------------------------------
+void activate_camera(const ecs::Entity entity, CameraSystem& cam_sys) {
+    const auto cam_cmpnt = cam_sys.get_component(entity);
+    cam_sys.activate(cam_cmpnt);
+}
+
+//  ----------------------------------------------------------------------------
 void add_camera_component(
     const Entity entity,
     CameraSystem& cam_sys,

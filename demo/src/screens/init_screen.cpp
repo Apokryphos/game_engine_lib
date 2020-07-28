@@ -320,6 +320,20 @@ static void init_entities(Game& game) {
     Entity camera = ecs.create_entity();
     make_camera(game, camera, "camera", glm::vec3(1.0f), 10.0f);
 
+    //  2D camera
+    Entity ortho_camera = ecs.create_entity();
+    make_camera(
+        game,
+        ortho_camera,
+        "ortho_camera",
+        glm::vec3(0.0f),
+        64.0f,
+        true
+    );
+
+    CameraSystem& camera_sys = get_camera_system(sys_mgr);
+    activate_camera(camera, camera_sys);
+
     init_models(game);
     init_sprites(game);
 }

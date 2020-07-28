@@ -16,7 +16,8 @@ void make_camera(
     const Entity entity,
     const std::string& name,
     glm::vec3 position,
-    float move_speed
+    float move_speed,
+    bool ortho
 ) {
     SystemManager& sys_mgr = game.get_system_manager();
     add_name_component(entity, get_name_system(sys_mgr), name);
@@ -31,7 +32,10 @@ void make_camera(
         glm::vec3(0)
     );
     const auto cam_cmpnt = cam_sys.get_component(entity);
-    cam_sys.activate(cam_cmpnt);
-    cam_sys.set_mode(cam_cmpnt, CameraMode::Orbit);
+    cam_sys.set_ortho(cam_cmpnt, ortho);
+
+    if (!ortho) {
+        cam_sys.set_mode(cam_cmpnt, CameraMode::Orbit);
+    }
 }
 }

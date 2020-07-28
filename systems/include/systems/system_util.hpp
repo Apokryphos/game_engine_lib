@@ -19,6 +19,8 @@ class ModelSystem;
 class MoveSystem;
 class SpriteSystem;
 
+void activate_camera(const ecs::Entity entity, CameraSystem& cam_sys);
+
 void add_camera_component(
     const ecs::Entity entity,
     CameraSystem& cam_sys,
