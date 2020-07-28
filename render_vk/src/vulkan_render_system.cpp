@@ -725,7 +725,6 @@ void VulkanRenderSystem::end_frame() {
     ) {
         m_framebuffer_resized = false;
         recreate_swapchain();
-        m_tasks.clear();
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Failed to present swap chain image.");
     }
