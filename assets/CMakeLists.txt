@@ -9,6 +9,8 @@ configure_file(config/config.ini ${OUTPUT_DIR}/config/config.ini COPYONLY)
 
 # Models
 configure_file(models/model.obj ${OUTPUT_DIR}/models/model.obj COPYONLY)
+configure_file(models/model2.glb ${OUTPUT_DIR}/models/model2.glb COPYONLY)
+configure_file(models/model2.mtl ${OUTPUT_DIR}/models/model2.mtl COPYONLY)
 
 # Textures
 configure_file(textures/model.png ${OUTPUT_DIR}/textures/model.png COPYONLY)

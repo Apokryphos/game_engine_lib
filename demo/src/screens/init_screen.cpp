@@ -206,12 +206,11 @@ static void init_entities(Game& game) {
     Entity camera = ecs.create_entity();
     make_camera(game, camera, "camera", glm::vec3(1.0f), 10.0f);
 
-    //  Texture ID distribution
+    std::uniform_int_distribution<int> model_id_dist(0, 2);
     std::uniform_int_distribution<int> texture_id_dist(0, 2);
-
-    //  Position distribution
-    Random& random = game.get_random();
     std::uniform_int_distribution<int> position_dist(-100, 100);
+
+    Random& random = game.get_random();
 
     std::set<glm::vec3> position_set;
     while (position_set.size() < 5000) {
@@ -243,7 +242,12 @@ static void init_entities(Game& game) {
         add_position_component(entity, pos_sys, position);
 
         ModelSystem& model_sys = get_model_system(sys_mgr);
-        add_model_component(entity, model_sys, 1, texture_id_dist(random.get_rng()));
+        add_model_component(
+            entity,
+            model_sys,
+            model_id_dist(random.get_rng()),
+            texture_id_dist(random.get_rng())
+        );
     }
 }
 
@@ -275,6 +279,7 @@ void InitScreen::on_load(Game& game) {
     //  Load assets
     AssetManager& asset_mgr = engine.get_asset_manager();
     Renderer& render_sys = engine.get_render_system();
+    asset_mgr.load_model(render_sys, "assets/models/model2.glb");
     asset_mgr.load_model(render_sys, "assets/models/model.obj");
     asset_mgr.load_texture(render_sys, "assets/textures/model.png");
     asset_mgr.load_texture(render_sys, "assets/textures/model2.png");
