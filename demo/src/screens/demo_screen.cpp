@@ -99,7 +99,12 @@ void DemoScreen::on_render(Game& game) {
     std::vector<SpriteBatch> sprite_batches;
     demo_sys.batch_sprites(game, ortho_view, ortho_proj, sprite_batches);
 
+    //  Batch billboards
+    std::vector<SpriteBatch> billboard_batches;
+    demo_sys.batch_billboards(game, view, proj, billboard_batches);
+
     //  Draw batches
+    render_sys.draw_billboards(billboard_batches);
     render_sys.draw_models(model_batches);
     render_sys.draw_sprites(sprite_batches);
 }

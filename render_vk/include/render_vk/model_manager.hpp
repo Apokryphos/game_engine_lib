@@ -20,7 +20,8 @@ class ModelManager
     std::mutex m_textures_mutex;
     std::map<common::AssetId, std::unique_ptr<VulkanModel>> m_models;
     std::map<common::AssetId, Texture> m_textures;
-    std::unique_ptr<VulkanModel> m_quad;
+    std::unique_ptr<VulkanModel> m_billboard_quad;
+    std::unique_ptr<VulkanModel> m_sprite_quad;
 
 public:
     ModelManager();
@@ -52,8 +53,9 @@ public:
         VkCommandPool command_pool
     );
 
+    VulkanModel& get_billboard_quad();
     VulkanModel* get_model(const AssetId id);
-    VulkanModel& get_quad();
+    VulkanModel& get_sprite_quad();
     void get_textures(std::vector<Texture>& textures);
     void unload(VkDevice device);
 };

@@ -1,8 +1,8 @@
 #include "common/log.hpp"
+#include "render_vk/billboard_pipeline.hpp"
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/model_manager.hpp"
 #include "render_vk/render_tasks/task_draw_sprites.hpp"
-#include "render_vk/sprite_pipeline.hpp"
 #include "render_vk/vulkan_model.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
@@ -13,9 +13,9 @@ using namespace render;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-void task_draw_sprites(
+void task_draw_billboards(
     const VkRenderPass render_pass,
-    const SpritePipeline& pipeline,
+    const BillboardPipeline& pipeline,
     ModelManager& model_mgr,
     const VulkanRenderSystem::FrameDescriptorObjects& descriptors,
     const std::vector<render::SpriteBatch>& batches,
@@ -33,7 +33,7 @@ void task_draw_sprites(
         VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
     begin_info.pInheritanceInfo = &inherit_info;
 
-    begin_debug_marker(command_buffer, "Draw Sprites", DEBUG_MARKER_COLOR_ORANGE);
+    begin_debug_marker(command_buffer, "Draw Billboards", DEBUG_MARKER_COLOR_ORANGE);
     if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
         throw std::runtime_error("Failed to begin recording command buffer.");
     }
@@ -79,7 +79,7 @@ void task_draw_sprites(
     );
 
     //  Get sprite quad
-    VulkanModel& quad = model_mgr.get_sprite_quad();
+    VulkanModel& quad = model_mgr.get_billboard_quad();
 
     //  Keep track of model index because of dynamic buffer alignment
     for (const SpriteBatch& batch : batches) {

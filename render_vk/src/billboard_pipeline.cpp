@@ -1,5 +1,5 @@
+#include "render_vk/billboard_pipeline.hpp"
 #include "render_vk/shader.hpp"
-#include "render_vk/sprite_pipeline.hpp"
 #include "render_vk/vertex.hpp"
 #include <cstdint>
 #include <stdexcept>
@@ -7,16 +7,16 @@
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-void create_sprite_pipeline(
+void create_billboard_pipeline(
     VkDevice device,
     const VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
     const DescriptorSetLayouts& descriptor_set_layouts,
-    SpritePipeline& sprite_pipeline
+    BillboardPipeline& billboard_pipeline
 ) {
     //  Shaders
-    auto vert_shader_code = read_file("assets/shaders/vk/sprite_vert.spv");
-    auto frag_shader_code = read_file("assets/shaders/vk/sprite_frag.spv");
+    auto vert_shader_code = read_file("assets/shaders/vk/billboard_vert.spv");
+    auto frag_shader_code = read_file("assets/shaders/vk/billboard_frag.spv");
 
     VkShaderModule vert_shader_module = create_shader_module(device, vert_shader_code);
     VkShaderModule frag_shader_module = create_shader_module(device, frag_shader_code);
@@ -170,7 +170,7 @@ void create_sprite_pipeline(
         device,
         &pipeline_layout_info,
         nullptr,
-        &sprite_pipeline.layout
+        &billboard_pipeline.layout
     ) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create pipeline layout.");
     }
@@ -187,7 +187,7 @@ void create_sprite_pipeline(
     pipeline_info.pDepthStencilState = &depth_stencil;
     pipeline_info.pColorBlendState = &color_blending;
     pipeline_info.pDynamicState = nullptr; // Optional
-    pipeline_info.layout = sprite_pipeline.layout;
+    pipeline_info.layout = billboard_pipeline.layout;
     pipeline_info.renderPass = render_pass;
     pipeline_info.subpass = 0;
     pipeline_info.basePipelineHandle = VK_NULL_HANDLE; // Optional
@@ -198,9 +198,9 @@ void create_sprite_pipeline(
         VK_NULL_HANDLE, 1,
         &pipeline_info,
         nullptr,
-        &sprite_pipeline.pipeline) != VK_SUCCESS
+        &billboard_pipeline.pipeline) != VK_SUCCESS
     ) {
-        throw std::runtime_error("Failed to create sprite pipeline.");
+        throw std::runtime_error("Failed to create billboard pipeline.");
     }
 
     vkDestroyShaderModule(device, frag_shader_module, nullptr);

@@ -46,7 +46,7 @@ void CameraSystem::update(Game& game) {
         data.distance = std::clamp(
             data.distance + data.zoom_direction * data.zoom_speed * elapsed_seconds,
             0.1f,
-            10.0f
+            100.0f
         );
 
         //  Get target position (entity or vec3)

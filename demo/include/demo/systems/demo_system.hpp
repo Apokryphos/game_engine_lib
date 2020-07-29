@@ -22,6 +22,12 @@ private:
 
 public:
     DemoSystem();
+    void batch_billboards(
+        engine::Game& game,
+        glm::mat4 view,
+        glm::mat4 proj,
+        std::vector<render::SpriteBatch>& billboard_batches
+    );
     void batch_models(
         engine::Game& game,
         glm::mat4 view,

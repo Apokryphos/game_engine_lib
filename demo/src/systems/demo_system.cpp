@@ -3,6 +3,7 @@
 #include "engine/system_manager.hpp"
 #include "render/frustum.hpp"
 #include "render/sprite_batch.hpp"
+#include "systems/billboard_system.hpp"
 #include "systems/model_system.hpp"
 #include "systems/position_system.hpp"
 #include "systems/sprite_system.hpp"
@@ -65,6 +66,65 @@ DemoSystem::DemoSystem()
 }
 
 //  ----------------------------------------------------------------------------
+void DemoSystem::batch_billboards(
+    Game& game,
+    glm::mat4 view,
+    glm::mat4 proj,
+    std::vector<SpriteBatch>& billboard_batches
+) {
+    SystemManager& sys_mgr = game.get_system_manager();
+
+    //  Get drawable entities
+    const BillboardSystem& billboard_sys = get_billboard_system(sys_mgr);
+    std::vector<Entity> entities;
+    billboard_sys.get_entities(entities);
+
+    const size_t entity_count = entities.size();
+
+    std::map<uint32_t, SpriteBatch> batches;
+
+    Frustum frustum(proj * view);
+
+    const PositionSystem& pos_sys = get_position_system(sys_mgr);
+    for (size_t n = 0; n < entity_count; ++n) {
+        //  Get positions
+        const auto pos_cmpnt = pos_sys.get_component(entities[n]);
+        glm::vec3 position = pos_sys.get_position(pos_cmpnt);
+
+        const auto billboard_cmpnt = billboard_sys.get_component(entities[n]);
+        const uint32_t texture_id = billboard_sys.get_texture_id(billboard_cmpnt);
+        const glm::vec2 size = billboard_sys.get_size(billboard_cmpnt);
+
+        //  Billboard bounding box
+        const glm::vec3 maxp(
+            position.x + size.x,
+            position.y + size.y,
+            1.0f
+        );
+
+        const glm::vec3 minp(
+            position.x - size.x,
+            position.y - size.y,
+            0.0f
+        );
+
+        //  Skip objects outside frustum
+        if (!frustum.is_box_visible(minp, maxp)) {
+            continue;
+        }
+
+        SpriteBatch& batch = batches[texture_id];
+        batch.texture_id = texture_id;
+        batch.positions.push_back(position);
+        batch.sizes.push_back(glm::vec3(1.0f));
+    }
+
+    for (const auto& pair : batches) {
+        billboard_batches.push_back(pair.second);
+    }
+}
+
+//  ----------------------------------------------------------------------------
 void DemoSystem::batch_models(
     Game& game,
     glm::mat4 view,
@@ -105,7 +165,7 @@ void DemoSystem::batch_models(
             position.z - size
         );
 
-        //  Skip models outside frustum
+        //  Skip objects outside frustum
         if (!frustum.is_box_visible(minp, maxp)) {
             continue;
         }
@@ -168,7 +228,7 @@ void DemoSystem::batch_sprites(
             0.0f
         );
 
-        //  Skip models outside frustum
+        //  Skip objects outside frustum
         if (!frustum.is_box_visible(minp, maxp)) {
             continue;
         }

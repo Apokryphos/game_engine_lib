@@ -23,6 +23,7 @@
 #include "systems/editor/model_system_editor_panel.hpp"
 #include "systems/editor/move_system_editor_panel.hpp"
 #include "systems/editor/position_system_editor_panel.hpp"
+#include "systems/billboard_system.hpp"
 #include "systems/model_system.hpp"
 #include "systems/move_system.hpp"
 #include "systems/position_system.hpp"
@@ -180,6 +181,7 @@ static void init_ecs_systems(Game& game) {
         std::make_unique<PositionSystemDebugPanel>(get_position_system(sys_mgr))
     );
 
+    sys_mgr.add_system(std::make_unique<BillboardSystem>(ecs, 10000));
     sys_mgr.add_system(std::make_unique<CameraSystem>(ecs, 10000));
     sys_mgr.add_system(std::make_unique<ModelSystem>(ecs, 10000));
     sys_mgr.add_system(std::make_unique<MoveSystem>(ecs, 10000));
@@ -199,6 +201,62 @@ static void init_ecs_systems(Game& game) {
     editor_sys.add_panel(
         std::make_unique<PositionSystemEditorPanel>(get_position_system(sys_mgr))
     );
+}
+
+//  ----------------------------------------------------------------------------
+static void init_billboards(Game& game) {
+    EcsRoot& ecs = game.get_ecs_root();
+    SystemManager& sys_mgr = game.get_system_manager();
+
+    NameSystem& name_sys = get_name_system(sys_mgr);
+    PositionSystem& pos_sys = get_position_system(sys_mgr);
+
+    std::uniform_real_distribution<float> size_dist(0.5f, 1.0f);
+    std::uniform_int_distribution<int> x_dist(-50, 50);
+    std::uniform_int_distribution<int> y_dist(-50, 50);
+
+    Random& random = game.get_random();
+
+    std::set<glm::vec3> position_set;
+    while (position_set.size() < SPRITE_COUNT) {
+        const glm::vec3 position = {
+            x_dist(random.get_rng()),
+            y_dist(random.get_rng()),
+            0.0f
+        };
+
+        position_set.insert(position);
+    }
+
+    std::vector<glm::vec3> positions;
+    std::copy(position_set.begin(), position_set.end(), std::back_inserter(positions));
+
+    const int entity_count = positions.size();
+    for (int n = 0; n < entity_count; ++n) {
+        Entity entity = ecs.create_entity();
+
+        const std::string name = "entity_" + std::to_string(entity.id);
+
+        name_sys.add_component(entity);
+        const auto name_cmpnt = name_sys.get_component(entity);
+        name_sys.set_name(name_cmpnt, name);
+
+        const glm::vec3 position = positions[n];
+
+        PositionSystem& pos_sys = get_position_system(sys_mgr);
+        add_position_component(entity, pos_sys, position);
+
+        BillboardSystem& billboard_sys = get_billboard_system(sys_mgr);
+        add_billboard_component(
+            entity,
+            billboard_sys,
+            4,
+            glm::vec2(
+                102 * size_dist(random.get_rng()),
+                100 * size_dist(random.get_rng())
+            )
+        );
+    }
 }
 
 //  ----------------------------------------------------------------------------
@@ -336,6 +394,7 @@ static void init_entities(Game& game) {
     CameraSystem& camera_sys = get_camera_system(sys_mgr);
     activate_camera(camera, camera_sys);
 
+    init_billboards(game);
     init_models(game);
     init_sprites(game);
 }
@@ -374,6 +433,7 @@ void InitScreen::on_load(Game& game) {
     asset_mgr.load_texture(render_sys, "assets/textures/model2.png");
     asset_mgr.load_texture(render_sys, "assets/textures/model3.png");
     asset_mgr.load_texture(render_sys, "assets/textures/sprite.png");
+    asset_mgr.load_texture(render_sys, "assets/textures/billboard.png");
 
     //  Next screen
     load_demo_screen(game);

@@ -6,7 +6,7 @@
 
 namespace systems
 {
-struct SpriteComponentData
+struct BillboardComponentData
 {
     uint32_t texture_id;
     glm::vec2 size;
@@ -20,11 +20,11 @@ struct SpriteComponentData
     }
 };
 
-class SpriteSystem : public ecs::EntitySystem<SpriteComponentData>
+class BillboardSystem : public ecs::EntitySystem<BillboardComponentData>
 {
 public:
-    SpriteSystem(ecs::EcsRoot& ecs_root, unsigned int max_components)
-    : EntitySystem(ecs_root, SpriteSystem::Id, "sprite_system", max_components) {
+    BillboardSystem(ecs::EcsRoot& ecs_root, unsigned int max_components)
+    : EntitySystem(ecs_root, BillboardSystem::Id, "billboard_system", max_components) {
     }
 
     glm::vec2 get_size(const Component cmpnt) const {
@@ -35,7 +35,7 @@ public:
         return get_component_data(cmpnt).texture_id;
     }
 
-    static const common::SystemId Id = SYSTEM_ID_SPRITE;
+    static const common::SystemId Id = SYSTEM_ID_BILLBOARD;
 
     void set_size(const Component cmpnt, const glm::vec2 size)  {
         get_component_data(cmpnt).size = size;

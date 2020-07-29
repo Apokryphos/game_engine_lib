@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.17)
 project(render_vk)
 
 set(SOURCE_FILES
+    src/billboard_pipeline.cpp
     src/buffer.cpp
     src/command_buffer.cpp
     src/command_pool.cpp
@@ -27,6 +28,7 @@ set(SOURCE_FILES
     src/queue_family.cpp
     # src/render_job_manager.cpp
     src/render_pass.cpp
+    src/render_tasks/task_draw_billboards.cpp
     src/render_tasks/task_draw_models.cpp
     src/render_tasks/task_draw_sprites.cpp
     src/render_tasks/task_update_uniforms.cpp

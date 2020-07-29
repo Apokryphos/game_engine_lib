@@ -28,11 +28,14 @@ public:
     Renderer(const Renderer&) = delete;
     Renderer& operator=(const Renderer&) = delete;
     virtual void begin_frame() = 0;
+    virtual void draw_billboards(
+        std::vector<SpriteBatch>& batches
+    ) = 0;
     virtual void draw_models(
         std::vector<ModelBatch>& batches
     ) = 0;
     virtual void draw_sprites(
-        std::vector<render::SpriteBatch>& batches
+        std::vector<SpriteBatch>& batches
     ) = 0;
     virtual void end_frame() = 0;
 

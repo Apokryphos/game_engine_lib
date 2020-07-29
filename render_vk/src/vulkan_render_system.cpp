@@ -13,6 +13,7 @@
 #include "render_vk/mesh.hpp"
 #include "render_vk/model_manager.hpp"
 #include "render_vk/render_pass.hpp"
+#include "render_vk/render_tasks/task_draw_billboards.hpp"
 #include "render_vk/render_tasks/task_draw_models.hpp"
 #include "render_vk/render_tasks/task_draw_sprites.hpp"
 #include "render_vk/render_tasks/task_update_uniforms.hpp"
@@ -476,7 +477,8 @@ bool VulkanRenderSystem::check_render_tasks_complete() {
         return true;
     }
 
-    if (m_tasks.is_complete(FrameTaskId::DrawModels) &&
+    if (m_tasks.is_complete(FrameTaskId::DrawBillboards) &&
+        m_tasks.is_complete(FrameTaskId::DrawModels) &&
         m_tasks.is_complete(FrameTaskId::DrawSprites) &&
         m_tasks.is_complete(FrameTaskId::UpdateFrameUniforms)
     ) {
@@ -547,6 +549,14 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         m_graphics_pipeline
     );
 
+    create_billboard_pipeline(
+        m_device,
+        m_swapchain,
+        m_render_pass,
+        m_descriptor_set_layouts,
+        m_billboard_pipeline
+    );
+
     create_sprite_pipeline(
         m_device,
         m_swapchain,
@@ -611,6 +621,9 @@ void VulkanRenderSystem::destroy_swapchain() {
     vkDestroyPipeline(m_device, m_graphics_pipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_pipeline_layout, nullptr);
 
+    vkDestroyPipeline(m_device, m_billboard_pipeline.pipeline, nullptr);
+    vkDestroyPipelineLayout(m_device, m_billboard_pipeline.layout, nullptr);
+
     vkDestroyPipeline(m_device, m_sprite_pipeline.pipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_sprite_pipeline.layout, nullptr);
 
@@ -626,6 +639,17 @@ void VulkanRenderSystem::destroy_swapchain() {
     //  Destroy swapchain
     vkDestroySwapchainKHR(m_device, m_swapchain.swapchain, nullptr);
 }
+
+//  ----------------------------------------------------------------------------
+void VulkanRenderSystem::draw_billboards(
+    std::vector<SpriteBatch>& batches
+) {
+    Job job{};
+    job.task_id = FrameTaskId::DrawBillboards;
+    job.sprite_batches = batches;
+    add_job(job);
+}
+
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::draw_models(
@@ -661,10 +685,8 @@ void VulkanRenderSystem::end_frame() {
 
     Frame& frame = m_frames.at(m_current_frame);
 
-    std::vector<VkCommandBuffer> secondary_command_buffers{
-        m_tasks.get_command_buffers(FrameTaskId::DrawModels).at(0),
-        m_tasks.get_command_buffers(FrameTaskId::DrawSprites).at(0),
-    };
+    std::vector<VkCommandBuffer> secondary_command_buffers;
+    m_tasks.get_command_buffers(secondary_command_buffers);
 
     //  Record primary command buffers
     record_primary_command_buffer(
@@ -1035,6 +1057,19 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
         );
 
         switch (job.task_id) {
+            case FrameTaskId::DrawBillboards:
+                STOPWATCH.start(thread_name+"_draw_billboards");
+                task_draw_billboards(
+                    m_render_pass,
+                    m_billboard_pipeline,
+                    *m_model_mgr,
+                    frame.descriptor,
+                    job.sprite_batches,
+                    frame.command.buffer
+                );
+                STOPWATCH.stop(thread_name+"_draw_billboards");
+                break;
+
             case FrameTaskId::DrawModels:
                 STOPWATCH.start(thread_name+"_draw_models");
                 task_draw_models(

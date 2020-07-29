@@ -1,4 +1,5 @@
 #include "engine/system_manager.hpp"
+#include "systems/billboard_system.hpp"
 #include "systems/camera_system.hpp"
 #include "systems/model_system.hpp"
 #include "systems/move_system.hpp"
@@ -16,6 +17,22 @@ namespace systems
 void activate_camera(const ecs::Entity entity, CameraSystem& cam_sys) {
     const auto cam_cmpnt = cam_sys.get_component(entity);
     cam_sys.activate(cam_cmpnt);
+}
+
+//  ----------------------------------------------------------------------------
+void add_billboard_component(
+    const Entity entity,
+    BillboardSystem& billboard_sys,
+    uint32_t texture_id,
+    const glm::vec2 size
+) {
+    if (!billboard_sys.has_component(entity)) {
+        billboard_sys.add_component(entity);
+    }
+
+    const auto billboard_cmpnt = billboard_sys.get_component(entity);
+    billboard_sys.set_texture_id(billboard_cmpnt, texture_id);
+    billboard_sys.set_size(billboard_cmpnt, size);
 }
 
 //  ----------------------------------------------------------------------------
@@ -90,6 +107,11 @@ void add_sprite_component(
     const auto sprite_cmpnt = sprite_sys.get_component(entity);
     sprite_sys.set_texture_id(sprite_cmpnt, texture_id);
     sprite_sys.set_size(sprite_cmpnt, size);
+}
+
+//  ----------------------------------------------------------------------------
+BillboardSystem& get_billboard_system(engine::SystemManager& sys_mgr) {
+    return sys_mgr.get_system<BillboardSystem>(SYSTEM_ID_BILLBOARD);
 }
 
 //  ----------------------------------------------------------------------------

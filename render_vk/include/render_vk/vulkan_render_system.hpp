@@ -2,6 +2,7 @@
 
 #include "render/model_batch.hpp"
 #include "render/renderer.hpp"
+#include "render_vk/billboard_pipeline.hpp"
 #include "render_vk/descriptor_sets.hpp"
 #include "render_vk/depth.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
@@ -27,6 +28,7 @@ public:
     enum class FrameTaskId
     {
         None,
+        DrawBillboards,
         DrawModels,
         DrawSprites,
         UpdateFrameUniforms,
@@ -118,18 +120,44 @@ public:
 
         void add_results(FrameTaskId task_id, VkCommandBuffer command_buffer) {
             TaskResults& results = m_results[task_id];
-            results.command_buffers.push_back(command_buffer);
             ++results.complete;
+
+            //  Only add command buffer if the task actually generates one.
+            switch (task_id) {
+                default:
+                    throw std::runtime_error("Not implemented.");
+
+                //  Tasks that do not generate secondary command buffers
+                case FrameTaskId::UpdateObjectUniforms:
+                case FrameTaskId::UpdateFrameUniforms:
+                    break;
+
+                //  Tasks that generate secondary command buffers
+                case FrameTaskId::DrawBillboards:
+                case FrameTaskId::DrawModels:
+                case FrameTaskId::DrawSprites:
+                    results.command_buffers.push_back(command_buffer);
+                    break;
+            }
         }
 
         void clear() {
             m_results.clear();
         }
 
-        const std::vector<VkCommandBuffer>& get_command_buffers(
-            FrameTaskId task_id
+        void get_command_buffers(
+            std::vector<VkCommandBuffer>& command_buffers
         ) const {
-            return m_results.at(task_id).command_buffers;
+            for (const auto& pair : m_results) {
+                const auto& cmd_buffers = pair.second.command_buffers;
+                if (!cmd_buffers.empty()) {
+                    command_buffers.insert(
+                        command_buffers.end(),
+                        cmd_buffers.begin(),
+                        cmd_buffers.end()
+                    );
+                }
+            }
         }
 
         uint32_t is_complete(FrameTaskId task_id) const {
@@ -193,6 +221,7 @@ private:
     DynamicUniformBuffer<ObjectUbo> m_object_uniform;
 
     SpritePipeline m_sprite_pipeline;
+    BillboardPipeline m_billboard_pipeline;
 
     //  Main thread frame objects
     std::vector<Frame> m_frames;
@@ -243,6 +272,9 @@ public:
     ~VulkanRenderSystem();
     //  Starts a new frame.
     virtual void begin_frame() override;
+    virtual void draw_billboards(
+        std::vector<render::SpriteBatch>& batches
+    ) override;
     virtual void draw_models(
         std::vector<render::ModelBatch>& batches
     ) override;

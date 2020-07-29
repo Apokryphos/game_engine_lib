@@ -44,9 +44,49 @@ void ModelManager::initialize(
     VkQueue graphics_queue,
     VkCommandPool command_pool
 ) {
-    Mesh mesh;
+    //  Billboard quad
+    Mesh billboard_mesh;
 
-    mesh.vertices = {
+    billboard_mesh.vertices = {
+        {
+            { -1.0f,  0.0f, 1.0f },
+            {  1.0f,  1.0f, 1.0f },
+            {  0.0f,  0.0f, },
+        },
+        {
+            {  1.0f,  0.0f, 1.0f },
+            {  1.0f,  1.0f, 1.0f },
+            {  1.0f,  0.0f, },
+        },
+        {
+            {  1.0f,  0.0f, 0.0f },
+            {  1.0f,  1.0f, 1.0f },
+            {  1.0f,  1.0f, },
+        },
+        {
+            { -1.0f,  0.0f, 0.0f },
+            {  1.0f,  1.0f, 1.0f },
+            {  0.0f,  1.0f, },
+        }
+    };
+
+    //  Counter-clockwise order
+    billboard_mesh.indices = { 0, 3, 1, 1, 3, 2 };
+
+    m_billboard_quad = std::make_unique<VulkanModel>(0);
+
+    m_billboard_quad->load(
+        physical_device,
+        device,
+        graphics_queue,
+        command_pool,
+        billboard_mesh
+    );
+
+    //  Sprite quad
+    Mesh sprite_mesh;
+
+    sprite_mesh.vertices = {
         {
             { -1.0f, -1.0f, 0.0f },
             {  1.0f,  1.0f, 1.0f },
@@ -70,16 +110,16 @@ void ModelManager::initialize(
     };
 
     //  Counter-clockwise order
-    mesh.indices = { 0, 3, 1, 1, 3, 2 };
+    sprite_mesh.indices = { 0, 3, 1, 1, 3, 2 };
 
-    m_quad = std::make_unique<VulkanModel>(0);
+    m_sprite_quad = std::make_unique<VulkanModel>(0);
 
-    m_quad->load(
+    m_sprite_quad->load(
         physical_device,
         device,
         graphics_queue,
         command_pool,
-        mesh
+        sprite_mesh
     );
 }
 
@@ -108,6 +148,11 @@ void ModelManager::load_model(
 }
 
 //  ----------------------------------------------------------------------------
+VulkanModel& ModelManager::get_billboard_quad() {
+    return *m_billboard_quad;
+}
+
+//  ----------------------------------------------------------------------------
 VulkanModel* ModelManager::get_model(const AssetId id) {
     std::lock_guard<std::mutex> lock(m_models_mutex);
 
@@ -121,8 +166,8 @@ VulkanModel* ModelManager::get_model(const AssetId id) {
 }
 
 //  ----------------------------------------------------------------------------
-VulkanModel& ModelManager::get_quad() {
-    return *m_quad;
+VulkanModel& ModelManager::get_sprite_quad() {
+    return *m_sprite_quad;
 }
 
 //  ----------------------------------------------------------------------------
@@ -137,8 +182,11 @@ void ModelManager::get_textures(std::vector<Texture>& textures) {
 
 //  ----------------------------------------------------------------------------
 void ModelManager::unload(VkDevice device) {
-    m_quad->unload();
-    m_quad = nullptr;
+    m_billboard_quad->unload();
+    m_billboard_quad = nullptr;
+
+    m_sprite_quad->unload();
+    m_sprite_quad = nullptr;
 
     for (auto& pair : m_models) {
         pair.second->unload();
