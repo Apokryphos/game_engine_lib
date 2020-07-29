@@ -7,7 +7,6 @@
 #include "render_vk/depth.hpp"
 #include "render_vk/devices.hpp"
 #include "render_vk/framebuffers.hpp"
-#include "render_vk/graphics_pipeline.hpp"
 #include "render_vk/imgui/imgui_vk.hpp"
 #include "render_vk/instance.hpp"
 #include "render_vk/mesh.hpp"

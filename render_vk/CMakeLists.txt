@@ -21,7 +21,6 @@ set(SOURCE_FILES
     src/imgui/imgui_vk.cpp
     src/index_buffer.cpp
     src/instance.cpp
-    src/graphics_pipeline.cpp
     src/mesh.cpp
     src/model_manager.cpp
     src/queue_family.cpp
