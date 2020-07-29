@@ -38,7 +38,6 @@ set(SOURCE_FILES
     src/vertex_buffer.cpp
     src/vulkan_model.cpp
     src/vulkan_queue.cpp
-    # src/vulkan_renderer.cpp
     src/vulkan_render_system.cpp
     src/vulkan_swapchain.cpp
 )
