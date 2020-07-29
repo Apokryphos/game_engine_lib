@@ -22,7 +22,6 @@ set(SOURCE_FILES
     src/index_buffer.cpp
     src/instance.cpp
     src/graphics_pipeline.cpp
-    src/frame_sync.cpp
     src/mesh.cpp
     src/model_manager.cpp
     src/queue_family.cpp
