@@ -14,7 +14,6 @@
 #include "render_vk/model_manager.hpp"
 #include "render_vk/render_pass.hpp"
 #include "render_vk/render_tasks/task_draw_billboards.hpp"
-#include "render_vk/render_tasks/task_draw_models.hpp"
 #include "render_vk/render_tasks/task_draw_sprites.hpp"
 #include "render_vk/render_tasks/task_update_uniforms.hpp"
 #include "render_vk/sprite_pipeline.hpp"
