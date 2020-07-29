@@ -498,7 +498,8 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
 
         //  Check if textures changed since last frame
         if (frame.texture_timestamp != m_texture_mgr.get_timestamp()) {
-            const std::vector<Texture>& textures = m_texture_mgr.get_textures();
+            std::vector<Texture> textures;
+            m_texture_mgr.get_textures(textures);
 
             //  Recreate descriptor objects
             create_descriptor_objects(

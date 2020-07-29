@@ -14,6 +14,13 @@ TextureManager::TextureManager(
 }
 
 //  ----------------------------------------------------------------------------
+void TextureManager::add_texture(const TextureId texture_id, const Texture& texture) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_textures.push_back(texture);
+    ++m_timestamp;
+}
+
+//  ----------------------------------------------------------------------------
 void TextureManager::destroy_textures() {
     for (Texture& texture : m_textures) {
         destroy_texture(m_device, texture);
@@ -23,8 +30,9 @@ void TextureManager::destroy_textures() {
 }
 
 //  ----------------------------------------------------------------------------
-const std::vector<Texture>& TextureManager::get_textures() const {
-    return m_textures;
+void TextureManager::get_textures(std::vector<Texture>& textures) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    textures = m_textures;
 }
 
 //  ----------------------------------------------------------------------------

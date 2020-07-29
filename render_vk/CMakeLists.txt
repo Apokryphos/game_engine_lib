@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.17)
 project(render_vk)
 
 set(SOURCE_FILES
+    src/asset_task_manager.cpp
     src/buffer.cpp
     src/command_buffer.cpp
     src/command_pool.cpp
