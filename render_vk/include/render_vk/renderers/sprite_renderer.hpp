@@ -1,6 +1,6 @@
 #pragma once
 
-#include "render/model_batch.hpp"
+#include "render/sprite_batch.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_render_system.hpp"
 #include <functional>
@@ -11,8 +11,8 @@ struct DescriptorSetLayouts;
 class ModelManager;
 struct VulkanSwapchain;
 
-//  Draws 3D models.
-class ModelRenderer
+//  Draws 2D sprites.
+class SpriteRenderer
 {
     VkDevice m_device                   {VK_NULL_HANDLE};
     VkRenderPass m_render_pass          {VK_NULL_HANDLE};
@@ -23,9 +23,9 @@ class ModelRenderer
     ModelManager& m_model_mgr;
 
 public:
-    ModelRenderer(ModelManager& model_mgr);
-    ModelRenderer(const ModelRenderer&) = delete;
-    ModelRenderer& operator=(const ModelRenderer&) = delete;
+    SpriteRenderer(ModelManager& model_mgr);
+    SpriteRenderer(const SpriteRenderer&) = delete;
+    SpriteRenderer& operator=(const SpriteRenderer&) = delete;
     //  Creates resources
     void create_objects(
         VkDevice device,
@@ -35,9 +35,9 @@ public:
     );
     //  Destroys resources
     void destroy_objects();
-    //  Draws 3D models
-    void draw_models(
-        const std::vector<render::ModelBatch>& batches,
+    //  Draws 2D sprites
+    void draw_sprites(
+        const std::vector<render::SpriteBatch>& batches,
         const VulkanRenderSystem::FrameDescriptorObjects& descriptors,
         VkCommandBuffer command_buffer
     );

@@ -28,11 +28,10 @@ set(SOURCE_FILES
     # src/render_job_manager.cpp
     src/render_pass.cpp
     src/render_tasks/task_draw_billboards.cpp
-    src/render_tasks/task_draw_sprites.cpp
     src/render_tasks/task_update_uniforms.cpp
     src/renderers/model_renderer.cpp
+    src/renderers/sprite_renderer.cpp
     src/shader.cpp
-    src/sprite_pipeline.cpp
     src/texture.cpp
     src/vertex_buffer.cpp
     src/vulkan_model.cpp

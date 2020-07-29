@@ -14,12 +14,11 @@
 #include "render_vk/model_manager.hpp"
 #include "render_vk/render_pass.hpp"
 #include "render_vk/render_tasks/task_draw_billboards.hpp"
-#include "render_vk/render_tasks/task_draw_sprites.hpp"
 #include "render_vk/render_tasks/task_update_uniforms.hpp"
-#include "render_vk/sprite_pipeline.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/renderers/model_renderer.hpp"
+#include "render_vk/renderers/sprite_renderer.hpp"
 #include "render_vk/vulkan_render_system.hpp"
 #include "render_vk/vulkan_model.hpp"
 #include <glm/gtc/matrix_transform.hpp>
@@ -547,20 +546,19 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         m_descriptor_set_layouts
     );
 
+    m_sprite_renderer->create_objects(
+        m_device,
+        m_swapchain,
+        m_render_pass,
+        m_descriptor_set_layouts
+    );
+
     create_billboard_pipeline(
         m_device,
         m_swapchain,
         m_render_pass,
         m_descriptor_set_layouts,
         m_billboard_pipeline
-    );
-
-    create_sprite_pipeline(
-        m_device,
-        m_swapchain,
-        m_render_pass,
-        m_descriptor_set_layouts,
-        m_sprite_pipeline
     );
 
     create_depth_resources(
@@ -617,12 +615,10 @@ void VulkanRenderSystem::destroy_swapchain() {
     }
 
     m_model_renderer->destroy_objects();
+    m_sprite_renderer->destroy_objects();
 
     vkDestroyPipeline(m_device, m_billboard_pipeline.pipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_billboard_pipeline.layout, nullptr);
-
-    vkDestroyPipeline(m_device, m_sprite_pipeline.pipeline, nullptr);
-    vkDestroyPipelineLayout(m_device, m_sprite_pipeline.layout, nullptr);
 
     imgui_vulkan_cleanup_swapchain(m_device);
 
@@ -875,6 +871,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
 
     m_model_mgr = std::make_unique<ModelManager>();
     m_model_renderer = std::make_unique<ModelRenderer>(*m_model_mgr);
+    m_sprite_renderer = std::make_unique<SpriteRenderer>(*m_model_mgr);
 
     create_swapchain_objects();
 
@@ -1093,12 +1090,9 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
 
             case FrameTaskId::DrawSprites:
                 STOPWATCH.start(thread_name+"_draw_sprites");
-                task_draw_sprites(
-                    m_render_pass,
-                    m_sprite_pipeline,
-                    *m_model_mgr,
-                    frame.descriptor,
+                m_sprite_renderer->draw_sprites(
                     job.sprite_batches,
+                    frame.descriptor,
                     frame.command.buffer
                 );
                 STOPWATCH.stop(thread_name+"_draw_sprites");

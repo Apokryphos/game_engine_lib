@@ -6,7 +6,6 @@
 #include "render_vk/descriptor_sets.hpp"
 #include "render_vk/depth.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
-#include "render_vk/sprite_pipeline.hpp"
 #include "render_vk/uniform_buffer.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
@@ -22,6 +21,7 @@ namespace render_vk
 {
 class ModelManager;
 class ModelRenderer;
+class SpriteRenderer;
 
 class VulkanRenderSystem : public render::Renderer
 {
@@ -227,7 +227,6 @@ private:
     //  Per-object dynamic uniform buffer
     DynamicUniformBuffer<ObjectUbo> m_object_uniform;
 
-    SpritePipeline m_sprite_pipeline;
     BillboardPipeline m_billboard_pipeline;
 
     //  Main thread frame objects
@@ -247,6 +246,7 @@ private:
 
     std::unique_ptr<ModelManager> m_model_mgr;
     std::unique_ptr<ModelRenderer> m_model_renderer;
+    std::unique_ptr<SpriteRenderer> m_sprite_renderer;
 
     //  Adds a new job for a worker thread to process.
     void add_job(Job& job);
