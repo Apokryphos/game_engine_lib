@@ -21,7 +21,7 @@ struct GLFWwindow;
 namespace render_vk
 {
 class ModelManager;
-class VulkanModelRenderer;
+class ModelRenderer;
 
 class VulkanRenderSystem : public render::Renderer
 {
@@ -246,7 +246,7 @@ private:
     RenderTasks m_tasks;
 
     std::unique_ptr<ModelManager> m_model_mgr;
-    std::unique_ptr<VulkanModelRenderer> m_model_renderer;
+    std::unique_ptr<ModelRenderer> m_model_renderer;
 
     //  Adds a new job for a worker thread to process.
     void add_job(Job& job);

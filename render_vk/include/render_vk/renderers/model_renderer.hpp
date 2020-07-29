@@ -11,7 +11,7 @@ struct DescriptorSetLayouts;
 class ModelManager;
 struct VulkanSwapchain;
 
-class VulkanModelRenderer
+class ModelRenderer
 {
     VkDevice m_device                   {VK_NULL_HANDLE};
     VkRenderPass m_render_pass          {VK_NULL_HANDLE};
@@ -22,9 +22,9 @@ class VulkanModelRenderer
     ModelManager& m_model_mgr;
 
 public:
-    VulkanModelRenderer(ModelManager& model_mgr);
-    VulkanModelRenderer(const VulkanModelRenderer&) = delete;
-    VulkanModelRenderer& operator=(const VulkanModelRenderer&) = delete;
+    ModelRenderer(ModelManager& model_mgr);
+    ModelRenderer(const ModelRenderer&) = delete;
+    ModelRenderer& operator=(const ModelRenderer&) = delete;
     //  Creates resources
     void create_objects(
         VkDevice device,

@@ -30,7 +30,7 @@ set(SOURCE_FILES
     src/render_tasks/task_draw_billboards.cpp
     src/render_tasks/task_draw_sprites.cpp
     src/render_tasks/task_update_uniforms.cpp
-    src/renderers/vulkan_model_renderer.cpp
+    src/renderers/model_renderer.cpp
     src/shader.cpp
     src/sprite_pipeline.cpp
     src/texture.cpp

@@ -19,7 +19,7 @@
 #include "render_vk/sprite_pipeline.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
-#include "render_vk/renderers/vulkan_model_renderer.hpp"
+#include "render_vk/renderers/model_renderer.hpp"
 #include "render_vk/vulkan_render_system.hpp"
 #include "render_vk/vulkan_model.hpp"
 #include <glm/gtc/matrix_transform.hpp>
@@ -874,7 +874,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     create_descriptor_set_layouts(m_device, MAX_TEXTURES, m_descriptor_set_layouts);
 
     m_model_mgr = std::make_unique<ModelManager>();
-    m_model_renderer = std::make_unique<VulkanModelRenderer>(*m_model_mgr);
+    m_model_renderer = std::make_unique<ModelRenderer>(*m_model_mgr);
 
     create_swapchain_objects();
 

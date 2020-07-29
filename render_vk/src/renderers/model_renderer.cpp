@@ -3,7 +3,7 @@
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/graphics_pipeline.hpp"
 #include "render_vk/model_manager.hpp"
-#include "render_vk/renderers/vulkan_model_renderer.hpp"
+#include "render_vk/renderers/model_renderer.hpp"
 #include "render_vk/vulkan_model.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
@@ -13,12 +13,12 @@ using namespace render;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-VulkanModelRenderer::VulkanModelRenderer(ModelManager& model_mgr)
+ModelRenderer::ModelRenderer(ModelManager& model_mgr)
 : m_model_mgr(model_mgr) {
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanModelRenderer::create_objects(
+void ModelRenderer::create_objects(
     VkDevice device,
     const VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
@@ -38,7 +38,7 @@ void VulkanModelRenderer::create_objects(
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanModelRenderer::destroy_objects() {
+void ModelRenderer::destroy_objects() {
     vkDestroyPipeline(m_device, m_pipeline, nullptr);
     m_pipeline = VK_NULL_HANDLE;
 
@@ -50,7 +50,7 @@ void VulkanModelRenderer::destroy_objects() {
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanModelRenderer::draw_models(
+void ModelRenderer::draw_models(
     const std::vector<ModelBatch>& batches,
     const VulkanRenderSystem::FrameDescriptorObjects& descriptors,
     VkCommandBuffer command_buffer
