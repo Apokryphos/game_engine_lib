@@ -470,30 +470,17 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
 
     const std::string thread_name = "thread" + std::to_string(thread_id);
 
-    //  Initialize frame objects
+    //  Initialize frame command objects
     uint32_t frame_index = 0;
     std::vector<ThreadFrame> frames(m_frame_count);
     for (ThreadFrame& frame : frames) {
-        const std::string frame_name =
-            thread_name + "_frame" + std::to_string(++frame_index);
+        frame.name = thread_name + "_frame" + std::to_string(++frame_index);
 
         create_secondary_command_objects(
             m_device,
             m_physical_device,
-            frame_name,
+            frame.name,
             frame.command
-        );
-
-        const std::vector<Texture>& textures = m_texture_mgr.get_textures();
-
-        create_descriptor_objects(
-            m_device,
-            m_descriptor_set_layouts,
-            textures,
-            m_frame_uniform,
-            m_object_uniform,
-            frame_name,
-            frame.descriptor
         );
     }
 
@@ -506,8 +493,31 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             continue;
         }
 
-        //  Process job
+        //  Get data for current frame
         ThreadFrame& frame = frames.at(m_current_frame);
+
+        //  Check if textures changed since last frame
+        if (frame.texture_timestamp != m_texture_mgr.get_timestamp()) {
+            const std::vector<Texture>& textures = m_texture_mgr.get_textures();
+
+            //  Recreate descriptor objects
+            create_descriptor_objects(
+                m_device,
+                m_descriptor_set_layouts,
+                textures,
+                m_frame_uniform,
+                m_object_uniform,
+                frame.name,
+                frame.descriptor
+            );
+
+            frame.texture_timestamp = m_texture_mgr.get_timestamp();
+
+            log_debug(
+                "Render worker thread '%s' updated descriptor sets after texture changes.",
+                frame.name.c_str()
+            );
+        }
 
         vkResetCommandPool(
             m_device,
@@ -515,6 +525,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT
         );
 
+        //  Process job
         switch (job.task_id) {
             case TaskId::DrawBillboards: {
                 STOPWATCH.start(thread_name+"_draw_billboards");

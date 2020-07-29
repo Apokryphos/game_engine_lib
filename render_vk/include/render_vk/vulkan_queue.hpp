@@ -77,8 +77,7 @@ public:
 
     void end_single_time_commands(
         VkCommandPool command_pool,
-        VkCommandBuffer command_buffer,
-        VkFence fence = VK_NULL_HANDLE
+        VkCommandBuffer command_buffer
     );
 
     VkQueue get_queue() {

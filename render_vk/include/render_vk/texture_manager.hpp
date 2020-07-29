@@ -13,10 +13,12 @@ class TextureManager
 {
     typedef uint32_t TextureId;
 
+    //  Changes when textures are added or removed.
+    uint32_t m_timestamp {1};
+
     VkDevice m_device                  {VK_NULL_HANDLE};
     VkPhysicalDevice m_physical_device {VK_NULL_HANDLE};
 
-    std::map<TextureId, VkFence> m_pending;
     std::vector<Texture> m_textures;
 
 public:
@@ -26,13 +28,18 @@ public:
     );
     void destroy_textures();
     const std::vector<Texture>& get_textures() const;
-    bool has_pending_textures();
+
+    //  Returns timestamp used to determine if textures were added or removed
+    inline uint32_t get_timestamp() const {
+        return m_timestamp;
+    }
+
+    //  Loads a texture and waits for the queue to finish execution
     void load_texture(
         const TextureId texture_id,
         const std::string& path,
         VulkanQueue& queue,
         VkCommandPool command_pool
     );
-    bool texture_is_ready(const TextureId texture_id);
 };
 }

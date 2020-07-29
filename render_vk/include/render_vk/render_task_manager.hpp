@@ -51,6 +51,8 @@ class RenderTaskManager
     //  Frame objects for worker threads
     struct ThreadFrame
     {
+        uint32_t texture_timestamp {0};
+        std::string name;
         FrameCommandObjects command;
         FrameDescriptorObjects descriptor;
     };
