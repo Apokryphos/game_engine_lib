@@ -15,6 +15,7 @@
 #include "render_vk/render_pass.hpp"
 #include "render_vk/render_tasks/task_update_uniforms.hpp"
 #include "render_vk/texture.hpp"
+#include "render_vk/texture_manager.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/render_task_manager.hpp"
 #include "render_vk/renderers/billboard_renderer.hpp"
@@ -119,14 +120,14 @@ VulkanRenderSystem::~VulkanRenderSystem() {
 void VulkanRenderSystem::begin_frame() {
     STOPWATCH.start("begin_frame");
 
-    //  Check that textures exist
-    std::vector<Texture> textures;
-    m_model_mgr->get_textures(textures);
-    if (textures.empty()) {
+    //  Check that texture transfers are finished
+    if (m_texture_mgr->has_pending_textures()) {
         m_frame_status = FrameStatus::Discarded;
         m_render_task_mgr->begin_frame(m_current_frame, true);
         return;
     }
+
+    const std::vector<Texture>& textures = m_texture_mgr->get_textures();
 
     m_frame_status = FrameStatus::None;
 
@@ -524,6 +525,8 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     create_descriptor_set_layouts(m_device, MAX_TEXTURES, m_descriptor_set_layouts);
 
     m_model_mgr = std::make_unique<ModelManager>();
+    m_texture_mgr = std::make_unique<TextureManager>(m_physical_device, m_device);
+
     m_billboard_renderer = std::make_unique<BillboardRenderer>(*m_model_mgr);
     m_model_renderer = std::make_unique<ModelRenderer>(*m_model_mgr);
     m_sprite_renderer = std::make_unique<SpriteRenderer>(*m_model_mgr);
@@ -547,7 +550,8 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         m_descriptor_set_layouts,
         m_frame_uniform,
         m_object_uniform,
-        *m_model_mgr
+        *m_model_mgr,
+        *m_texture_mgr
     );
 
     return true;
@@ -572,18 +576,7 @@ void VulkanRenderSystem::load_model(const AssetId id, const std::string& path) {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::load_texture(const AssetId id, const std::string& path) {
-    Texture texture{};
-
-    create_texture(
-        m_physical_device,
-        m_device,
-        m_graphics_queue,
-        m_resource_command_pool,
-        path,
-        texture
-    );
-
-    m_model_mgr->add_texture(id, texture);
+    m_texture_mgr->load_texture(id, path, m_graphics_queue, m_resource_command_pool);
 }
 
 //  ----------------------------------------------------------------------------
@@ -644,6 +637,8 @@ void VulkanRenderSystem::shutdown() {
 
     //  Unload models
     m_model_mgr->unload(m_device);
+
+    m_texture_mgr->destroy_textures();
 
     vkDestroyDevice(m_device, nullptr);
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);

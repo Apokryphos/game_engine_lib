@@ -22,6 +22,7 @@ class BillboardRenderer;
 class ModelManager;
 class ModelRenderer;
 class SpriteRenderer;
+class TextureManager;
 
 class RenderTaskManager
 {
@@ -166,6 +167,7 @@ class RenderTaskManager
     //  Per-object dynamic uniform buffer
     DynamicUniformBuffer<ObjectUbo>& m_object_uniform;
     ModelManager& m_model_mgr;
+    TextureManager& m_texture_mgr;
 
     //  Adds a new job for a worker thread to process.
     void add_job(Job& job);
@@ -186,7 +188,8 @@ public:
         DescriptorSetLayouts& descriptor_set_layouts,
         UniformBuffer<FrameUbo>& frame_uniform,
         DynamicUniformBuffer<ObjectUbo>& object_uniform,
-        ModelManager& model_mgr
+        ModelManager& model_mgr,
+        TextureManager& texture_mgr
     );
     ~RenderTaskManager();
     RenderTaskManager(const RenderTaskManager&) = delete;

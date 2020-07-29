@@ -25,7 +25,8 @@ void VulkanQueue::copy_buffer(
 //  ----------------------------------------------------------------------------
 void VulkanQueue::end_single_time_commands(
     VkCommandPool command_pool,
-    VkCommandBuffer command_buffer
+    VkCommandBuffer command_buffer,
+    VkFence fence
 ) {
     vkEndCommandBuffer(command_buffer);
 
@@ -36,10 +37,11 @@ void VulkanQueue::end_single_time_commands(
 
     std::lock_guard<std::mutex> lock(m_queue_mutex);
     {
-        vkQueueSubmit(m_queue, 1, &submit_info, VK_NULL_HANDLE);
+        vkQueueSubmit(m_queue, 1, &submit_info, fence);
 
-        //  TODO: Fences would permit multiple transfers
-        vkQueueWaitIdle(m_queue);
+        if (fence == VK_NULL_HANDLE) {
+            vkQueueWaitIdle(m_queue);
+        }
     }
 
     vkFreeCommandBuffers(m_device, command_pool, 1, &command_buffer);

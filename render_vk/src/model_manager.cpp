@@ -10,8 +10,7 @@ using namespace common;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-ModelManager::ModelManager()
-: m_rebuild_descriptor_sets(false) {
+ModelManager::ModelManager() {
 }
 
 //  ----------------------------------------------------------------------------
@@ -24,17 +23,6 @@ void ModelManager::add_model(std::unique_ptr<VulkanModel> model) {
     std::lock_guard<std::mutex> lock(m_models_mutex);
 
     m_models[model->get_id()] = std::move(model);
-}
-
-//  ----------------------------------------------------------------------------
-void ModelManager::add_texture(
-    const AssetId id,
-    const Texture& texture
-) {
-    std::lock_guard<std::mutex> lock(m_textures_mutex);
-
-    m_textures[id] = texture;
-    m_rebuild_descriptor_sets = true;
 }
 
 //  ----------------------------------------------------------------------------
@@ -171,16 +159,6 @@ VulkanModel& ModelManager::get_sprite_quad() {
 }
 
 //  ----------------------------------------------------------------------------
-void ModelManager::get_textures(std::vector<Texture>& textures) {
-    textures.clear();
-
-    std::lock_guard<std::mutex> lock(m_textures_mutex);
-    for (const auto& pair : m_textures) {
-        textures.push_back(pair.second);
-    }
-}
-
-//  ----------------------------------------------------------------------------
 void ModelManager::unload(VkDevice device) {
     m_billboard_quad->unload();
     m_billboard_quad = nullptr;
@@ -192,9 +170,5 @@ void ModelManager::unload(VkDevice device) {
         pair.second->unload();
     }
     m_models.clear();
-
-    for (auto& pair : m_textures) {
-        destroy_texture(device, pair.second);
-    }
 }
 }

@@ -12,6 +12,7 @@
 #include "render_vk/renderers/model_renderer.hpp"
 #include "render_vk/renderers/sprite_renderer.hpp"
 #include "render_vk/texture.hpp"
+#include "render_vk/texture_manager.hpp"
 #include "render_vk/vulkan_queue.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
 
@@ -282,14 +283,16 @@ RenderTaskManager::RenderTaskManager(
     DescriptorSetLayouts& descriptor_set_layouts,
     UniformBuffer<FrameUbo>& frame_uniform,
     DynamicUniformBuffer<ObjectUbo>& object_uniform,
-    ModelManager& model_mgr
+    ModelManager& model_mgr,
+    TextureManager& texture_mgr
 )
 : m_physical_device(physical_device),
   m_device(device),
   m_descriptor_set_layouts(descriptor_set_layouts),
   m_frame_uniform(frame_uniform),
   m_object_uniform(object_uniform),
-  m_model_mgr(model_mgr) {
+  m_model_mgr(model_mgr),
+  m_texture_mgr(texture_mgr) {
 }
 
 //  ----------------------------------------------------------------------------
@@ -467,9 +470,6 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
 
     const std::string thread_name = "thread" + std::to_string(thread_id);
 
-    std::vector<Texture> textures;
-    m_model_mgr.get_textures(textures);
-
     //  Initialize frame objects
     uint32_t frame_index = 0;
     std::vector<ThreadFrame> frames(m_frame_count);
@@ -483,6 +483,8 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             frame_name,
             frame.command
         );
+
+        const std::vector<Texture>& textures = m_texture_mgr.get_textures();
 
         create_descriptor_objects(
             m_device,

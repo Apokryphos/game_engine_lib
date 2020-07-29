@@ -31,6 +31,7 @@ set(SOURCE_FILES
     src/renderers/sprite_renderer.cpp
     src/shader.cpp
     src/texture.cpp
+    src/texture_manager.cpp
     src/vertex_buffer.cpp
     src/vulkan_model.cpp
     src/vulkan_queue.cpp

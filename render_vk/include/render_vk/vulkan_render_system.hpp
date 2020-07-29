@@ -21,6 +21,7 @@ class ModelManager;
 class ModelRenderer;
 class RenderTaskManager;
 class SpriteRenderer;
+class TextureManager;
 
 class VulkanRenderSystem : public render::Renderer
 {
@@ -92,6 +93,7 @@ private:
     std::vector<Frame> m_frames;
 
     std::unique_ptr<ModelManager> m_model_mgr;
+    std::unique_ptr<TextureManager> m_texture_mgr;
 
     //  Manages rendering task worker threads
     std::unique_ptr<RenderTaskManager> m_render_task_mgr;
