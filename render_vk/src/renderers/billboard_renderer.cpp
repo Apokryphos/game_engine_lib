@@ -1,6 +1,7 @@
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/command_pool.hpp"
 #include "render_vk/debug_utils.hpp"
+#include "render_vk/descriptor_set_layout.hpp"
 #include "render_vk/model_manager.hpp"
 #include "render_vk/renderers/billboard_renderer.hpp"
 #include "render_vk/shader.hpp"
@@ -63,7 +64,7 @@ void BillboardRenderer::destroy_objects() {
 //  ----------------------------------------------------------------------------
 void BillboardRenderer::draw_billboards(
     const std::vector<SpriteBatch>& batches,
-    const VulkanRenderSystem::FrameDescriptorObjects& descriptors,
+    const FrameDescriptorObjects& descriptors,
     VkCommandBuffer command_buffer
 ) {
     VkCommandBufferInheritanceInfo inherit_info{};

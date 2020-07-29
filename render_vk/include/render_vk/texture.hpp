@@ -6,6 +6,8 @@
 
 namespace render_vk
 {
+static const uint32_t MAX_TEXTURES = 4096;
+
 class Texture
 {
 public:

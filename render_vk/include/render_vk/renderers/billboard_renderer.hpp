@@ -1,8 +1,8 @@
 #pragma once
 
 #include "render/sprite_batch.hpp"
+#include "render_vk/frame_objects.hpp"
 #include "render_vk/vulkan.hpp"
-#include "render_vk/vulkan_render_system.hpp"
 #include <functional>
 
 namespace render_vk
@@ -38,7 +38,7 @@ public:
     //  Draws 3D billboard sprites
     void draw_billboards(
         const std::vector<render::SpriteBatch>& batches,
-        const VulkanRenderSystem::FrameDescriptorObjects& descriptors,
+        const FrameDescriptorObjects& descriptors,
         VkCommandBuffer command_buffer
     );
 };

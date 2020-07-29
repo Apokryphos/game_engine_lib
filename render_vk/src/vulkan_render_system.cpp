@@ -5,6 +5,7 @@
 #include "render_vk/command_pool.hpp"
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/depth.hpp"
+#include "render_vk/descriptor_set_layout.hpp"
 #include "render_vk/devices.hpp"
 #include "render_vk/framebuffers.hpp"
 #include "render_vk/imgui/imgui_vk.hpp"
@@ -15,6 +16,7 @@
 #include "render_vk/render_tasks/task_update_uniforms.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
+#include "render_vk/render_task_manager.hpp"
 #include "render_vk/renderers/billboard_renderer.hpp"
 #include "render_vk/renderers/model_renderer.hpp"
 #include "render_vk/renderers/sprite_renderer.hpp"
@@ -30,14 +32,13 @@ using namespace render;
 namespace render_vk
 {
 static const uint32_t MAX_OBJECTS = 10000;
-static const uint32_t MAX_TEXTURES = 4096;
 static Stopwatch STOPWATCH;
 
 //  ----------------------------------------------------------------------------
 static void create_sync_objects(
     VkDevice device,
     const std::string& name_prefix,
-    VulkanRenderSystem::FrameSyncObjects& sync
+    FrameSyncObjects& sync
 ) {
     VkSemaphoreCreateInfo semaphore_info{};
     semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -81,187 +82,10 @@ static void create_sync_objects(
 }
 
 //  ----------------------------------------------------------------------------
-void create_descriptor_pool(
-    VkDevice device,
-    VkDescriptorPool& descriptor_pool
-) {
-    const uint32_t sampler_count = MAX_TEXTURES;
-    const uint32_t max_sets = 2 + (sampler_count);
-
-    std::array<VkDescriptorPoolSize, 2> pool_sizes{};
-    pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    pool_sizes[0].descriptorCount = 1;
-    // pool_sizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    // pool_sizes[1].descriptorCount = 1;
-    pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    pool_sizes[1].descriptorCount = sampler_count;
-
-    VkDescriptorPoolCreateInfo pool_info{};
-    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
-    pool_info.pPoolSizes = pool_sizes.data();
-    pool_info.maxSets = max_sets;
-
-    if (vkCreateDescriptorPool(device, &pool_info, nullptr, &descriptor_pool) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create descriptor pool.");
-    }
-}
-
-//  ----------------------------------------------------------------------------
-static void create_descriptor_set(
-    const VkDevice device,
-    const VkDescriptorSetLayout descriptor_set_layout,
-    const VkDescriptorPool descriptor_pool,
-    const std::string& debug_name,
-    VkDescriptorSet& descriptor_set
-) {
-    VkDescriptorSetAllocateInfo alloc_info{};
-    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    alloc_info.descriptorPool = descriptor_pool;
-    alloc_info.descriptorSetCount = 1;
-    alloc_info.pSetLayouts = &descriptor_set_layout;
-
-    if (vkAllocateDescriptorSets(device, &alloc_info, &descriptor_set) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to allocate descriptor set.");
-    }
-
-    set_debug_name(
-        device,
-        VK_OBJECT_TYPE_DESCRIPTOR_SET,
-        descriptor_set,
-        debug_name.c_str()
-    );
-}
-
-//  ----------------------------------------------------------------------------
-void update_frame_descriptor_sets(
-    VkDevice device,
-    VkBuffer frame_uniform_buffer,
-    size_t frame_ubo_size,
-    VkDescriptorSet& descriptor_set
-) {
-    VkDescriptorBufferInfo frame_buffer_info{};
-    frame_buffer_info.buffer = frame_uniform_buffer;
-    frame_buffer_info.offset = 0;
-    frame_buffer_info.range = frame_ubo_size;
-
-    std::array<VkWriteDescriptorSet, 1> descriptor_writes{};
-
-    //  Per-frame dynamic uniform buffer
-    descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[0].dstSet = descriptor_set;
-    descriptor_writes[0].dstBinding = 0;
-    descriptor_writes[0].dstArrayElement = 0;
-    descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[0].descriptorCount = 1;
-    descriptor_writes[0].pBufferInfo = &frame_buffer_info;
-    descriptor_writes[0].pImageInfo = nullptr;
-    descriptor_writes[0].pTexelBufferView = nullptr;
-
-    vkUpdateDescriptorSets(
-        device,
-        static_cast<uint32_t>(descriptor_writes.size()),
-        descriptor_writes.data(),
-        0,
-        nullptr
-    );
-}
-
-//  ----------------------------------------------------------------------------
-void update_texture_descriptor_sets(
-    VkDevice device,
-    const std::vector<Texture>& textures,
-    VkDescriptorSet& descriptor_set
-) {
-    std::vector<VkDescriptorImageInfo> image_infos(textures.size());
-    for (size_t n = 0; n < image_infos.size(); ++n) {
-        image_infos[n].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        image_infos[n].imageView = textures[n].view;
-        image_infos[n].sampler = textures[n].sampler;
-    }
-
-    std::array<VkWriteDescriptorSet, 1> descriptor_writes{};
-
-    //  Combined texture sampler
-    descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[0].dstSet = descriptor_set;
-    descriptor_writes[0].dstBinding = 0;
-    descriptor_writes[0].dstArrayElement = 0;
-    descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    descriptor_writes[0].descriptorCount = static_cast<uint32_t>(image_infos.size());
-    descriptor_writes[0].pBufferInfo = nullptr;
-    descriptor_writes[0].pImageInfo = image_infos.data();
-    descriptor_writes[0].pTexelBufferView = nullptr;
-
-    vkUpdateDescriptorSets(
-        device,
-        static_cast<uint32_t>(descriptor_writes.size()),
-        descriptor_writes.data(),
-        0,
-        nullptr
-    );
-}
-
-//  ----------------------------------------------------------------------------
-void update_object_descriptor_sets(
-    VkDevice device,
-    const std::vector<Texture>& textures,
-    VkBuffer object_uniform_buffer,
-    VkDescriptorSet& descriptor_set
-) {
-    VkDescriptorBufferInfo object_buffer_info{};
-    object_buffer_info.buffer = object_uniform_buffer;
-    object_buffer_info.offset = 0;
-    object_buffer_info.range = VK_WHOLE_SIZE;
-
-    std::vector<VkDescriptorImageInfo> image_infos(textures.size());
-    for (size_t n = 0; n < image_infos.size(); ++n) {
-        image_infos[n].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        image_infos[n].imageView = textures[n].view;
-        image_infos[n].sampler = textures[n].sampler;
-    }
-
-    std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
-
-    //  Per-object dynamic uniform buffer
-    descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[0].dstSet = descriptor_set;
-    descriptor_writes[0].dstBinding = 0;
-    descriptor_writes[0].dstArrayElement = 0;
-    descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    descriptor_writes[0].descriptorCount = 1;
-    descriptor_writes[0].pBufferInfo = &object_buffer_info;
-    descriptor_writes[0].pImageInfo = nullptr;
-    descriptor_writes[0].pTexelBufferView = nullptr;
-
-    //  Combined texture sampler
-    descriptor_writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[1].dstSet = descriptor_set;
-    descriptor_writes[1].dstBinding = 1;
-    descriptor_writes[1].dstArrayElement = 0;
-    descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    descriptor_writes[1].descriptorCount = static_cast<uint32_t>(image_infos.size());
-    descriptor_writes[1].pBufferInfo = nullptr;
-    descriptor_writes[1].pImageInfo = image_infos.data();
-    descriptor_writes[1].pTexelBufferView = nullptr;
-
-    vkUpdateDescriptorSets(
-        device,
-        static_cast<uint32_t>(descriptor_writes.size()),
-        descriptor_writes.data(),
-        0,
-        nullptr
-    );
-}
-
-//  ----------------------------------------------------------------------------
 static void create_primary_command_objects(
     VkDevice device,
     VkPhysicalDevice physical_device,
-    VulkanQueue& graphics_queue,
-    VulkanSwapchain& swapchain,
-    DepthImage depth_image,
-    VulkanRenderSystem::FrameCommandObjects& frame_command
+    FrameCommandObjects& frame_command
 ) {
     create_command_pool(
         device,
@@ -279,88 +103,6 @@ static void create_primary_command_objects(
 }
 
 //  ----------------------------------------------------------------------------
-static void create_secondary_command_objects(
-    VkDevice device,
-    VkPhysicalDevice physical_device,
-    VulkanQueue& graphics_queue,
-    VulkanSwapchain& swapchain,
-    DepthImage depth_image,
-    const std::string& name_prefix,
-    VulkanRenderSystem::FrameCommandObjects& frame_command
-) {
-    create_command_pool(
-        device,
-        physical_device,
-        frame_command.pool,
-        (name_prefix + "_command_pool").c_str()
-    );
-
-    create_secondary_command_buffer(
-        device,
-        frame_command.pool,
-        frame_command.buffer,
-        (name_prefix + "_command_buffer").c_str()
-    );
-}
-
-//  ----------------------------------------------------------------------------
-static void create_descriptor_objects(
-    VkDevice device,
-    DescriptorSetLayouts descriptor_set_layouts,
-    const std::vector<Texture>& textures,
-    const UniformBuffer<FrameUbo>& frame_uniform,
-    const DynamicUniformBuffer<ObjectUbo>& object_uniform,
-    const std::string& name_prefix,
-    VulkanRenderSystem::FrameDescriptorObjects& descriptor
-) {
-    create_descriptor_pool(device, descriptor.pool);
-
-    create_descriptor_set(
-        device,
-        descriptor_set_layouts.frame,
-        descriptor.pool,
-        name_prefix + "_frame_descriptor_set",
-        descriptor.frame_set
-    );
-
-    create_descriptor_set(
-        device,
-        descriptor_set_layouts.texture_sampler,
-        descriptor.pool,
-        name_prefix + "_texture_sampler_descriptor_set",
-        descriptor.texture_set
-    );
-
-    // create_descriptor_set(
-    //     device,
-    //     descriptor_set_layouts.object,
-    //     descriptor.pool,
-    //     name_prefix + "_object_descriptor_set",
-    //     descriptor.object_set
-    // );
-
-    update_frame_descriptor_sets(
-        device,
-        frame_uniform.get_buffer(),
-        frame_uniform.get_ubo_size(),
-        descriptor.frame_set
-    );
-
-    update_texture_descriptor_sets(
-        device,
-        textures,
-        descriptor.texture_set
-    );
-
-    // update_object_descriptor_sets(
-    //     device,
-    //     textures,
-    //     object_uniform.get_buffer(),
-    //     descriptor.object_set
-    // );
-}
-
-//  ----------------------------------------------------------------------------
 VulkanRenderSystem::VulkanRenderSystem()
 : Renderer(RenderApi::Vulkan),
   m_frames(m_frame_count),
@@ -374,50 +116,16 @@ VulkanRenderSystem::~VulkanRenderSystem() {
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanRenderSystem::add_job(Job& job) {
-    //  Can't post jobs if frame isn't in busy state.
-    if (m_frame_status != FrameStatus::Busy) {
-        //  Don't add job. Frame may have been discarded.
-        return;
-    }
-
-    //  Check that a valid task ID was assigned
-    if (job.task_id == FrameTaskId::None) {
-        throw std::runtime_error("Invalid job task ID.");
-    }
-
-    //  Track task call
-    {
-        std::lock_guard<std::mutex> lock(m_tasks_mutex);
-        job.order = m_tasks.add_call(job.task_id);
-    }
-
-    //  Enqueue job
-    {
-        std::lock_guard<std::mutex> lock(m_jobs_mutex);
-        m_jobs.push(job);
-    }
-}
-
-//  ----------------------------------------------------------------------------
 void VulkanRenderSystem::begin_frame() {
     STOPWATCH.start("begin_frame");
-
-    //  Ensure task results are clear
-    m_tasks.clear();
 
     //  Check that textures exist
     std::vector<Texture> textures;
     m_model_mgr->get_textures(textures);
     if (textures.empty()) {
         m_frame_status = FrameStatus::Discarded;
+        m_render_task_mgr->begin_frame(m_current_frame, true);
         return;
-    }
-
-    static bool first_call = true;
-    if (first_call) {
-        first_call = false;
-        start_threads();
     }
 
     m_frame_status = FrameStatus::None;
@@ -448,6 +156,7 @@ void VulkanRenderSystem::begin_frame() {
         //  Surface changed and swapchain is no longer compatible
         recreate_swapchain();
         m_frame_status = FrameStatus::Discarded;
+        m_render_task_mgr->begin_frame(m_current_frame, true);
         return;
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("Failed to acquire swapchain image.");
@@ -455,17 +164,9 @@ void VulkanRenderSystem::begin_frame() {
 
     m_frame_status = FrameStatus::Busy;
 
-    STOPWATCH.stop("begin_frame");
-}
+    m_render_task_mgr->begin_frame(m_current_frame, false);
 
-//  ----------------------------------------------------------------------------
-void VulkanRenderSystem::cancel_threads() {
-    m_cancel_threads = true;
-    for (std::thread& thread : m_threads) {
-        thread.join();
-    }
-    m_threads.clear();
-    m_cancel_threads = false;
+    STOPWATCH.stop("begin_frame");
 }
 
 //  ----------------------------------------------------------------------------
@@ -475,14 +176,10 @@ bool VulkanRenderSystem::check_render_tasks_complete() {
         return true;
     }
 
-    {
-        std::lock_guard<std::mutex> lock(m_tasks_mutex);
-
-        if (m_tasks.is_complete()) {
-            //  Worker threads have completed all tasks for this frame
-            m_frame_status = FrameStatus::Ready;
-            return true;
-        }
+    if (m_render_task_mgr->check_tasks_complete()) {
+        //  Worker threads have completed all tasks for this frame
+        m_frame_status = FrameStatus::Ready;
+        return true;
     }
 
     //  Worker threads are still processing tasks for this frame
@@ -500,9 +197,6 @@ void VulkanRenderSystem::create_frame_resources() {
         create_primary_command_objects(
             m_device,
             m_physical_device,
-            m_graphics_queue,
-            m_swapchain,
-            m_depth_image,
             m_frames[n].command
         );
     }
@@ -631,45 +325,23 @@ void VulkanRenderSystem::destroy_swapchain() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::draw_billboards(
-    std::vector<SpriteBatch>& batches
+    std::vector<render::SpriteBatch>& batches
 ) {
-    if (batches.empty()) {
-        return;
-    }
-
-    Job job{};
-    job.task_id = FrameTaskId::DrawBillboards;
-    job.sprite_batches = batches;
-    add_job(job);
+    m_render_task_mgr->draw_billboards(*m_billboard_renderer, batches);
 }
-
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::draw_models(
-    std::vector<ModelBatch>& batches
+    std::vector<render::ModelBatch>& batches
 ) {
-    if (batches.empty()) {
-        return;
-    }
-
-    Job job{};
-    job.task_id = FrameTaskId::DrawModels;
-    job.batches = batches;
-    add_job(job);
+    m_render_task_mgr->draw_models(*m_model_renderer, batches);
 }
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::draw_sprites(
-    std::vector<SpriteBatch>& batches
+    std::vector<render::SpriteBatch>& batches
 ) {
-    if (batches.empty()) {
-        return;
-    }
-
-    Job job{};
-    job.task_id = FrameTaskId::DrawSprites;
-    job.sprite_batches = batches;
-    add_job(job);
+    m_render_task_mgr->draw_sprites(*m_sprite_renderer, batches);
 }
 
 //  ----------------------------------------------------------------------------
@@ -681,14 +353,14 @@ void VulkanRenderSystem::end_frame() {
 
     //  Check that frame is OK to continue with
     if (m_frame_status != FrameStatus::Ready) {
-        m_tasks.clear();
+        m_render_task_mgr->end_frame();
         return;
     }
 
     Frame& frame = m_frames.at(m_current_frame);
 
     std::vector<VkCommandBuffer> secondary_command_buffers;
-    m_tasks.get_command_buffers(secondary_command_buffers);
+    m_render_task_mgr->get_command_buffers(secondary_command_buffers);
 
     //  Record primary command buffers
     record_primary_command_buffer(
@@ -754,7 +426,7 @@ void VulkanRenderSystem::end_frame() {
     //  Advance frame counter
     m_current_frame = (m_current_frame + 1) % m_frame_count;
 
-    m_tasks.clear();
+    m_render_task_mgr->end_frame();
 }
 
 //  ----------------------------------------------------------------------------
@@ -765,20 +437,6 @@ float VulkanRenderSystem::get_aspect_ratio() const {
 //  ----------------------------------------------------------------------------
 glm::vec2 VulkanRenderSystem::get_size() const {
     return { m_swapchain.extent.width, m_swapchain.extent.height };
-}
-
-//  ----------------------------------------------------------------------------
-bool VulkanRenderSystem::get_job(Job& job) {
-    std::lock_guard<std::mutex> lock(m_jobs_mutex);
-
-    if (m_jobs.empty()) {
-        return false;
-    }
-
-    job = m_jobs.front();
-    m_jobs.pop();
-
-    return true;
 }
 
 //  ----------------------------------------------------------------------------
@@ -883,6 +541,15 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         m_resource_command_pool
     );
 
+    m_render_task_mgr = std::make_unique<RenderTaskManager>(
+        m_physical_device,
+        m_device,
+        m_descriptor_set_layouts,
+        m_frame_uniform,
+        m_object_uniform,
+        *m_model_mgr
+    );
+
     return true;
 }
 
@@ -920,16 +587,6 @@ void VulkanRenderSystem::load_texture(const AssetId id, const std::string& path)
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanRenderSystem::post_results(
-    FrameTaskId task_id,
-    uint32_t order,
-    VkCommandBuffer command_buffer
-) {
-    std::lock_guard<std::mutex> lock(m_tasks_mutex);
-    m_tasks.add_results(task_id, order, command_buffer);
-}
-
-//  ----------------------------------------------------------------------------
 void VulkanRenderSystem::recreate_swapchain() {
     //  Get window size
     int width;
@@ -944,7 +601,7 @@ void VulkanRenderSystem::recreate_swapchain() {
 
     vkDeviceWaitIdle(m_device);
 
-    cancel_threads();
+    m_render_task_mgr->cancel_threads();
 
     destroy_frame_resources();
 
@@ -957,7 +614,7 @@ void VulkanRenderSystem::recreate_swapchain() {
 
     create_frame_resources();
 
-    start_threads();
+    m_render_task_mgr->start_threads();
 }
 
 //  ----------------------------------------------------------------------------
@@ -972,7 +629,7 @@ void VulkanRenderSystem::shutdown() {
     //  Wait for operations to finish
     vkDeviceWaitIdle(m_device);
 
-    cancel_threads();
+    m_render_task_mgr->cancel_threads();
 
     destroy_frame_resources();
 
@@ -999,141 +656,12 @@ void VulkanRenderSystem::shutdown() {
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanRenderSystem::start_threads() {
-    assert(m_thread_count > 0);
-    for (auto n = 0; n < m_thread_count; ++n) {
-        m_threads.emplace_back(&VulkanRenderSystem::thread_main, this, n);
-    }
-}
-
-//  ----------------------------------------------------------------------------
-void VulkanRenderSystem::thread_main(uint8_t thread_id) {
-    log_debug("Thread %d started.", thread_id);
-
-    const std::string thread_name = "thread" + std::to_string(thread_id);
-
-    std::vector<Texture> textures;
-    m_model_mgr->get_textures(textures);
-
-    //  Initialize frame objects
-    uint32_t frame_index = 0;
-    std::vector<ThreadFrame> frames(m_frame_count);
-    for (ThreadFrame& frame : frames) {
-        const std::string frame_name =
-            thread_name + "_frame" + std::to_string(++frame_index);
-
-        create_secondary_command_objects(
-            m_device,
-            m_physical_device,
-            m_graphics_queue,
-            m_swapchain,
-            m_depth_image,
-            frame_name,
-            frame.command
-        );
-
-        create_descriptor_objects(
-            m_device,
-            m_descriptor_set_layouts,
-            textures,
-            m_frame_uniform,
-            m_object_uniform,
-            frame_name,
-            frame.descriptor
-        );
-    }
-
-    //  Main loop
-    while (!m_cancel_threads) {
-        Job job{};
-        //  Sleep until job is available
-        if (!get_job(job)) {
-            std::this_thread::sleep_for(std::chrono::microseconds(250));
-            continue;
-        }
-
-        //  Process job
-        ThreadFrame& frame = frames.at(m_current_frame);
-
-        vkResetCommandPool(
-            m_device,
-            frame.command.pool,
-            VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT
-        );
-
-        switch (job.task_id) {
-            case FrameTaskId::DrawBillboards:
-                STOPWATCH.start(thread_name+"_draw_billboards");
-                m_billboard_renderer->draw_billboards(
-                    job.sprite_batches,
-                    frame.descriptor,
-                    frame.command.buffer
-                );
-                STOPWATCH.stop(thread_name+"_draw_billboards");
-                break;
-
-            case FrameTaskId::DrawModels:
-                STOPWATCH.start(thread_name+"_draw_models");
-                m_model_renderer->draw_models(
-                    job.batches,
-                    frame.descriptor,
-                    frame.command.buffer
-                );
-                STOPWATCH.stop(thread_name+"_draw_models");
-                break;
-
-            case FrameTaskId::DrawSprites:
-                STOPWATCH.start(thread_name+"_draw_sprites");
-                m_sprite_renderer->draw_sprites(
-                    job.sprite_batches,
-                    frame.descriptor,
-                    frame.command.buffer
-                );
-                STOPWATCH.stop(thread_name+"_draw_sprites");
-                break;
-
-            case FrameTaskId::UpdateFrameUniforms:
-                STOPWATCH.start(thread_name+"_update_frame_uniforms");
-                task_update_frame_uniforms(job.frame_ubo, m_frame_uniform);
-                STOPWATCH.stop(thread_name+"_update_frame_uniforms");
-                break;
-
-            case FrameTaskId::UpdateObjectUniforms:
-                STOPWATCH.start(thread_name+"_update_object_uniforms");
-                task_update_object_uniforms(job.batches, m_object_uniform);
-                STOPWATCH.stop(thread_name+"_update_object_uniforms");
-                break;
-        }
-
-        //  Post completed work
-        post_results(job.task_id, job.order, frame.command.buffer);
-    }
-
-    //  Release frame objects
-    for (ThreadFrame& frame : frames) {
-        //  Command pool
-        vkDestroyCommandPool(m_device, frame.command.pool, nullptr);
-        //  Descriptors
-        vkDestroyDescriptorPool(m_device, frame.descriptor.pool, nullptr);
-    }
-
-    log_debug("Thread %d exited.", thread_id);
-}
-
-//  ----------------------------------------------------------------------------
 void VulkanRenderSystem::update_frame_uniforms(
     const glm::mat4& view,
     const glm::mat4& proj,
     const glm::mat4& ortho_view,
     const glm::mat4& ortho_proj
 ) {
-    //  Update uniform data
-    Job job{};
-    job.task_id = FrameTaskId::UpdateFrameUniforms;
-    job.frame_ubo.view = view;
-    job.frame_ubo.proj = proj;
-    job.frame_ubo.ortho_view = ortho_view;
-    job.frame_ubo.ortho_proj = ortho_proj;
-    add_job(job);
+    m_render_task_mgr->update_frame_uniforms(view, proj, ortho_view, ortho_proj);
 }
 }

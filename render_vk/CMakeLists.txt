@@ -23,8 +23,8 @@ set(SOURCE_FILES
     src/mesh.cpp
     src/model_manager.cpp
     src/queue_family.cpp
-    # src/render_job_manager.cpp
     src/render_pass.cpp
+    src/render_task_manager.cpp
     src/render_tasks/task_update_uniforms.cpp
     src/renderers/billboard_renderer.cpp
     src/renderers/model_renderer.cpp
