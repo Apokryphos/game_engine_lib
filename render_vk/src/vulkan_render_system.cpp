@@ -120,15 +120,6 @@ VulkanRenderSystem::~VulkanRenderSystem() {
 void VulkanRenderSystem::begin_frame() {
     STOPWATCH.start("begin_frame");
 
-    //  Check that texture transfers are finished
-    // if (m_texture_mgr->has_pending_textures()) {
-    //     m_frame_status = FrameStatus::Discarded;
-    //     m_render_task_mgr->begin_frame(m_current_frame, true);
-    //     return;
-    // }
-
-    const std::vector<Texture>& textures = m_texture_mgr->get_textures();
-
     m_frame_status = FrameStatus::None;
 
     Frame& frame = m_frames.at(m_current_frame);
