@@ -10,7 +10,6 @@
 #include "engine/system_manager.hpp"
 #include "platform/window.hpp"
 #include "render/renderer.hpp"
-#include "render/renderers/model_renderer.hpp"
 #include "systems/camera_system.hpp"
 #include "systems/model_system.hpp"
 #include "systems/move_system.hpp"
