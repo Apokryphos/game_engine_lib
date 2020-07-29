@@ -1,6 +1,7 @@
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/command_pool.hpp"
 #include "render_vk/debug_utils.hpp"
+#include "render_vk/graphics_pipeline.hpp"
 #include "render_vk/model_manager.hpp"
 #include "render_vk/renderers/vulkan_model_renderer.hpp"
 #include "render_vk/vulkan_model.hpp"
@@ -11,93 +12,49 @@ using namespace render;
 
 namespace render_vk
 {
-//  Number of objects to create UBO data structs for
-const size_t OBJECT_INSTANCES = 100;
-
 //  ----------------------------------------------------------------------------
 VulkanModelRenderer::VulkanModelRenderer(ModelManager& model_mgr)
-: m_current_image(0),
-  m_model_mgr(model_mgr),
-  m_object_uniform(OBJECT_INSTANCES) {
+: m_model_mgr(model_mgr) {
 }
 
 //  ----------------------------------------------------------------------------
 void VulkanModelRenderer::create_objects(
-    VkPhysicalDevice physical_device,
     VkDevice device,
+    const VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
-    VkPipelineLayout pipeline_layout,
-    VkPipeline graphics_pipeline,
-    uint32_t swapchain_image_count
+    const DescriptorSetLayouts& descriptor_set_layouts
 ) {
     m_device = device;
     m_render_pass = render_pass;
-    m_pipeline_layout = pipeline_layout;
-    m_graphics_pipeline = graphics_pipeline;
 
-    m_frame_uniform.create(physical_device, m_device);
-    m_object_uniform.create(physical_device, m_device);
-
-    create_command_pool(device, physical_device, m_command_pool);
-
-    create_secondary_command_buffers(
+    create_graphics_pipeline(
         device,
-        m_command_pool,
-        swapchain_image_count,
-        m_command_buffers
+        swapchain,
+        render_pass,
+        descriptor_set_layouts,
+        m_pipeline_layout,
+        m_pipeline
     );
 }
 
 //  ----------------------------------------------------------------------------
 void VulkanModelRenderer::destroy_objects() {
-    m_frame_uniform.destroy();
-    m_object_uniform.destroy();
-    vkDestroyCommandPool(m_device, m_command_pool, nullptr);
-    m_device = VK_NULL_HANDLE;
+    vkDestroyPipeline(m_device, m_pipeline, nullptr);
+    m_pipeline = VK_NULL_HANDLE;
+
+    vkDestroyPipelineLayout(m_device, m_pipeline_layout, nullptr);
+    m_pipeline_layout = VK_NULL_HANDLE;
+
     m_render_pass = VK_NULL_HANDLE;
+    m_device = VK_NULL_HANDLE;
 }
 
 //  ----------------------------------------------------------------------------
 void VulkanModelRenderer::draw_models(
-    const glm::mat4& view,
-    const glm::mat4& proj,
-    std::vector<ModelBatch>& batches
+    const std::vector<ModelBatch>& batches,
+    const VulkanRenderSystem::FrameDescriptorObjects& descriptors,
+    VkCommandBuffer command_buffer
 ) {
-    assert(!batches.empty());
-
-    //  Check that descriptor set is valid
-    if (m_descriptor_sets.frame_sets.empty()) {
-        return;
-    }
-
-    //  Check that textures exist
-    std::vector<Texture> textures;
-    m_model_mgr.get_textures(textures);
-    if (textures.empty()) {
-        return;
-    }
-
-    //   Build vectors for uniform buffers
-    std::vector<glm::vec3> positions;
-    std::vector<uint32_t> texture_ids;
-    for (const ModelBatch& batch : batches) {
-        positions.insert(
-            positions.end(),
-            batch.positions.begin(),
-            batch.positions.end()
-        );
-
-        texture_ids.insert(
-            texture_ids.end(),
-            batch.texture_ids.begin(),
-            batch.texture_ids.end()
-        );
-    }
-    update_uniform_buffers(view, proj, positions, texture_ids);
-
-    //  Build secondary command buffer
-    VkCommandBuffer command_buffer = m_command_buffers.at(m_current_image);
-
     VkCommandBufferInheritanceInfo inherit_info{};
     inherit_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
     inherit_info.renderPass = m_render_pass;
@@ -105,25 +62,57 @@ void VulkanModelRenderer::draw_models(
     //  Record secondary command buffer
     VkCommandBufferBeginInfo begin_info{};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    begin_info.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+    begin_info.flags =
+        VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT |
+        VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
     begin_info.pInheritanceInfo = &inherit_info;
 
+    begin_debug_marker(command_buffer, "Draw Models", DEBUG_MARKER_COLOR_ORANGE);
     if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
         throw std::runtime_error("Failed to begin recording command buffer.");
+    }
+
+    //  Check if batches are empty
+    if (batches.empty()) {
+        if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to record secondary command buffer.");
+        }
+        end_debug_marker(command_buffer);
+        return;
     }
 
     //  Bind pipeline
     vkCmdBindPipeline(
         command_buffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
-        m_graphics_pipeline
+        m_pipeline
     );
 
-    begin_debug_marker(command_buffer, "Draw Model (SECONDARY)", DEBUG_MARKER_COLOR_ORANGE);
+    //  Bind per-frame descriptors
+    vkCmdBindDescriptorSets(
+        command_buffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        m_pipeline_layout,
+        0,
+        1,
+        &descriptors.frame_set,
+        0,
+        nullptr
+    );
+
+    //  Bind texture descriptors
+    vkCmdBindDescriptorSets(
+        command_buffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        m_pipeline_layout,
+        1,
+        1,
+        &descriptors.texture_set,
+        0,
+        nullptr
+    );
 
     //  Keep track of model index because of dynamic buffer alignment
-    size_t model_index = 0;
-
     for (const ModelBatch& batch : batches) {
         //  Get model
         VulkanModel* model = m_model_mgr.get_model(batch.model_id);
@@ -144,91 +133,63 @@ void VulkanModelRenderer::draw_models(
             VK_INDEX_TYPE_UINT32
         );
 
-        //  Bind per-frame descriptors
-        vkCmdBindDescriptorSets(
+        // const uint32_t dynamic_align = static_cast<uint32_t>(m_object_uniform.get_align());
+        const uint32_t index_count = model->get_index_count();
+
+        // vkCmdBindDescriptorSets(
+        //     command_buffer,
+        //     VK_PIPELINE_BIND_POINT_GRAPHICS,
+        //     m_pipeline_layout,
+        //     1,
+        //     1,
+        //     &descriptor.object_set,
+        //     1,
+        //     &dynamic_align
+        // );
+
+        //  Texture ID
+        vkCmdPushConstants(
             command_buffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
             m_pipeline_layout,
-            0,
-            1,
-            &m_descriptor_sets.frame_sets[m_current_image],
-            0,
-            nullptr
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            sizeof(glm::mat4),
+            sizeof(uint32_t),
+            &batch.texture_id
         );
 
         //  Draw each object
-        for (int n = 0; n < batch.positions.size(); ++n) {
+        for (uint32_t n = 0; n < batch.positions.size(); ++n) {
             //  One dynamic offset per dynamic descriptor to offset into the ubo
             //  containing all model matrices
-            const size_t dynamic_align = m_object_uniform.get_align();
-            const uint32_t dynamic_offset = model_index * static_cast<uint32_t>(dynamic_align);
+            // const uint32_t dynamic_offset = n * dynamic_align;
 
-            //  Bind per-object descriptor set using the dynamic offset
-            vkCmdBindDescriptorSets(
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), batch.positions[n]);
+
+            vkCmdPushConstants(
                 command_buffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
                 m_pipeline_layout,
-                1,
-                1,
-                &m_descriptor_sets.object_sets[m_current_image],
-                1,
-                &dynamic_offset
+                VK_SHADER_STAGE_VERTEX_BIT,
+                0,
+                sizeof(glm::mat4),
+                &model
             );
-
-            ++model_index;
 
             //  Draw
             vkCmdDrawIndexed(
                 command_buffer,
-                static_cast<uint32_t>(model->get_index_count()),
+                index_count,
                 1,
                 0,
                 0,
-                0
+                1
             );
         }
     }
-
-    end_debug_marker(command_buffer);
 
     if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record secondary command buffer.");
     }
 
-    m_descriptor_sets = {};
-}
-
-//  ----------------------------------------------------------------------------
-void VulkanModelRenderer::update_uniform_buffers(
-    glm::mat4 view,
-    glm::mat4 proj,
-    const std::vector<glm::vec3>& positions,
-    const std::vector<uint32_t>& texture_ids
-) {
-    assert(positions.size() == texture_ids.size());
-
-    //  Update frame UBO
-    FrameUbo frame_ubo{};
-    frame_ubo.view = view;
-    frame_ubo.proj = proj;
-
-    //  GLM (OpenGL) uses inverted Y clip coordinate
-    frame_ubo.proj[1][1] *= -1;
-
-    //  Copy frame UBO struct to uniform buffer
-    m_frame_uniform.copy(frame_ubo);
-
-    //  Update all UBO structs once per frame
-    const size_t object_count = positions.size();
-    assert(object_count > 0);
-
-    std::vector<ObjectUbo> data(object_count);
-    for (size_t n = 0; n < object_count; ++n)  {
-        data[n].texture_index = texture_ids[n];
-        data[n].model = glm::translate(glm::mat4(1.0f), positions[n]);
-    }
-
-    //  Copy object UBO structs to dynamic uniform buffer
-    m_object_uniform.copy(data);
+    end_debug_marker(command_buffer);
 }
 }

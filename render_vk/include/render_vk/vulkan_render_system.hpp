@@ -21,6 +21,7 @@ struct GLFWwindow;
 namespace render_vk
 {
 class ModelManager;
+class VulkanModelRenderer;
 
 class VulkanRenderSystem : public render::Renderer
 {
@@ -206,9 +207,6 @@ private:
 
     VkRenderPass m_render_pass          = VK_NULL_HANDLE;
 
-    VkPipelineLayout m_pipeline_layout  = VK_NULL_HANDLE;
-    VkPipeline m_graphics_pipeline      = VK_NULL_HANDLE;
-
     //  Command pool used to create main thread resources
     VkCommandPool m_resource_command_pool = VK_NULL_HANDLE;
 
@@ -248,6 +246,7 @@ private:
     RenderTasks m_tasks;
 
     std::unique_ptr<ModelManager> m_model_mgr;
+    std::unique_ptr<VulkanModelRenderer> m_model_renderer;
 
     //  Adds a new job for a worker thread to process.
     void add_job(Job& job);

@@ -1,87 +1,44 @@
 #pragma once
 
-#include "render/renderers/model_renderer.hpp"
-#include "render_vk/command_buffer.hpp"
-#include "render_vk/descriptor_sets.hpp"
-#include "render_vk/dynamic_uniform_buffer.hpp"
-#include "render_vk/uniform_buffer.hpp"
+#include "render/model_batch.hpp"
 #include "render_vk/vulkan.hpp"
+#include "render_vk/vulkan_render_system.hpp"
+#include <functional>
 
 namespace render_vk
 {
+struct DescriptorSetLayouts;
 class ModelManager;
+struct VulkanSwapchain;
 
-class VulkanModelRenderer : public render::ModelRenderer
+class VulkanModelRenderer
 {
-    //  Current swapchain image index
-    uint32_t m_current_image;
+    VkDevice m_device                   {VK_NULL_HANDLE};
+    VkRenderPass m_render_pass          {VK_NULL_HANDLE};
 
-    VkDevice m_device;
-    VkRenderPass m_render_pass;
-    VkPipelineLayout m_pipeline_layout;
-    VkPipeline m_graphics_pipeline;
-
-    //  Set in begin_frame()
-    DescriptorSets m_descriptor_sets;
-
-    VkCommandPool m_command_pool;
-    std::vector<VkCommandBuffer> m_command_buffers;
-
-    //  Per-frame uniform buffer
-    UniformBuffer<FrameUbo> m_frame_uniform;
-
-    //  Per-object dynamic uniform buffer
-    DynamicUniformBuffer<ObjectUbo> m_object_uniform;
+    VkPipelineLayout m_pipeline_layout  {VK_NULL_HANDLE};
+    VkPipeline m_pipeline               {VK_NULL_HANDLE};
 
     ModelManager& m_model_mgr;
 
-    void update_uniform_buffers();
-
 public:
     VulkanModelRenderer(ModelManager& model_mgr);
-
-    void begin_frame(
-        uint32_t current_image,
-        const DescriptorSets& descriptor_sets
-    ) {
-        m_current_image = current_image;
-        m_descriptor_sets = descriptor_sets;
-    }
-
+    VulkanModelRenderer(const VulkanModelRenderer&) = delete;
+    VulkanModelRenderer& operator=(const VulkanModelRenderer&) = delete;
+    //  Creates resources
     void create_objects(
-        VkPhysicalDevice physical_device,
         VkDevice device,
+        const VulkanSwapchain& swapchain,
         VkRenderPass render_pass,
-        VkPipelineLayout pipeline_layout,
-        VkPipeline graphics_pipeline,
-        uint32_t swapchain_image_count
+        const DescriptorSetLayouts& descriptor_set_layouts
     );
-
+    //  Destroys resources
     void destroy_objects();
-
-    virtual void draw_models(
-        const glm::mat4& view,
-        const glm::mat4& proj,
-        std::vector<render::ModelBatch>& batches
-    ) override;
-
-    VkCommandBuffer get_command_buffer() const {
-        return m_command_buffers.at(m_current_image);
-    }
-
-    UniformBuffer<FrameUbo>& get_frame_uniform() {
-        return m_frame_uniform;
-    }
-
-    DynamicUniformBuffer<ObjectUbo>& get_object_uniform() {
-        return m_object_uniform;
-    }
-
-    void update_uniform_buffers(
-        glm::mat4 view,
-        glm::mat4 proj,
-        const std::vector<glm::vec3>& positions,
-        const std::vector<uint32_t>& texture_ids
+    //  Draws 3D models
+    void draw_models(
+        const std::vector<render::ModelBatch>& batches,
+        const VulkanRenderSystem::FrameDescriptorObjects& descriptors,
+        VkCommandBuffer command_buffer
     );
 };
 }

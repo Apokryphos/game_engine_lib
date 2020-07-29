@@ -20,6 +20,7 @@
 #include "render_vk/sprite_pipeline.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
+#include "render_vk/renderers/vulkan_model_renderer.hpp"
 #include "render_vk/vulkan_render_system.hpp"
 #include "render_vk/vulkan_model.hpp"
 #include <glm/gtc/matrix_transform.hpp>
@@ -540,13 +541,11 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         "resource_command_pool"
     );
 
-    create_graphics_pipeline(
+    m_model_renderer->create_objects(
         m_device,
         m_swapchain,
         m_render_pass,
-        m_descriptor_set_layouts,
-        m_pipeline_layout,
-        m_graphics_pipeline
+        m_descriptor_set_layouts
     );
 
     create_billboard_pipeline(
@@ -618,8 +617,7 @@ void VulkanRenderSystem::destroy_swapchain() {
         vkDestroyFramebuffer(m_device, framebuffer, nullptr);
     }
 
-    vkDestroyPipeline(m_device, m_graphics_pipeline, nullptr);
-    vkDestroyPipelineLayout(m_device, m_pipeline_layout, nullptr);
+    m_model_renderer->destroy_objects();
 
     vkDestroyPipeline(m_device, m_billboard_pipeline.pipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_billboard_pipeline.layout, nullptr);
@@ -876,13 +874,15 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
 
     create_descriptor_set_layouts(m_device, MAX_TEXTURES, m_descriptor_set_layouts);
 
+    m_model_mgr = std::make_unique<ModelManager>();
+    m_model_renderer = std::make_unique<VulkanModelRenderer>(*m_model_mgr);
+
     create_swapchain_objects();
 
     create_swapchain_dependents();
 
     create_frame_resources();
 
-    m_model_mgr = std::make_unique<ModelManager>();
     m_model_mgr->initialize(
         m_physical_device,
         m_device,
@@ -1084,13 +1084,9 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
 
             case FrameTaskId::DrawModels:
                 STOPWATCH.start(thread_name+"_draw_models");
-                task_draw_models(
-                    m_render_pass,
-                    m_pipeline_layout,
-                    m_graphics_pipeline,
-                    *m_model_mgr,
-                    frame.descriptor,
+                m_model_renderer->draw_models(
                     job.batches,
+                    frame.descriptor,
                     frame.command.buffer
                 );
                 STOPWATCH.stop(thread_name+"_draw_models");
