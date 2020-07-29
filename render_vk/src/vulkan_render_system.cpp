@@ -12,10 +12,10 @@
 #include "render_vk/mesh.hpp"
 #include "render_vk/model_manager.hpp"
 #include "render_vk/render_pass.hpp"
-#include "render_vk/render_tasks/task_draw_billboards.hpp"
 #include "render_vk/render_tasks/task_update_uniforms.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
+#include "render_vk/renderers/billboard_renderer.hpp"
 #include "render_vk/renderers/model_renderer.hpp"
 #include "render_vk/renderers/sprite_renderer.hpp"
 #include "render_vk/vulkan_render_system.hpp"
@@ -538,6 +538,13 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         "resource_command_pool"
     );
 
+    m_billboard_renderer->create_objects(
+        m_device,
+        m_swapchain,
+        m_render_pass,
+        m_descriptor_set_layouts
+    );
+
     m_model_renderer->create_objects(
         m_device,
         m_swapchain,
@@ -550,14 +557,6 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         m_swapchain,
         m_render_pass,
         m_descriptor_set_layouts
-    );
-
-    create_billboard_pipeline(
-        m_device,
-        m_swapchain,
-        m_render_pass,
-        m_descriptor_set_layouts,
-        m_billboard_pipeline
     );
 
     create_depth_resources(
@@ -613,11 +612,9 @@ void VulkanRenderSystem::destroy_swapchain() {
         vkDestroyFramebuffer(m_device, framebuffer, nullptr);
     }
 
+    m_billboard_renderer->destroy_objects();
     m_model_renderer->destroy_objects();
     m_sprite_renderer->destroy_objects();
-
-    vkDestroyPipeline(m_device, m_billboard_pipeline.pipeline, nullptr);
-    vkDestroyPipelineLayout(m_device, m_billboard_pipeline.layout, nullptr);
 
     imgui_vulkan_cleanup_swapchain(m_device);
 
@@ -869,6 +866,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     create_descriptor_set_layouts(m_device, MAX_TEXTURES, m_descriptor_set_layouts);
 
     m_model_mgr = std::make_unique<ModelManager>();
+    m_billboard_renderer = std::make_unique<BillboardRenderer>(*m_model_mgr);
     m_model_renderer = std::make_unique<ModelRenderer>(*m_model_mgr);
     m_sprite_renderer = std::make_unique<SpriteRenderer>(*m_model_mgr);
 
@@ -1066,12 +1064,9 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
         switch (job.task_id) {
             case FrameTaskId::DrawBillboards:
                 STOPWATCH.start(thread_name+"_draw_billboards");
-                task_draw_billboards(
-                    m_render_pass,
-                    m_billboard_pipeline,
-                    *m_model_mgr,
-                    frame.descriptor,
+                m_billboard_renderer->draw_billboards(
                     job.sprite_batches,
+                    frame.descriptor,
                     frame.command.buffer
                 );
                 STOPWATCH.stop(thread_name+"_draw_billboards");

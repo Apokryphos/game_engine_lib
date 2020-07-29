@@ -2,7 +2,6 @@
 
 #include "render/model_batch.hpp"
 #include "render/renderer.hpp"
-#include "render_vk/billboard_pipeline.hpp"
 #include "render_vk/descriptor_sets.hpp"
 #include "render_vk/depth.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
@@ -19,6 +18,7 @@ struct GLFWwindow;
 
 namespace render_vk
 {
+class BillboardRenderer;
 class ModelManager;
 class ModelRenderer;
 class SpriteRenderer;
@@ -227,8 +227,6 @@ private:
     //  Per-object dynamic uniform buffer
     DynamicUniformBuffer<ObjectUbo> m_object_uniform;
 
-    BillboardPipeline m_billboard_pipeline;
-
     //  Main thread frame objects
     std::vector<Frame> m_frames;
 
@@ -245,6 +243,9 @@ private:
     RenderTasks m_tasks;
 
     std::unique_ptr<ModelManager> m_model_mgr;
+
+    //  Renderers
+    std::unique_ptr<BillboardRenderer> m_billboard_renderer;
     std::unique_ptr<ModelRenderer> m_model_renderer;
     std::unique_ptr<SpriteRenderer> m_sprite_renderer;
 
