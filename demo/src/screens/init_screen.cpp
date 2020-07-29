@@ -211,7 +211,6 @@ static void init_billboards(Game& game) {
     NameSystem& name_sys = get_name_system(sys_mgr);
     PositionSystem& pos_sys = get_position_system(sys_mgr);
 
-    std::uniform_real_distribution<float> size_dist(0.5f, 1.0f);
     std::uniform_int_distribution<int> x_dist(-50, 50);
     std::uniform_int_distribution<int> y_dist(-50, 50);
 
@@ -251,10 +250,7 @@ static void init_billboards(Game& game) {
             entity,
             billboard_sys,
             4,
-            glm::vec2(
-                102 * size_dist(random.get_rng()),
-                100 * size_dist(random.get_rng())
-            )
+            glm::vec2(1.0f)
         );
     }
 }

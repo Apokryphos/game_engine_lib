@@ -104,8 +104,8 @@ void DemoScreen::on_render(Game& game) {
     demo_sys.batch_billboards(game, view, proj, billboard_batches);
 
     //  Draw batches
-    render_sys.draw_billboards(billboard_batches);
     render_sys.draw_models(model_batches);
+    render_sys.draw_billboards(billboard_batches);
     render_sys.draw_sprites(sprite_batches);
 }
 

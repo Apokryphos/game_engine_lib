@@ -116,7 +116,7 @@ void DemoSystem::batch_billboards(
         SpriteBatch& batch = batches[texture_id];
         batch.texture_id = texture_id;
         batch.positions.push_back(position);
-        batch.sizes.push_back(glm::vec3(1.0f));
+        batch.sizes.push_back({size.x, 1.0f, size.y});
     }
 
     for (const auto& pair : batches) {
