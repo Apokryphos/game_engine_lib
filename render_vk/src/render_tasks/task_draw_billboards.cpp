@@ -2,7 +2,7 @@
 #include "render_vk/billboard_pipeline.hpp"
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/model_manager.hpp"
-#include "render_vk/render_tasks/task_draw_sprites.hpp"
+#include "render_vk/render_tasks/task_draw_billboards.hpp"
 #include "render_vk/vulkan_model.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
