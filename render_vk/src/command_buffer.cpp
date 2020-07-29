@@ -195,11 +195,13 @@ void record_primary_command_buffer(
     vkCmdBeginRenderPass(command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
     //  Execute secondary command buffers
-    vkCmdExecuteCommands(
-        command_buffer,
-        static_cast<uint32_t>(secondary_command_buffers.size()),
-        secondary_command_buffers.data()
-    );
+    if (!secondary_command_buffers.empty()) {
+        vkCmdExecuteCommands(
+            command_buffer,
+            static_cast<uint32_t>(secondary_command_buffers.size()),
+            secondary_command_buffers.data()
+        );
+    }
 
     //  Start next subpass for ImGui
     vkCmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);

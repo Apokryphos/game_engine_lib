@@ -644,6 +644,10 @@ void VulkanRenderSystem::destroy_swapchain() {
 void VulkanRenderSystem::draw_billboards(
     std::vector<SpriteBatch>& batches
 ) {
+    if (batches.empty()) {
+        return;
+    }
+
     Job job{};
     job.task_id = FrameTaskId::DrawBillboards;
     job.sprite_batches = batches;
@@ -655,6 +659,10 @@ void VulkanRenderSystem::draw_billboards(
 void VulkanRenderSystem::draw_models(
     std::vector<ModelBatch>& batches
 ) {
+    if (batches.empty()) {
+        return;
+    }
+
     Job job{};
     job.task_id = FrameTaskId::DrawModels;
     job.batches = batches;
@@ -665,6 +673,10 @@ void VulkanRenderSystem::draw_models(
 void VulkanRenderSystem::draw_sprites(
     std::vector<SpriteBatch>& batches
 ) {
+    if (batches.empty()) {
+        return;
+    }
+
     Job job{};
     job.task_id = FrameTaskId::DrawSprites;
     job.sprite_batches = batches;
