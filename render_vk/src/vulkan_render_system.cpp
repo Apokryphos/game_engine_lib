@@ -705,7 +705,6 @@ void VulkanRenderSystem::end_frame() {
     record_primary_command_buffer(
         m_render_pass,
         m_pipeline_layout,
-        m_graphics_pipeline,
         m_swapchain.extent,
         m_swapchain.framebuffers.at(m_image_index),
         secondary_command_buffers,
