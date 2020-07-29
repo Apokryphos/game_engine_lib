@@ -391,7 +391,7 @@ void VulkanRenderSystem::add_job(Job& job) {
     //  Track task call
     {
         std::lock_guard<std::mutex> lock(m_tasks_mutex);
-        m_tasks.add_call(job.task_id);
+        job.order = m_tasks.add_call(job.task_id);
     }
 
     //  Enqueue job
@@ -477,14 +477,14 @@ bool VulkanRenderSystem::check_render_tasks_complete() {
         return true;
     }
 
-    if (m_tasks.is_complete(FrameTaskId::DrawBillboards) &&
-        m_tasks.is_complete(FrameTaskId::DrawModels) &&
-        m_tasks.is_complete(FrameTaskId::DrawSprites) &&
-        m_tasks.is_complete(FrameTaskId::UpdateFrameUniforms)
-    ) {
-        //  Worker threads have completed all tasks for this frame
-        m_frame_status = FrameStatus::Ready;
-        return true;
+    {
+        std::lock_guard<std::mutex> lock(m_tasks_mutex);
+
+        if (m_tasks.is_complete()) {
+            //  Worker threads have completed all tasks for this frame
+            m_frame_status = FrameStatus::Ready;
+            return true;
+        }
     }
 
     //  Worker threads are still processing tasks for this frame
@@ -692,6 +692,7 @@ void VulkanRenderSystem::end_frame() {
 
     //  Check that frame is OK to continue with
     if (m_frame_status != FrameStatus::Ready) {
+        m_tasks.clear();
         return;
     }
 
@@ -930,10 +931,11 @@ void VulkanRenderSystem::load_texture(const AssetId id, const std::string& path)
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::post_results(
     FrameTaskId task_id,
+    uint32_t order,
     VkCommandBuffer command_buffer
 ) {
     std::lock_guard<std::mutex> lock(m_tasks_mutex);
-    m_tasks.add_results(task_id, command_buffer);
+    m_tasks.add_results(task_id, order, command_buffer);
 }
 
 //  ----------------------------------------------------------------------------
@@ -1123,7 +1125,7 @@ void VulkanRenderSystem::thread_main(uint8_t thread_id) {
         }
 
         //  Post completed work
-        post_results(job.task_id, frame.command.buffer);
+        post_results(job.task_id, job.order, frame.command.buffer);
     }
 
     //  Release frame objects
