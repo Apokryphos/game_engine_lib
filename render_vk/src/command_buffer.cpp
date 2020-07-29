@@ -158,7 +158,6 @@ void create_secondary_command_buffer(
 //  ----------------------------------------------------------------------------
 void record_primary_command_buffer(
     VkRenderPass render_pass,
-    VkPipelineLayout pipeline_layout,
     VkExtent2D extent,
     VkFramebuffer framebuffer,
     const std::vector<VkCommandBuffer>& secondary_command_buffers,
