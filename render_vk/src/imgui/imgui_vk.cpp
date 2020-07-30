@@ -110,6 +110,11 @@ void imgui_vulkan_init(
 // }
 
 //  ----------------------------------------------------------------------------
+void imgui_vulkan_discard_frame() {
+    ImGui::EndFrame();
+}
+
+//  ----------------------------------------------------------------------------
 void imgui_vulkan_render_frame(VkCommandBuffer command_buffer) {
     ImGui::Render();
 

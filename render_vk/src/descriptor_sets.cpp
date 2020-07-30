@@ -107,6 +107,8 @@ void update_object_descriptor_sets(
     VkBuffer object_uniform_buffer,
     std::vector<VkDescriptorSet>& descriptor_sets
 ) {
+    assert(!textures.empty());
+
     for (size_t n = 0; n < swapchain_image_count; n++) {
         VkDescriptorBufferInfo object_buffer_info{};
         object_buffer_info.buffer = object_uniform_buffer;
@@ -161,6 +163,8 @@ void update_sampler_descriptor_sets(
     std::vector<Texture>& textures,
     std::vector<VkDescriptorSet>& descriptor_sets
 ) {
+    assert(!textures.empty());
+
     for (size_t n = 0; n < swapchain_image_count; n++) {
         std::vector<VkDescriptorImageInfo> image_infos(textures.size());
         for (size_t n = 0; n < image_infos.size(); ++n) {

@@ -134,7 +134,14 @@ void VulkanRenderSystem::begin_frame() {
         UINT64_MAX
     );
 
+    //  Update descriptor sets
     m_descriptor_set_mgr->update_descriptor_sets(*m_texture_mgr);
+    if (!m_descriptor_set_mgr->is_ready()) {
+        m_frame_status = FrameStatus::Discarded;
+        m_render_task_mgr->begin_frame(m_current_frame, true);
+        imgui_vulkan_discard_frame();
+        return;
+    }
 
     //  Get next presentable swapchain image index
     VkResult result = vkAcquireNextImageKHR(
@@ -158,7 +165,6 @@ void VulkanRenderSystem::begin_frame() {
     }
 
     m_frame_status = FrameStatus::Busy;
-
     m_render_task_mgr->begin_frame(m_current_frame, false);
 
     STOPWATCH.stop("begin_frame");
@@ -559,6 +565,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         m_descriptor_set_layouts,
         m_frame_uniform,
         m_object_uniform,
+        *m_descriptor_set_mgr,
         *m_model_mgr,
         *m_texture_mgr
     );

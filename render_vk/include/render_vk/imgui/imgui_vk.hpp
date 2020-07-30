@@ -6,6 +6,8 @@ struct GLFWwindow;
 
 namespace render_vk
 {
+void imgui_vulkan_discard_frame();
+
 //  Initializes ImGui.
 //  Currently, ImGui will use the same render pass and command pool as the
 //  engine.

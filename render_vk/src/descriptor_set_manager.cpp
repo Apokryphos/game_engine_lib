@@ -61,6 +61,8 @@ static void update_texture_descriptor_sets(
     const std::vector<Texture>& textures,
     VkDescriptorSet& descriptor_set
 ) {
+    assert(!textures.empty());
+
     std::vector<VkDescriptorImageInfo> image_infos(textures.size());
     for (size_t n = 0; n < image_infos.size(); ++n) {
         image_infos[n].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -100,6 +102,8 @@ void DescriptorSetManager::copy_texture_descriptor_set(VkDescriptorSet dst) {
     copy.dstSet = dst;
     copy.srcSet = m_texture_descriptor_set;
 
+    assert(m_texture_descriptors_count > 0);
+
     vkUpdateDescriptorSets(
         m_device,
         0,
@@ -130,6 +134,12 @@ void DescriptorSetManager::destroy() {
 }
 
 //  ----------------------------------------------------------------------------
+bool DescriptorSetManager::is_ready() const {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_is_ready;
+}
+
+//  ----------------------------------------------------------------------------
 void DescriptorSetManager::update_descriptor_sets(TextureManager& texture_mgr) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -142,6 +152,15 @@ void DescriptorSetManager::update_descriptor_sets(TextureManager& texture_mgr) {
 
     std::vector<Texture> textures;
     texture_mgr.get_textures(textures);
+
+    m_texture_descriptors_count = textures.size();
+
+    if (textures.empty()) {
+        m_is_ready = false;
+        return;
+    }
+
     update_texture_descriptor_sets(m_device, textures, m_texture_descriptor_set);
+    m_is_ready = true;
 }
 }

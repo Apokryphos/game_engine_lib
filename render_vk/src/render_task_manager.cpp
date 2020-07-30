@@ -5,6 +5,7 @@
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/descriptor_pool.hpp"
 #include "render_vk/descriptor_set_layout.hpp"
+#include "render_vk/descriptor_set_manager.hpp"
 #include "render_vk/model_manager.hpp"
 #include "render_vk/render_task_manager.hpp"
 #include "render_vk/render_tasks/task_update_uniforms.hpp"
@@ -84,47 +85,14 @@ void update_frame_descriptor_sets(
 }
 
 //  ----------------------------------------------------------------------------
-void update_texture_descriptor_sets(
-    VkDevice device,
-    const std::vector<Texture>& textures,
-    VkDescriptorSet& descriptor_set
-) {
-    std::vector<VkDescriptorImageInfo> image_infos(textures.size());
-    for (size_t n = 0; n < image_infos.size(); ++n) {
-        image_infos[n].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        image_infos[n].imageView = textures[n].view;
-        image_infos[n].sampler = textures[n].sampler;
-    }
-
-    std::array<VkWriteDescriptorSet, 1> descriptor_writes{};
-
-    //  Combined texture sampler
-    descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[0].dstSet = descriptor_set;
-    descriptor_writes[0].dstBinding = 0;
-    descriptor_writes[0].dstArrayElement = 0;
-    descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    descriptor_writes[0].descriptorCount = static_cast<uint32_t>(image_infos.size());
-    descriptor_writes[0].pBufferInfo = nullptr;
-    descriptor_writes[0].pImageInfo = image_infos.data();
-    descriptor_writes[0].pTexelBufferView = nullptr;
-
-    vkUpdateDescriptorSets(
-        device,
-        static_cast<uint32_t>(descriptor_writes.size()),
-        descriptor_writes.data(),
-        0,
-        nullptr
-    );
-}
-
-//  ----------------------------------------------------------------------------
 void update_object_descriptor_sets(
     VkDevice device,
     const std::vector<Texture>& textures,
     VkBuffer object_uniform_buffer,
     VkDescriptorSet& descriptor_set
 ) {
+    assert(!textures.empty());
+
     VkDescriptorBufferInfo object_buffer_info{};
     object_buffer_info.buffer = object_uniform_buffer;
     object_buffer_info.offset = 0;
@@ -201,7 +169,6 @@ void create_descriptor_pool(
 static void create_descriptor_objects(
     VkDevice device,
     DescriptorSetLayouts descriptor_set_layouts,
-    const std::vector<Texture>& textures,
     const UniformBuffer<FrameUbo>& frame_uniform,
     const DynamicUniformBuffer<ObjectUbo>& object_uniform,
     const std::string& name_prefix,
@@ -238,12 +205,6 @@ static void create_descriptor_objects(
         frame_uniform.get_buffer(),
         frame_uniform.get_ubo_size(),
         descriptor.frame_set
-    );
-
-    update_texture_descriptor_sets(
-        device,
-        textures,
-        descriptor.texture_set
     );
 
     // update_object_descriptor_sets(
@@ -283,6 +244,7 @@ RenderTaskManager::RenderTaskManager(
     DescriptorSetLayouts& descriptor_set_layouts,
     UniformBuffer<FrameUbo>& frame_uniform,
     DynamicUniformBuffer<ObjectUbo>& object_uniform,
+    DescriptorSetManager& descriptor_set_mgr,
     ModelManager& model_mgr,
     TextureManager& texture_mgr
 )
@@ -291,6 +253,7 @@ RenderTaskManager::RenderTaskManager(
   m_descriptor_set_layouts(descriptor_set_layouts),
   m_frame_uniform(frame_uniform),
   m_object_uniform(object_uniform),
+  m_descriptor_set_mgr(descriptor_set_mgr),
   m_model_mgr(model_mgr),
   m_texture_mgr(texture_mgr) {
 }
@@ -504,6 +467,15 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             frame.name,
             frame.command
         );
+
+        create_descriptor_objects(
+            m_device,
+            m_descriptor_set_layouts,
+            m_frame_uniform,
+            m_object_uniform,
+            frame.name,
+            frame.descriptor
+        );
     }
 
     bool frame_changed = false;
@@ -571,16 +543,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
                 std::this_thread::sleep_for(std::chrono::microseconds(250));
             }
 
-            //  Recreate descriptor objects
-            create_descriptor_objects(
-                m_device,
-                m_descriptor_set_layouts,
-                textures,
-                m_frame_uniform,
-                m_object_uniform,
-                frame.name,
-                frame.descriptor
-            );
+            m_descriptor_set_mgr.copy_texture_descriptor_set(frame.descriptor.texture_set);
 
             frame.texture_timestamp = texture_timestamp;
 

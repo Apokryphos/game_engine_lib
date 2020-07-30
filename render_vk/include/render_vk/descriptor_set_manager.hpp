@@ -11,9 +11,10 @@ class TextureManager;
 //  descriptor sets.
 class DescriptorSetManager
 {
+    bool m_is_ready {false};
     uint32_t m_texture_timestamp {0};
     uint32_t m_texture_descriptors_count {0};
-    std::mutex m_mutex;
+    mutable std::mutex m_mutex;
     VkDevice m_device {VK_NULL_HANDLE};
     VkDescriptorPool m_descriptor_pool {VK_NULL_HANDLE};
     VkDescriptorSet m_texture_descriptor_set {VK_NULL_HANDLE};
@@ -25,6 +26,7 @@ public:
     );
     void copy_texture_descriptor_set(VkDescriptorSet dst);
     void destroy();
+    bool is_ready() const;
     void update_descriptor_sets(TextureManager& texture_mgr);
 };
 }

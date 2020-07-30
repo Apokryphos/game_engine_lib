@@ -19,6 +19,7 @@
 
 namespace render_vk
 {
+class DescriptorSetManager;
 class BillboardRenderer;
 class ModelManager;
 class ModelRenderer;
@@ -176,6 +177,7 @@ class RenderTaskManager
     UniformBuffer<FrameUbo>& m_frame_uniform;
     //  Per-object dynamic uniform buffer
     DynamicUniformBuffer<ObjectUbo>& m_object_uniform;
+    DescriptorSetManager& m_descriptor_set_mgr;
     ModelManager& m_model_mgr;
     TextureManager& m_texture_mgr;
 
@@ -196,6 +198,7 @@ public:
         DescriptorSetLayouts& descriptor_set_layouts,
         UniformBuffer<FrameUbo>& frame_uniform,
         DynamicUniformBuffer<ObjectUbo>& object_uniform,
+        DescriptorSetManager& descriptor_set_mgr,
         ModelManager& model_mgr,
         TextureManager& texture_mgr
     );
