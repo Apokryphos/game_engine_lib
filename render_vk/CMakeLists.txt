@@ -12,6 +12,7 @@ set(SOURCE_FILES
     src/depth.cpp
     src/descriptor_pool.cpp
     src/descriptor_set_layout.cpp
+    src/descriptor_set_manager.cpp
     src/descriptor_sets.cpp
     src/devices.cpp
     src/dynamic_uniform_buffer.cpp

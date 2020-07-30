@@ -6,6 +6,7 @@
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/depth.hpp"
 #include "render_vk/descriptor_set_layout.hpp"
+#include "render_vk/descriptor_set_manager.hpp"
 #include "render_vk/devices.hpp"
 #include "render_vk/framebuffers.hpp"
 #include "render_vk/imgui/imgui_vk.hpp"
@@ -132,6 +133,8 @@ void VulkanRenderSystem::begin_frame() {
         VK_TRUE,
         UINT64_MAX
     );
+
+    m_descriptor_set_mgr->update_descriptor_sets(*m_texture_mgr);
 
     //  Get next presentable swapchain image index
     VkResult result = vkAcquireNextImageKHR(
@@ -515,6 +518,11 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
 
     create_descriptor_set_layouts(m_device, MAX_TEXTURES, m_descriptor_set_layouts);
 
+    m_descriptor_set_mgr = std::make_unique<DescriptorSetManager>(
+        m_device,
+        m_descriptor_set_layouts.texture_sampler
+    );
+
     m_model_mgr = std::make_unique<ModelManager>();
     m_texture_mgr = std::make_unique<TextureManager>(m_physical_device, m_device);
 
@@ -644,6 +652,8 @@ void VulkanRenderSystem::shutdown() {
     m_model_mgr->unload(m_device);
 
     m_texture_mgr->destroy_textures();
+
+    m_descriptor_set_mgr->destroy();
 
     vkDestroyDevice(m_device, nullptr);
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);

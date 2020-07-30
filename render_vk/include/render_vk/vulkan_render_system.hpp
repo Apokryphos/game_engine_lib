@@ -18,6 +18,7 @@ struct GLFWwindow;
 namespace render_vk
 {
 class BillboardRenderer;
+class DescriptorSetManager;
 class ModelManager;
 class ModelRenderer;
 class RenderTaskManager;
@@ -99,6 +100,7 @@ private:
     std::unique_ptr<AssetTaskManager> m_asset_task_mgr;
     //  Manages rendering task worker threads
     std::unique_ptr<RenderTaskManager> m_render_task_mgr;
+    std::unique_ptr<DescriptorSetManager> m_descriptor_set_mgr;
 
     //  Renderers
     std::unique_ptr<BillboardRenderer> m_billboard_renderer;
