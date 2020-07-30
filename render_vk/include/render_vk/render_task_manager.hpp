@@ -24,6 +24,14 @@ class ModelRenderer;
 class SpriteRenderer;
 class TextureManager;
 
+struct ThreadFrameCommandObjects
+{
+    //  The command pool for this frame.
+    VkCommandPool pool       = VK_NULL_HANDLE;
+    //  The secondary command buffers for this frame.
+    std::vector<VkCommandBuffer> buffers;
+};
+
 class RenderTaskManager
 {
     enum class TaskId
@@ -51,9 +59,10 @@ class RenderTaskManager
     //  Frame objects for worker threads
     struct ThreadFrame
     {
+        uint32_t command_buffer_index {0};
         uint32_t texture_timestamp {0};
         std::string name;
-        FrameCommandObjects command;
+        ThreadFrameCommandObjects command;
         FrameDescriptorObjects descriptor;
     };
 

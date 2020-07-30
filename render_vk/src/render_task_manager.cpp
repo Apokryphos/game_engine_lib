@@ -259,7 +259,7 @@ static void create_secondary_command_objects(
     VkDevice device,
     VkPhysicalDevice physical_device,
     const std::string& name_prefix,
-    FrameCommandObjects& frame_command
+    ThreadFrameCommandObjects& frame_command
 ) {
     create_command_pool(
         device,
@@ -268,12 +268,12 @@ static void create_secondary_command_objects(
         (name_prefix + "_command_pool").c_str()
     );
 
-    create_secondary_command_buffer(
-        device,
-        frame_command.pool,
-        frame_command.buffer,
-        (name_prefix + "_command_buffer").c_str()
-    );
+    // create_secondary_command_buffer(
+    //     device,
+    //     frame_command.pool,
+    //     frame_command.buffer,
+    //     (name_prefix + "_command_buffer").c_str()
+    // );
 }
 
 //  ----------------------------------------------------------------------------
@@ -524,8 +524,18 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         );
     }
 
+    bool frame_changed = false;
+    uint32_t last_frame = m_frame_count + 1;
+
     //  Main loop
     while (!m_cancel_threads) {
+        //  Check if frame changed or if this thread is working multiple
+        //  times this frame.
+        if (last_frame != m_current_frame) {
+            last_frame = m_current_frame;
+            frame_changed = true;
+        }
+
         Job job{};
         //  Sleep until job is available
         if (!get_job(job)) {
@@ -536,7 +546,36 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         //  Get data for current frame
         ThreadFrame& frame = frames.at(m_current_frame);
 
-        //  Check if textures changed since last frame
+        //  If frame has changed, then reset command buffers
+        if (frame_changed) {
+            frame_changed = false;
+            frame.command_buffer_index = 0;
+
+            vkResetCommandPool(
+                m_device,
+                frame.command.pool,
+                VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT
+            );
+        } else {
+            ++frame.command_buffer_index;
+        }
+
+        //  Create more command buffers if needed
+        if (frame.command_buffer_index >= frame.command.buffers.size()) {
+            VkCommandBuffer command_buffer;
+            create_secondary_command_buffer(
+                m_device,
+                frame.command.pool,
+                command_buffer,
+                (frame.name+"_command_buffer"+std::to_string(frame.command.buffers.size())).c_str()
+            );
+            frame.command.buffers.push_back(command_buffer);
+        }
+
+        //  Get command buffer to use
+        VkCommandBuffer command_buffer = frame.command.buffers.at(frame.command_buffer_index);
+
+        //  Check if textures changed
         const auto texture_timestamp = m_texture_mgr.get_timestamp();
         if (frame.texture_timestamp != texture_timestamp) {
             std::vector<Texture> textures;
@@ -569,12 +608,6 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             );
         }
 
-        vkResetCommandPool(
-            m_device,
-            frame.command.pool,
-            VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT
-        );
-
         //  Process job
         switch (job.task_id) {
             case TaskId::DrawBillboards: {
@@ -583,7 +616,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
                 billboard_renderer->draw_billboards(
                     job.sprite_batches,
                     frame.descriptor,
-                    frame.command.buffer
+                    command_buffer
                 );
                 STOPWATCH.stop(thread_name+"_draw_billboards");
                 break;
@@ -595,7 +628,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
                 model_renderer->draw_models(
                     job.batches,
                     frame.descriptor,
-                    frame.command.buffer
+                    command_buffer
                 );
                 STOPWATCH.stop(thread_name+"_draw_models");
                 break;
@@ -607,7 +640,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
                 sprite_renderer->draw_sprites(
                     job.sprite_batches,
                     frame.descriptor,
-                    frame.command.buffer
+                    command_buffer
                 );
                 STOPWATCH.stop(thread_name+"_draw_sprites");
                 break;
@@ -627,7 +660,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         }
 
         //  Post completed work
-        post_results(job.task_id, job.order, frame.command.buffer);
+        post_results(job.task_id, job.order, command_buffer);
     }
 
     //  Release frame objects
