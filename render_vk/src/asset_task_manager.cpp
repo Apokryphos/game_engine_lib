@@ -43,34 +43,17 @@ void AssetTaskManager::add_job(Job& job) {
     }
 
     //  Enqueue job
-    {
-        std::lock_guard<std::mutex> lock(m_jobs_mutex);
-        m_jobs.push(job);
-    }
+    m_jobs.push(job);
 }
 
 //  ----------------------------------------------------------------------------
 void AssetTaskManager::cancel_threads() {
-    m_cancel_threads = true;
+    m_jobs.cancel();
     for (std::thread& thread : m_threads) {
         thread.join();
     }
     m_threads.clear();
-    m_cancel_threads = false;
-}
-
-//  ----------------------------------------------------------------------------
-bool AssetTaskManager::get_job(Job& job) {
-    std::lock_guard<std::mutex> lock(m_jobs_mutex);
-
-    if (m_jobs.empty()) {
-        return false;
-    }
-
-    job = m_jobs.front();
-    m_jobs.pop();
-
-    return true;
+    m_jobs.resume();
 }
 
 //  ----------------------------------------------------------------------------
@@ -112,12 +95,11 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
     );
 
     //  Main loop
-    while (!m_cancel_threads) {
+    while (true) {
         Job job{};
         //  Sleep until job is available
-        if (!get_job(job)) {
-            std::this_thread::sleep_for(std::chrono::microseconds(250));
-            continue;
+        if (!m_jobs.wait_and_pop(job)) {
+            break;
         }
 
         //  Process job

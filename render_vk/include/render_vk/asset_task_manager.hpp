@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/job_queue.hpp"
 #include "render_vk/vulkan.hpp"
 #include <mutex>
 #include <queue>
@@ -35,9 +36,6 @@ class AssetTaskManager
         VkCommandPool command_pool;
     };
 
-    //  True when threads should be canceled.
-    bool m_cancel_threads {false};
-
     //  Number of worker threads.
     uint8_t m_thread_count {2};
 
@@ -47,10 +45,8 @@ class AssetTaskManager
     //  Worker threads
     std::vector<std::thread> m_threads;
 
-    //  Job queue mutex
-    std::mutex m_jobs_mutex;
     //  Job queue
-    std::queue<Job> m_jobs;
+    common::JobQueue<Job> m_jobs;
 
     VulkanQueue& m_queue;
     ModelManager& m_model_mgr;
@@ -58,8 +54,6 @@ class AssetTaskManager
 
     //  Adds a new job for a worker thread to process.
     void add_job(Job& job);
-    //  Checks if a worker thread job is available.
-    bool get_job(Job& job);
     //  Called by worker threads when work is completed.
     void post_texture_results(
         TaskId task_id,
