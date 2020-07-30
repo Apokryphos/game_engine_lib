@@ -6,6 +6,7 @@
 
 namespace common
 {
+//  Thread-safe queue.
 template <typename T>
 class JobQueue
 {
@@ -41,6 +42,14 @@ public:
             m_queue.push(value);
         }
         m_condition.notify_one();
+    }
+
+    void resume() {
+        {
+            std::lock_guard<std::mutex> lock(m_cancel_mutex);
+            m_cancel = false;
+        }
+        m_condition.notify_all();
     }
 
     //  Waits until a job is ready or the queue is canceled.

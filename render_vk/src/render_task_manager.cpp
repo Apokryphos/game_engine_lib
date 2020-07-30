@@ -318,11 +318,7 @@ void RenderTaskManager::add_job(Job& job) {
         job.order = m_tasks.add_call(job.task_id);
     }
 
-    //  Enqueue job
-    {
-        std::lock_guard<std::mutex> lock(m_jobs_mutex);
-        m_jobs.push(job);
-    }
+    m_jobs.push(job);
 }
 
 //  ----------------------------------------------------------------------------
@@ -343,12 +339,12 @@ void RenderTaskManager::begin_frame(
 
 //  ----------------------------------------------------------------------------
 void RenderTaskManager::cancel_threads() {
-    m_cancel_threads = true;
+    m_jobs.cancel();
     for (std::thread& thread : m_threads) {
         thread.join();
     }
     m_threads.clear();
-    m_cancel_threads = false;
+    m_jobs.resume();
 }
 
 //  ----------------------------------------------------------------------------
@@ -473,20 +469,6 @@ void RenderTaskManager::get_command_buffers(
 }
 
 //  ----------------------------------------------------------------------------
-bool RenderTaskManager::get_job(Job& job) {
-    std::lock_guard<std::mutex> lock(m_jobs_mutex);
-
-    if (m_jobs.empty()) {
-        return false;
-    }
-
-    job = m_jobs.front();
-    m_jobs.pop();
-
-    return true;
-}
-
-//  ----------------------------------------------------------------------------
 void RenderTaskManager::post_results(
     TaskId task_id,
     uint32_t order,
@@ -528,7 +510,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
     uint32_t last_frame = m_frame_count + 1;
 
     //  Main loop
-    while (!m_cancel_threads) {
+    while (true) {
         //  Check if frame changed or if this thread is working multiple
         //  times this frame.
         if (last_frame != m_current_frame) {
@@ -538,9 +520,8 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
 
         Job job{};
         //  Sleep until job is available
-        if (!get_job(job)) {
-            std::this_thread::sleep_for(std::chrono::microseconds(250));
-            continue;
+        if (!m_jobs.wait_and_pop(job)) {
+            break;
         }
 
         //  Get data for current frame
@@ -561,7 +542,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         }
 
         //  Create more command buffers if needed
-        if (frame.command_buffer_index >= frame.command.buffers.size()) {
+        while (frame.command_buffer_index >= frame.command.buffers.size()) {
             VkCommandBuffer command_buffer;
             create_secondary_command_buffer(
                 m_device,
@@ -571,6 +552,8 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             );
             frame.command.buffers.push_back(command_buffer);
         }
+
+        assert(frame.command_buffer_index < frame.command.buffers.size());
 
         //  Get command buffer to use
         VkCommandBuffer command_buffer = frame.command.buffers.at(frame.command_buffer_index);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/job_queue.hpp"
 #include "render/model_batch.hpp"
 #include "render/sprite_batch.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
@@ -143,8 +144,6 @@ class RenderTaskManager
         }
     };
 
-    //  True when threads should be canceled.
-    bool m_cancel_threads {false};
     //  True when frame was discarded and draw requests should be ignored.
     bool m_discard_frame  {false};
 
@@ -163,9 +162,9 @@ class RenderTaskManager
     std::vector<std::thread> m_threads;
 
     //  Job queue mutex
-    std::mutex m_jobs_mutex;
+    // std::mutex m_jobs_mutex;
     //  Job queue
-    std::queue<Job> m_jobs;
+    common::JobQueue<Job> m_jobs;
 
     //  Tasks mutex
     std::mutex m_tasks_mutex;
@@ -182,8 +181,6 @@ class RenderTaskManager
 
     //  Adds a new job for a worker thread to process.
     void add_job(Job& job);
-    //  Checks if a worker thread job is available.
-    bool get_job(Job& job);
     //  Called by worker threads when work is completed.
     void post_results(
         TaskId task_id,
