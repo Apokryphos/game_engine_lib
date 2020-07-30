@@ -52,6 +52,7 @@ bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
 
 namespace demo
 {
+const int BILLBOARD_COUNT = 100;
 const int MODEL_COUNT = 5000;
 const int SPRITE_COUNT = 100;
 
@@ -217,7 +218,7 @@ static void init_billboards(Game& game) {
     Random& random = game.get_random();
 
     std::set<glm::vec3> position_set;
-    while (position_set.size() < SPRITE_COUNT) {
+    while (position_set.size() < BILLBOARD_COUNT) {
         const glm::vec3 position = {
             x_dist(random.get_rng()),
             y_dist(random.get_rng()),
