@@ -9,8 +9,7 @@ using namespace render;
 namespace engine
 {
 //  ----------------------------------------------------------------------------
-AssetManager::AssetManager()
-: m_unique_id(1) {
+AssetManager::AssetManager() {
 }
 
 //  ----------------------------------------------------------------------------
@@ -19,8 +18,13 @@ AssetManager::~AssetManager() {
 }
 
 //  ----------------------------------------------------------------------------
-AssetId AssetManager::get_unique_id() {
-    return m_unique_id++;
+AssetId AssetManager::get_unique_model_id() {
+    return m_unique_model_id++;
+}
+
+//  ----------------------------------------------------------------------------
+AssetId AssetManager::get_unique_texture_id() {
+    return m_unique_texture_id++;
 }
 
 //  ----------------------------------------------------------------------------
@@ -40,7 +44,7 @@ AssetId AssetManager::load_model(
         return (*find).id;
     }
 
-    const AssetId id = get_unique_id();
+    const AssetId id = get_unique_model_id();
 
     renderer.load_model(id, path);
 
@@ -71,7 +75,7 @@ AssetId AssetManager::load_texture(
         return (*find).id;
     }
 
-    const AssetId id = get_unique_id();
+    const AssetId id = get_unique_texture_id();
 
     renderer.load_texture(id, path);
 

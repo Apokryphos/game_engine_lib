@@ -531,9 +531,19 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     m_model_mgr->initialize(
         m_physical_device,
         m_device,
-        m_graphics_queue.get_queue(),
+        m_graphics_queue,
         m_resource_command_pool
     );
+
+    m_asset_task_mgr = std::make_unique<AssetTaskManager>(
+        m_physical_device,
+        m_device,
+        m_graphics_queue,
+        *m_model_mgr,
+        *m_texture_mgr
+    );
+
+    m_asset_task_mgr->start_threads();
 
     m_render_task_mgr = std::make_unique<RenderTaskManager>(
         m_physical_device,
@@ -557,7 +567,7 @@ void VulkanRenderSystem::load_model(const AssetId id, const std::string& path) {
     model->load(
         m_physical_device,
         m_device,
-        m_graphics_queue.get_queue(),
+        m_graphics_queue,
         m_resource_command_pool,
         mesh
     );
@@ -568,6 +578,9 @@ void VulkanRenderSystem::load_model(const AssetId id, const std::string& path) {
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::load_texture(const AssetId id, const std::string& path) {
     m_texture_mgr->load_texture(id, path, m_graphics_queue, m_resource_command_pool);
+
+    //  TODO: Fix locks
+    // m_asset_task_mgr->load_texture(id, path);
 }
 
 //  ----------------------------------------------------------------------------
@@ -613,6 +626,7 @@ void VulkanRenderSystem::shutdown() {
     //  Wait for operations to finish
     vkDeviceWaitIdle(m_device);
 
+    m_asset_task_mgr->cancel_threads();
     m_render_task_mgr->cancel_threads();
 
     destroy_frame_resources();

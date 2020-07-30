@@ -20,13 +20,13 @@ VkCommandBuffer begin_single_time_commands(
 
     //  Create temporary command buffer
     VkCommandBuffer command_buffer;
-    vkAllocateCommandBuffers(device, &alloc_info, &command_buffer);
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &alloc_info, &command_buffer));
 
     VkCommandBufferBeginInfo begin_info{};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-    vkBeginCommandBuffer(command_buffer, &begin_info);
+    VK_CHECK_RESULT(vkBeginCommandBuffer(command_buffer, &begin_info));
 
     return command_buffer;
 }
@@ -38,17 +38,17 @@ void end_single_time_commands(
     VkCommandBuffer command_buffer,
     VkQueue transfer_queue
 ) {
-    vkEndCommandBuffer(command_buffer);
+    VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer));
 
     VkSubmitInfo submit_info{};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &command_buffer;
 
-    vkQueueSubmit(transfer_queue, 1, &submit_info, VK_NULL_HANDLE);
+    VK_CHECK_RESULT(vkQueueSubmit(transfer_queue, 1, &submit_info, VK_NULL_HANDLE));
 
     //  TODO: Fences would permit multiple transfers
-    vkQueueWaitIdle(transfer_queue);
+    VK_CHECK_RESULT(vkQueueWaitIdle(transfer_queue));
 
     vkFreeCommandBuffers(device, command_pool, 1, &command_buffer);
 }

@@ -1,5 +1,9 @@
+#include "common/log.hpp"
 #include "render_vk/texture_manager.hpp"
 #include "render_vk/vulkan_queue.hpp"
+#include <algorithm>
+
+using namespace common;
 
 namespace render_vk
 {
@@ -14,10 +18,13 @@ TextureManager::TextureManager(
 }
 
 //  ----------------------------------------------------------------------------
-void TextureManager::add_texture(const TextureId texture_id, const Texture& texture) {
+void TextureManager::add_texture(const Texture& texture) {
     std::lock_guard<std::mutex> lock(m_mutex);
+
     m_textures.push_back(texture);
     ++m_timestamp;
+
+    log_debug("Texture %d completed transfer.", texture.id);
 }
 
 //  ----------------------------------------------------------------------------
@@ -32,6 +39,7 @@ void TextureManager::destroy_textures() {
 //  ----------------------------------------------------------------------------
 void TextureManager::get_textures(std::vector<Texture>& textures) {
     std::lock_guard<std::mutex> lock(m_mutex);
+
     textures = m_textures;
 }
 
@@ -42,6 +50,8 @@ void TextureManager::load_texture(
     VulkanQueue& queue,
     VkCommandPool command_pool
 ) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     Texture texture{};
     create_texture(
         m_physical_device,
@@ -52,8 +62,23 @@ void TextureManager::load_texture(
         texture
     );
 
+    texture.id = texture_id;
+
     m_textures.push_back(texture);
 
     ++m_timestamp;
+}
+
+//  ----------------------------------------------------------------------------
+bool TextureManager::texture_exists(const TextureId texture_id) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return std::find_if(
+        m_textures.begin(),
+        m_textures.end(),
+        [texture_id](const Texture& texture) {
+            return texture.id == texture_id;
+        }
+    ) != m_textures.end();
 }
 }

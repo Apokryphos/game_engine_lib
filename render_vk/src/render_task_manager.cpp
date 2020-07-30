@@ -382,7 +382,20 @@ void RenderTaskManager::draw_billboards(
     Job job{};
     job.task_id = TaskId::DrawBillboards;
     job.renderer = &renderer;
-    job.sprite_batches = batches;
+    job.sprite_batches.reserve(batches.size());
+
+    for (const SpriteBatch& batch : batches) {
+        if (m_texture_mgr.texture_exists(batch.texture_id)) {
+            job.sprite_batches.push_back(batch);
+        } else {
+            log_debug("Discarded batch with pending texture %d.", batch.texture_id);
+        }
+    }
+
+    if (job.sprite_batches.empty()) {
+        return;
+    }
+
     add_job(job);
 }
 
@@ -400,6 +413,20 @@ void RenderTaskManager::draw_models(
     job.task_id = TaskId::DrawModels;
     job.batches = batches;
     job.renderer = &renderer;
+    job.batches.reserve(batches.size());
+
+    for (const ModelBatch& batch : batches) {
+        if (m_texture_mgr.texture_exists(batch.texture_id)) {
+            job.batches.push_back(batch);
+        } else {
+            log_debug("Discarded batch with pending texture %d.", batch.texture_id);
+        }
+    }
+
+    if (job.batches.empty()) {
+        return;
+    }
+
     add_job(job);
 }
 
@@ -415,7 +442,20 @@ void RenderTaskManager::draw_sprites(
     Job job{};
     job.task_id = TaskId::DrawSprites;
     job.renderer = &renderer;
-    job.sprite_batches = batches;
+    job.sprite_batches.reserve(batches.size());
+
+    for (const SpriteBatch& batch : batches) {
+        if (m_texture_mgr.texture_exists(batch.texture_id)) {
+            job.sprite_batches.push_back(batch);
+        } else {
+            log_debug("Discarded batch with pending texture %d.", batch.texture_id);
+        }
+    }
+
+    if (job.sprite_batches.empty()) {
+        return;
+    }
+
     add_job(job);
 }
 
@@ -497,9 +537,17 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         ThreadFrame& frame = frames.at(m_current_frame);
 
         //  Check if textures changed since last frame
-        if (frame.texture_timestamp != m_texture_mgr.get_timestamp()) {
+        const auto texture_timestamp = m_texture_mgr.get_timestamp();
+        if (frame.texture_timestamp != texture_timestamp) {
             std::vector<Texture> textures;
             m_texture_mgr.get_textures(textures);
+
+            //  Wait until there's at least one texture loaded or
+            //  updating the descriptor sets will fail.
+            while (textures.empty()) {
+                m_texture_mgr.get_textures(textures);
+                std::this_thread::sleep_for(std::chrono::microseconds(250));
+            }
 
             //  Recreate descriptor objects
             create_descriptor_objects(
@@ -512,11 +560,12 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
                 frame.descriptor
             );
 
-            frame.texture_timestamp = m_texture_mgr.get_timestamp();
+            frame.texture_timestamp = texture_timestamp;
 
             log_debug(
-                "Render worker thread '%s' updated descriptor sets after texture changes.",
-                frame.name.c_str()
+                "Render worker thread '%s' updated descriptor sets after texture changes (frame: %d).",
+                frame.name.c_str(),
+                m_current_frame
             );
         }
 

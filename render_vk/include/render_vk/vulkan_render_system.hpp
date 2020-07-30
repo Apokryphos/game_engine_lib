@@ -2,6 +2,7 @@
 
 #include "render/model_batch.hpp"
 #include "render/renderer.hpp"
+#include "render_vk/asset_task_manager.hpp"
 #include "render_vk/descriptor_sets.hpp"
 #include "render_vk/depth.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
@@ -95,6 +96,7 @@ private:
     std::unique_ptr<ModelManager> m_model_mgr;
     std::unique_ptr<TextureManager> m_texture_mgr;
 
+    std::unique_ptr<AssetTaskManager> m_asset_task_mgr;
     //  Manages rendering task worker threads
     std::unique_ptr<RenderTaskManager> m_render_task_mgr;
 

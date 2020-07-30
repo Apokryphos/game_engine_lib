@@ -1,5 +1,6 @@
 #include "render_vk/buffer.hpp"
 #include "render_vk/vulkan.hpp"
+#include "render_vk/vulkan_queue.hpp"
 #include <cstdint>
 #include <cstring>
 #include <vector>
@@ -10,7 +11,7 @@ namespace render_vk
 void create_index_buffer(
     VkPhysicalDevice physical_device,
     VkDevice device,
-    VkQueue transfer_queue,
+    VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const std::vector<uint32_t>& indices,
     VkBuffer& index_buffer,
@@ -47,9 +48,7 @@ void create_index_buffer(
         index_buffer_memory
     );
 
-    copy_buffer(
-        device,
-        transfer_queue,
+    transfer_queue.copy_buffer(
         command_pool,
         staging_buffer,
         index_buffer,

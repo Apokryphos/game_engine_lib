@@ -6,11 +6,14 @@
 
 namespace render_vk
 {
+typedef uint32_t TextureId;
+
 static const uint32_t MAX_TEXTURES = 4096;
 
 class Texture
 {
 public:
+    TextureId id;
     // uint32_t width;
     // uint32_t height;
     uint32_t mip_levels;

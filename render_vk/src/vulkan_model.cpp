@@ -10,7 +10,7 @@ namespace render_vk
 void VulkanModel::load(
     VkPhysicalDevice physical_device,
     VkDevice device,
-    VkQueue graphics_queue,
+    VulkanQueue& graphics_queue,
     VkCommandPool command_pool,
     Mesh& mesh
 ) {

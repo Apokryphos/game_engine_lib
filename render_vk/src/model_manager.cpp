@@ -29,7 +29,7 @@ void ModelManager::add_model(std::unique_ptr<VulkanModel> model) {
 void ModelManager::initialize(
     VkPhysicalDevice physical_device,
     VkDevice device,
-    VkQueue graphics_queue,
+    VulkanQueue& graphics_queue,
     VkCommandPool command_pool
 ) {
     //  Billboard quad
@@ -117,7 +117,7 @@ void ModelManager::load_model(
     const std::string& path,
     VkPhysicalDevice physical_device,
     VkDevice device,
-    VkQueue graphics_queue,
+    VulkanQueue& graphics_queue,
     VkCommandPool command_pool
 ) {
     Mesh mesh;

@@ -27,7 +27,7 @@ void VulkanQueue::end_single_time_commands(
     VkCommandPool command_pool,
     VkCommandBuffer command_buffer
 ) {
-    vkEndCommandBuffer(command_buffer);
+    VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer));
 
     VkSubmitInfo submit_info{};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -42,8 +42,8 @@ void VulkanQueue::end_single_time_commands(
 
     std::lock_guard<std::mutex> lock(m_queue_mutex);
     {
-        vkQueueSubmit(m_queue, 1, &submit_info, fence);
-        vkWaitForFences(m_device, 1, &fence, VK_TRUE, UINT64_MAX);
+        VK_CHECK_RESULT(vkQueueSubmit(m_queue, 1, &submit_info, fence));
+        VK_CHECK_RESULT(vkWaitForFences(m_device, 1, &fence, VK_TRUE, UINT64_MAX));
     }
 
     vkDestroyFence(m_device, fence, nullptr);

@@ -12,8 +12,6 @@ class VulkanQueue;
 
 class TextureManager
 {
-    typedef uint32_t TextureId;
-
     //  Changes when textures are added or removed.
     uint32_t m_timestamp {1};
 
@@ -29,12 +27,16 @@ public:
         VkPhysicalDevice physical_device,
         VkDevice device
     );
-    void add_texture(const TextureId texture_id, const Texture& texture);
+    TextureManager(const TextureManager&) = delete;
+    TextureManager& operator=(const TextureManager&) = delete;
+    void add_texture(const Texture& texture);
     void destroy_textures();
     void get_textures(std::vector<Texture>& textures);
 
     //  Returns timestamp used to determine if textures were added or removed
-    inline uint32_t get_timestamp() const {
+    inline uint32_t get_timestamp() {
+        std::lock_guard<std::mutex> lock(m_mutex);
+
         return m_timestamp;
     }
 
@@ -45,5 +47,7 @@ public:
         VulkanQueue& queue,
         VkCommandPool command_pool
     );
+
+    bool texture_exists(const TextureId texture_id);
 };
 }

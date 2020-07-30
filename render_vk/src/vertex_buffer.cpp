@@ -1,6 +1,7 @@
 #include "render_vk/buffer.hpp"
 #include "render_vk/vertex.hpp"
 #include "render_vk/vulkan.hpp"
+#include "render_vk/vulkan_queue.hpp"
 #include <cstring>
 #include <stdexcept>
 #include <vector>
@@ -11,7 +12,7 @@ namespace render_vk
 void create_vertex_buffer(
     VkPhysicalDevice physical_device,
     VkDevice device,
-    VkQueue transfer_queue,
+    VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const std::vector<Vertex>& vertices,
     VkBuffer& vertex_buffer,
@@ -48,9 +49,7 @@ void create_vertex_buffer(
         vertex_buffer_memory
     );
 
-    copy_buffer(
-        device,
-        transfer_queue,
+    transfer_queue.copy_buffer(
         command_pool,
         staging_buffer,
         vertex_buffer,

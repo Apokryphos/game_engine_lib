@@ -1,18 +1,8 @@
 #pragma once
 
-#include "render/model_batch.hpp"
-#include "render/sprite_batch.hpp"
-#include "render_vk/dynamic_uniform_buffer.hpp"
-#include "render_vk/frame_objects.hpp"
-#include "render_vk/ubo.hpp"
-#include "render_vk/uniform_buffer.hpp"
 #include "render_vk/vulkan.hpp"
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
-#include <map>
 #include <mutex>
 #include <queue>
-#include <stdexcept>
 #include <thread>
 #include <vector>
 
@@ -42,7 +32,7 @@ class AssetTaskManager
     //  Objects for worker threads
     struct ThreadState
     {
-        FrameCommandObjects command;
+        VkCommandPool command_pool;
     };
 
     //  True when threads should be canceled.
@@ -73,7 +63,6 @@ class AssetTaskManager
     //  Called by worker threads when work is completed.
     void post_texture_results(
         TaskId task_id,
-        uint32_t asset_id,
         Texture& texture
     );
     void thread_main(uint8_t thread_id);

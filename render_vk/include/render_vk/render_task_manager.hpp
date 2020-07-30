@@ -213,8 +213,6 @@ public:
     );
     void end_frame();
     void get_command_buffers(std::vector<VkCommandBuffer>& command_buffers);
-    void load_model(common::AssetId id, const std::string& path);
-    void load_texture(common::AssetId id, const std::string& path);
     void start_threads();
     void update_frame_uniforms(
         const glm::mat4& view,

@@ -5,6 +5,7 @@
 namespace render_vk
 {
 struct Mesh;
+class VulkanQueue;
 
 class VulkanModel
 {
@@ -47,7 +48,7 @@ public:
     void load(
         VkPhysicalDevice physical_device,
         VkDevice device,
-        VkQueue graphics_queue,
+        VulkanQueue& graphics_queue,
         VkCommandPool command_pool,
         Mesh& mesh
     );

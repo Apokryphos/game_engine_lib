@@ -9,6 +9,7 @@
 namespace render_vk
 {
 class VulkanModel;
+class VulkanQueue;
 
 class ModelManager
 {
@@ -30,7 +31,7 @@ public:
     void initialize(
         VkPhysicalDevice physical_device,
         VkDevice device,
-        VkQueue graphics_queue,
+        VulkanQueue& graphics_queue,
         VkCommandPool command_pool
     );
     void load_model(
@@ -38,7 +39,7 @@ public:
         const std::string& path,
         VkPhysicalDevice physical_device,
         VkDevice device,
-        VkQueue graphics_queue,
+        VulkanQueue& graphics_queue,
         VkCommandPool command_pool
     );
 

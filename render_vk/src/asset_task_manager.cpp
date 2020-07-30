@@ -10,33 +10,10 @@
 #include "render_vk/vulkan_queue.hpp"
 
 using namespace common;
-using namespace render;
 
 namespace render_vk
 {
 static Stopwatch STOPWATCH;
-
-//  ----------------------------------------------------------------------------
-static void create_command_objects(
-    VkDevice device,
-    VkPhysicalDevice physical_device,
-    const std::string& name_prefix,
-    FrameCommandObjects& frame_command
-) {
-    create_transient_command_pool(
-        device,
-        physical_device,
-        frame_command.pool,
-        (name_prefix + "_command_pool").c_str()
-    );
-
-    create_primary_command_buffer(
-        device,
-        frame_command.pool,
-        frame_command.buffer,
-        (name_prefix + "_command_buffer").c_str()
-    );
-}
 
 //  ----------------------------------------------------------------------------
 AssetTaskManager::AssetTaskManager(
@@ -97,12 +74,17 @@ bool AssetTaskManager::get_job(Job& job) {
 }
 
 //  ----------------------------------------------------------------------------
-void AssetTaskManager::post_texture_results(
-    TaskId task_id,
-    uint32_t asset_id,
-    Texture& texture
-) {
-    m_texture_mgr.add_texture(asset_id, texture);
+void AssetTaskManager::load_texture(uint32_t id, const std::string& path) {
+    Job job{};
+    job.task_id = TaskId::LoadTexture;
+    job.asset_id = id;
+    job.path = path;
+    add_job(job);
+}
+
+//  ----------------------------------------------------------------------------
+void AssetTaskManager::post_texture_results(TaskId task_id, Texture& texture) {
+    m_texture_mgr.add_texture(texture);
 }
 
 //  ----------------------------------------------------------------------------
@@ -122,11 +104,11 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
     //  Initialize thread objects
     ThreadState state{};
 
-    create_command_objects(
+    create_transient_command_pool(
         m_device,
         m_physical_device,
-        thread_name,
-        state.command
+        state.command_pool,
+        (thread_name + "_command_pool").c_str()
     );
 
     //  Main loop
@@ -138,17 +120,11 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
             continue;
         }
 
-        vkResetCommandPool(
-            m_device,
-            state.command.pool,
-            VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT
-        );
-
         //  Process job
         switch (job.task_id) {
             case TaskId::LoadModel: {
                 STOPWATCH.start(thread_name+"_load_model");
-                throw std::runtime_error("Not implemented");
+                throw std::runtime_error("Not implemented.");
                 STOPWATCH.stop(thread_name+"_load_model");
                 break;
             }
@@ -161,23 +137,27 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
                     m_physical_device,
                     m_device,
                     m_queue,
-                    state.command.pool,
+                    state.command_pool,
                     job.path,
                     texture
                 );
 
-                post_texture_results(job.task_id, job.asset_id, texture);
+                texture.id = job.asset_id;
 
-                STOPWATCH.stop(thread_name+"_draw_texture");
+                STOPWATCH.stop(thread_name+"_load_texture");
+
+                //  Post completed work
+                post_texture_results(job.task_id, texture);
                 break;
             }
-        }
 
-        //  Post completed work
+            default:
+                throw std::runtime_error("Asset worker thread task not implemented.");
+        }
     }
 
     //  Release thread state objects
-    vkDestroyCommandPool(m_device, state.command.pool, nullptr);
+    vkDestroyCommandPool(m_device, state.command_pool, nullptr);
 
     log_debug("Asset worker thread %d exited.", thread_id);
 }

@@ -6,10 +6,12 @@
 
 namespace render_vk
 {
+class VulkanQueue;
+
 void create_vertex_buffer(
     VkPhysicalDevice physical_device,
     VkDevice device,
-    VkQueue transfer_queue,
+    VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const std::vector<Vertex>& vertices,
     VkBuffer& vertex_buffer,

@@ -22,11 +22,14 @@ class AssetManager
         std::string path;
     };
 
-    AssetId m_unique_id;
+    AssetId m_unique_model_id {0};
+    AssetId m_unique_texture_id {0};
+
     std::vector<Entry> m_models;
     std::vector<Entry> m_textures;
 
-    AssetId get_unique_id();
+    AssetId get_unique_model_id();
+    AssetId get_unique_texture_id();
 
 public:
     AssetManager();
