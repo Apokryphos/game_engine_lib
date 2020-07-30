@@ -134,6 +134,9 @@ void VulkanRenderSystem::begin_frame() {
         UINT64_MAX
     );
 
+    //  Update textures
+    m_texture_mgr->update_textures();
+
     //  Update descriptor sets
     m_descriptor_set_mgr->update_descriptor_sets(*m_texture_mgr);
     if (!m_descriptor_set_mgr->is_ready()) {
@@ -526,7 +529,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
 
     m_descriptor_set_mgr = std::make_unique<DescriptorSetManager>(
         m_device,
-        m_descriptor_set_layouts.texture_sampler
+        *m_texture_mgr
     );
 
     m_model_mgr = std::make_unique<ModelManager>();
@@ -659,8 +662,6 @@ void VulkanRenderSystem::shutdown() {
     m_model_mgr->unload(m_device);
 
     m_texture_mgr->destroy_textures();
-
-    m_descriptor_set_mgr->destroy();
 
     vkDestroyDevice(m_device, nullptr);
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);

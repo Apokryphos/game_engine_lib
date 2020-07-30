@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/log.hpp"
 #include "common/job_queue.hpp"
 #include "render/model_batch.hpp"
 #include "render/sprite_batch.hpp"
@@ -45,6 +46,9 @@ class RenderTaskManager
         UpdateFrameUniforms,
         UpdateObjectUniforms,
     };
+
+    static bool task_requires_textures(TaskId task_id);
+    static const char* task_id_to_string(TaskId task_id);
 
     struct Job
     {
@@ -162,8 +166,6 @@ class RenderTaskManager
     //  Worker threads
     std::vector<std::thread> m_threads;
 
-    //  Job queue mutex
-    // std::mutex m_jobs_mutex;
     //  Job queue
     common::JobQueue<Job> m_jobs;
 

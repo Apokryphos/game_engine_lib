@@ -13,8 +13,6 @@ using namespace common;
 
 namespace render_vk
 {
-static Stopwatch STOPWATCH;
-
 //  ----------------------------------------------------------------------------
 AssetTaskManager::AssetTaskManager(
     VkPhysicalDevice physical_device,
@@ -80,6 +78,8 @@ void AssetTaskManager::start_threads() {
 
 //  ----------------------------------------------------------------------------
 void AssetTaskManager::thread_main(uint8_t thread_id) {
+    Stopwatch stopwatch;
+
     log_debug("Asset worker thread %d started.", thread_id);
 
     const std::string thread_name = "asset_worker" + std::to_string(thread_id);
@@ -105,14 +105,14 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
         //  Process job
         switch (job.task_id) {
             case TaskId::LoadModel: {
-                STOPWATCH.start(thread_name+"_load_model");
+                stopwatch.start(thread_name+"_load_model");
                 throw std::runtime_error("Not implemented.");
-                STOPWATCH.stop(thread_name+"_load_model");
+                stopwatch.stop(thread_name+"_load_model");
                 break;
             }
 
             case TaskId::LoadTexture: {
-                STOPWATCH.start(thread_name+"_load_texture");
+                stopwatch.start(thread_name+"_load_texture");
 
                 Texture texture{};
                 create_texture(
@@ -126,7 +126,7 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
 
                 texture.id = job.asset_id;
 
-                STOPWATCH.stop(thread_name+"_load_texture");
+                stopwatch.stop(thread_name+"_load_texture");
 
                 //  Post completed work
                 post_texture_results(job.task_id, texture);

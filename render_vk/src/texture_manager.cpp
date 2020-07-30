@@ -21,8 +21,7 @@ TextureManager::TextureManager(
 void TextureManager::add_texture(const Texture& texture) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    m_textures.push_back(texture);
-    ++m_timestamp;
+    m_added.push_back(texture);
 
     log_debug("Texture %d completed transfer.", texture.id);
 }
@@ -80,5 +79,19 @@ bool TextureManager::texture_exists(const TextureId texture_id) {
             return texture.id == texture_id;
         }
     ) != m_textures.end();
+}
+
+//  ----------------------------------------------------------------------------
+void TextureManager::update_textures() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if (m_added.empty()) {
+        return;
+    }
+
+    m_textures.insert(m_textures.end(), m_added.begin(), m_added.end());
+    m_added.clear();
+
+    ++m_timestamp;
 }
 }

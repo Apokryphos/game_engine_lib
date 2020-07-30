@@ -21,6 +21,7 @@ class TextureManager
     VkPhysicalDevice m_physical_device {VK_NULL_HANDLE};
 
     std::vector<Texture> m_textures;
+    std::vector<Texture> m_added;
 
 public:
     TextureManager(
@@ -49,5 +50,6 @@ public:
     );
 
     bool texture_exists(const TextureId texture_id);
+    void update_textures();
 };
 }
