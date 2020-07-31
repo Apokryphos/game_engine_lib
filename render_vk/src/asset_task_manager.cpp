@@ -14,6 +14,18 @@ using namespace common;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
+const char* AssetTaskManager::task_id_to_string(TaskId task_id) {
+    switch (task_id) {
+        default:
+            return "?";
+        case TaskId::LoadModel:
+            return "load_model";
+        case TaskId::LoadTexture:
+            return "load_texture";
+    }
+}
+
+//  ----------------------------------------------------------------------------
 AssetTaskManager::AssetTaskManager(
     VkPhysicalDevice physical_device,
     VkDevice device,
@@ -80,7 +92,7 @@ void AssetTaskManager::start_threads() {
 void AssetTaskManager::thread_main(uint8_t thread_id) {
     Stopwatch stopwatch;
 
-    log_debug("Asset worker thread %d started.", thread_id);
+    log_debug("Asset thread %d started (%p).", thread_id, std::this_thread::get_id());
 
     const std::string thread_name = "asset_worker" + std::to_string(thread_id);
 
@@ -101,6 +113,18 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
         if (!m_jobs.wait_and_pop(job)) {
             break;
         }
+
+        log_debug(
+            "%s: acquired %s",
+            thread_name.c_str(),
+            task_id_to_string(job.task_id)
+        );
+
+        log_debug(
+            "%s: execute %s",
+            thread_name.c_str(),
+            task_id_to_string(job.task_id)
+        );
 
         //  Process job
         switch (job.task_id) {
@@ -125,15 +149,27 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
                     job.path,
                     texture
                 );
-
-                log_debug("Created texture %s.", job.path.c_str());
-
                 texture.id = job.asset_id;
+
+                log_debug("Created texture %s (%d).", job.path.c_str(), texture.id);
 
                 stopwatch.stop(thread_name+"_load_texture");
 
+                log_debug(
+                    "%s: finished %s",
+                    thread_name.c_str(),
+                    task_id_to_string(job.task_id)
+                );
+
                 //  Post completed work
                 post_texture_results(job.task_id, texture);
+
+                log_debug(
+                    "%s: posted %s",
+                    thread_name.c_str(),
+                    task_id_to_string(job.task_id)
+                );
+
                 break;
             }
 

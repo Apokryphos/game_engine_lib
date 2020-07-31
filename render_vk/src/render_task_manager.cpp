@@ -484,7 +484,7 @@ void RenderTaskManager::start_threads() {
 void RenderTaskManager::thread_main(uint8_t thread_id) {
     Stopwatch stopwatch;
 
-    log_debug("Thread %d started.", thread_id);
+    log_debug("Render thread %d started (%p).", thread_id, std::this_thread::get_id());
 
     const std::string thread_name = "thread" + std::to_string(thread_id);
 
@@ -529,11 +529,11 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             break;
         }
 
-        log_debug(
-            "%s: acquired %s",
-            thread_name.c_str(),
-            task_id_to_string(job.task_id)
-        );
+        // log_debug(
+        //     "%s: acquired %s",
+        //     thread_name.c_str(),
+        //     task_id_to_string(job.task_id)
+        // );
 
         //  Get data for current frame
         ThreadFrame& frame = frames.at(m_current_frame);
@@ -595,11 +595,11 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         //  Get command buffer to use
         VkCommandBuffer command_buffer = frame.command.buffers.at(frame.command_buffer_index);
 
-        log_debug(
-            "%s:  execute %s",
-            thread_name.c_str(),
-            task_id_to_string(job.task_id)
-        );
+        // log_debug(
+        //     "%s:  execute %s",
+        //     thread_name.c_str(),
+        //     task_id_to_string(job.task_id)
+        // );
 
         //  Process job
         switch (job.task_id) {
@@ -652,11 +652,11 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
                 break;
         }
 
-        log_debug(
-            "%s: finished %s",
-            thread_name.c_str(),
-            task_id_to_string(job.task_id)
-        );
+        // log_debug(
+        //     "%s: finished %s",
+        //     thread_name.c_str(),
+        //     task_id_to_string(job.task_id)
+        // );
 
         //  Post completed work
         post_results(job.task_id, job.order, command_buffer);

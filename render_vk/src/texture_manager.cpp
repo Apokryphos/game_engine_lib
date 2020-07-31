@@ -91,8 +91,58 @@ void TextureManager::update_textures() {
         return;
     }
 
-    m_textures.insert(m_textures.end(), m_added.begin(), m_added.end());
+    //  Texture vector needs to match shader texture array.
+    //  Textures need to be in correct order matching texture IDs.
+    //  Any missing textures should be filled in with a placeholder
+    //  texture so they can be identified and to prevent validation
+    //  layer errors.
+
+    //  Get last ID of new textures
+    const uint32_t last_id = std::max_element(
+        m_added.begin(),
+        m_added.end(),
+        [](const Texture& a, const Texture& b){
+            return a.id < b.id;
+        }
+    )->id;
+
+    //  Check if textures vector needs to be resized
+    const size_t count = m_textures.size();
+    if (last_id >= count) {
+        //  Resize textures vector
+        m_textures.resize(last_id + 1);
+        const size_t new_count = m_textures.size();
+
+        //  TODO: Texture for missing textures should be loaded separately
+        //  For now, use the first available texture.
+        const Texture empty_texture =
+            count == 0 ?
+            m_added.at(0) :
+            m_textures.at(0);
+
+        //  Fill new slots with copy of empty texture
+        for (size_t n = count; n < new_count; ++n) {
+            m_textures[n] = empty_texture;
+            m_textures[n].id = n;
+        }
+    }
+
+    //  Add new textures
+    for (const Texture& texture : m_added) {
+        m_textures.at(texture.id) = texture;
+    }
+
+    //  Clear added textures
     m_added.clear();
+
+    //  Sort textures by ID
+    // std::sort(
+    //     m_textures.begin(),
+    //     m_textures.end(),
+    //     [](const Texture& a, const Texture& b) {
+    //         return a.id < b.id;
+    //     }
+    // );
 
     ++m_timestamp;
 

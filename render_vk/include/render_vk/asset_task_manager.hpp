@@ -23,6 +23,8 @@ class AssetTaskManager
         LoadTexture,
     };
 
+    static const char* task_id_to_string(TaskId task_id);
+
     struct Job
     {
         TaskId task_id {TaskId::None};

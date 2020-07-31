@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render_vk/buffer.hpp"
+#include "render_vk/debug_utils.hpp"
 #include "render_vk/vulkan.hpp"
 #include <mutex>
 #include <vector>
@@ -9,21 +10,30 @@ namespace render_vk
 {
 class VulkanQueue
 {
-    VkDevice m_device = VK_NULL_HANDLE;
-    VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
+    VkDevice m_device {VK_NULL_HANDLE};
+    VkPhysicalDevice m_physical_device {VK_NULL_HANDLE};
 
     std::mutex m_queue_mutex;
-    VkQueue m_queue = VK_NULL_HANDLE;
+    VkQueue m_queue {VK_NULL_HANDLE};
 
 public:
-    VulkanQueue()
-    : m_physical_device(VK_NULL_HANDLE),
-      m_device(VK_NULL_HANDLE),
-      m_queue(VK_NULL_HANDLE) {
+    VulkanQueue(
+        VkPhysicalDevice physical_device,
+        VkDevice device,
+        VkQueue queue
+    )
+    : m_physical_device(physical_device),
+      m_device(device),
+      m_queue(queue) {
     }
 
     VulkanQueue(const VulkanQueue&) = delete;
     VulkanQueue& operator=(const VulkanQueue&) = delete;
+
+    void begin_debug_marker(const char* name, const float color[4]) {
+        std::lock_guard<std::mutex> lock(m_queue_mutex);
+        render_vk::begin_debug_marker(m_queue, name, color);
+    }
 
     //  Copies a buffer to the GPU
     template <typename T>
@@ -54,8 +64,7 @@ public:
         vkUnmapMemory(m_device, staging_buffer_memory);
 
         //  Copy staging buffer to destination buffer
-        std::lock_guard<std::mutex> lock(m_queue_mutex);
-        copy_buffer(
+        VulkanQueue::copy_buffer(
             command_pool,
             staging_buffer,
             buffer,
@@ -75,24 +84,22 @@ public:
         VkDeviceSize size
     );
 
+    void end_debug_marker() {
+        std::lock_guard<std::mutex> lock(m_queue_mutex);
+        render_vk::end_debug_marker(m_queue);
+    }
+
     void end_single_time_commands(
         VkCommandPool command_pool,
         VkCommandBuffer command_buffer
     );
 
+    //  Only used for ImGui setup.
     VkQueue get_queue() {
         return m_queue;
     }
 
-    void initialize(
-        VkPhysicalDevice physical_device,
-        VkDevice device,
-        VkQueue queue
-    ) {
-        m_physical_device = physical_device;
-        m_device = device;
-        m_queue = queue;
-    }
+    VkResult present(const VkPresentInfoKHR& present_info);
 
     VkResult submit(
         uint32_t submit_info_count,

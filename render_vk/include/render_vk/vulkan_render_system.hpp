@@ -65,8 +65,6 @@ private:
     VkPhysicalDevice m_physical_device  = VK_NULL_HANDLE;
     VkDevice m_device                   = VK_NULL_HANDLE;
     VkSurfaceKHR m_surface              = VK_NULL_HANDLE;
-    //  Presentation queue
-    VkQueue m_present_queue             = VK_NULL_HANDLE;
     //  Render pass
     VkRenderPass m_render_pass          = VK_NULL_HANDLE;
 
@@ -80,8 +78,11 @@ private:
 
     GLFWwindow* m_glfw_window = nullptr;
 
-    //  Graphics queue
-    VulkanQueue m_graphics_queue;
+    //  Graphics queue (may be the same as present queue)
+    std::shared_ptr<VulkanQueue> m_graphics_queue;
+    //  Presentation queue (may be the same as graphics queue)
+    std::shared_ptr<VulkanQueue> m_present_queue;
+
     //  Swapchain
     VulkanSwapchain m_swapchain;
     //  Depth buffer image

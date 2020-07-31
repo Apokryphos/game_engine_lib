@@ -11,7 +11,6 @@ void VulkanQueue::copy_buffer(
     VkDeviceSize size
 ) {
     std::lock_guard<std::mutex> lock(m_queue_mutex);
-
     render_vk::copy_buffer(
         m_device,
         m_queue,
@@ -51,18 +50,25 @@ void VulkanQueue::end_single_time_commands(
 }
 
 //  ----------------------------------------------------------------------------
+VkResult VulkanQueue::present(const VkPresentInfoKHR& present_info) {
+    std::lock_guard<std::mutex> lock(m_queue_mutex);
+    VkResult result = vkQueuePresentKHR(m_queue, &present_info);
+    return result;
+}
+
+//  ----------------------------------------------------------------------------
 VkResult VulkanQueue::submit(
     uint32_t submit_info_count,
     const VkSubmitInfo& submit_info,
     VkFence fence
 ) {
     std::lock_guard<std::mutex> lock(m_queue_mutex);
-
-    return vkQueueSubmit(
+    VkResult result = vkQueueSubmit(
         m_queue,
         1,
         &submit_info,
         fence
     );
+    return result;
 }
 }

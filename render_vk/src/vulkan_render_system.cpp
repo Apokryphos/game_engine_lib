@@ -134,7 +134,7 @@ void VulkanRenderSystem::begin_frame() {
         UINT64_MAX
     );
 
-    log_debug("begin_frame: %d", m_current_frame);
+    // log_debug("begin_frame: %d", m_current_frame);
 
     //  Update textures
     m_texture_mgr->update_textures();
@@ -262,7 +262,7 @@ void VulkanRenderSystem::create_swapchain_dependents() {
     create_depth_resources(
         m_physical_device,
         m_device,
-        m_graphics_queue,
+        *m_graphics_queue,
         m_resource_command_pool,
         m_swapchain,
         m_depth_image
@@ -279,7 +279,7 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         m_instance,
         m_physical_device,
         m_device,
-        m_graphics_queue.get_queue(),
+        m_graphics_queue->get_queue(),
         m_swapchain,
         m_render_pass,
         m_resource_command_pool
@@ -352,7 +352,7 @@ void VulkanRenderSystem::draw_sprites(
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::end_frame() {
-    log_debug("end_frame: %d (waiting for render tasks)", m_current_frame);
+    // log_debug("end_frame: %d (waiting for render tasks)", m_current_frame);
 
     //  Wait for worker threads to complete
     while (!check_render_tasks_complete()) {
@@ -366,7 +366,7 @@ void VulkanRenderSystem::end_frame() {
         return;
     }
 
-    log_debug("end_frame: %d (submission)", m_current_frame);
+    // log_debug("end_frame: %d (submission)", m_current_frame);
 
     Frame& frame = m_frames.at(m_current_frame);
 
@@ -374,7 +374,7 @@ void VulkanRenderSystem::end_frame() {
     std::vector<VkCommandBuffer> secondary_command_buffers;
     m_render_task_mgr->get_command_buffers(secondary_command_buffers);
 
-    log_debug("Recording primary command buffers...");
+    // log_debug("Recording primary command buffers...");
 
     //  Record primary command buffers
     record_primary_command_buffer(
@@ -402,11 +402,11 @@ void VulkanRenderSystem::end_frame() {
 
     vkResetFences(m_device, 1, &frame.sync.frame_complete);
 
-    log_debug("Submitting frame %d.", m_current_frame);
+    // log_debug("Submitting frame %d.", m_current_frame);
 
     //  Submit draw commands
     STOPWATCH.start("queue_submit");
-    if (m_graphics_queue.submit(1, submit_info, frame.sync.frame_complete) != VK_SUCCESS) {
+    if (m_graphics_queue->submit(1, submit_info, frame.sync.frame_complete) != VK_SUCCESS) {
         throw std::runtime_error("Failed to submit draw command buffer.");
     }
     STOPWATCH.stop("queue_submit");
@@ -421,14 +421,14 @@ void VulkanRenderSystem::end_frame() {
     present_info.pSwapchains = swapchains;
     present_info.pImageIndices = &m_image_index;
 
-    log_debug("Presenting frame %d.", m_current_frame);
+    // log_debug("Presenting frame %d.", m_current_frame);
 
     //  Submit request to present image to swap chain
-    begin_debug_marker(m_present_queue, "Present Frame", DEBUG_MARKER_COLOR_GREEN);
+    m_present_queue->begin_debug_marker("Present Frame", DEBUG_MARKER_COLOR_GREEN);
     STOPWATCH.start("queue_present");
-    VkResult result = vkQueuePresentKHR(m_present_queue, &present_info);
+    VkResult result = m_present_queue->present(present_info);
     STOPWATCH.stop("queue_present");
-    end_debug_marker(m_present_queue);
+    m_present_queue->end_debug_marker();
 
     //  Recreate swapchain if needed
     if (result == VK_ERROR_OUT_OF_DATE_KHR ||
@@ -511,6 +511,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     }
 
     VkQueue graphics_queue = VK_NULL_HANDLE;
+    VkQueue present_queue = VK_NULL_HANDLE;
 
     //  Create logical device
     if (!create_logical_device(
@@ -520,7 +521,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         device_extensions,
         m_device,
         graphics_queue,
-        m_present_queue
+        present_queue
     )) {
         return false;
     }
@@ -535,7 +536,24 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     //  Optimize device calls
     volkLoadDevice(m_device);
 
-    m_graphics_queue.initialize(m_physical_device, m_device, graphics_queue);
+    //  Create graphics queue wrapper
+    m_graphics_queue = std::make_unique<VulkanQueue>(
+        m_physical_device,
+        m_device,
+        graphics_queue
+    );
+
+    //  Create present queue wrapper
+    if (graphics_queue == present_queue) {
+        m_present_queue = m_graphics_queue;
+    } else {
+        m_present_queue = std::make_unique<VulkanQueue>(
+            m_physical_device,
+            m_device,
+            present_queue
+        );
+    }
+
     m_frame_uniform.create(m_physical_device, m_device);
     m_object_uniform.create(m_physical_device, m_device);
 
@@ -562,14 +580,14 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     m_model_mgr->initialize(
         m_physical_device,
         m_device,
-        m_graphics_queue,
+        *m_graphics_queue,
         m_resource_command_pool
     );
 
     m_asset_task_mgr = std::make_unique<AssetTaskManager>(
         m_physical_device,
         m_device,
-        m_graphics_queue,
+        *m_graphics_queue,
         *m_model_mgr,
         *m_texture_mgr
     );
@@ -599,7 +617,7 @@ void VulkanRenderSystem::load_model(const AssetId id, const std::string& path) {
     model->load(
         m_physical_device,
         m_device,
-        m_graphics_queue,
+        *m_graphics_queue,
         m_resource_command_pool,
         mesh
     );
@@ -609,7 +627,7 @@ void VulkanRenderSystem::load_model(const AssetId id, const std::string& path) {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::load_texture(const AssetId id, const std::string& path) {
-    m_texture_mgr->load_texture(id, path, m_graphics_queue, m_resource_command_pool);
+    m_texture_mgr->load_texture(id, path, *m_graphics_queue, m_resource_command_pool);
 
     //  TODO: Fix locks
     // m_asset_task_mgr->load_texture(id, path);
