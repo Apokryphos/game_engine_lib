@@ -36,6 +36,9 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
             break;
 
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+            log_warn("Vulkan: %s\n", pCallbackData->pMessage);
+            break;
+
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
             log_error("Vulkan: %s\n", pCallbackData->pMessage);
             break;
