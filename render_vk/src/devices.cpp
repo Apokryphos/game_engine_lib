@@ -192,7 +192,10 @@ bool create_logical_device(
     vkGetDeviceQueue(device, indices.present_family.value(), 0, &present_queue);
 
     set_debug_name(device, VK_OBJECT_TYPE_QUEUE, graphics_queue, "graphics_queue");
-    set_debug_name(device, VK_OBJECT_TYPE_QUEUE, present_queue, "present_queue");
+
+    if (graphics_queue != present_queue) {
+        set_debug_name(device, VK_OBJECT_TYPE_QUEUE, present_queue, "present_queue");
+    }
 
     return true;
 }
