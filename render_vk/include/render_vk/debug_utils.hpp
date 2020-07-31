@@ -31,19 +31,24 @@ void begin_debug_marker(
     const char* name,
     const float color[4]
 );
-void begin_debug_marker(VkQueue queue, const char* name, const float color[4]);
 void end_debug_marker(VkCommandBuffer command_buffer);
+
+//  Use VulkanQueue::begin_debug_marker for shared queues.
+void begin_debug_marker(VkQueue queue, const char* name, const float color[4]);
+//  Use VulkanQueue::end_debug_marker for shared queue.
 void end_debug_marker(VkQueue queue);
+// void insert_debug_marker(
+//     VkQueue queue,
+//     const char* name,
+//     const float color[4]
+// );
+
 void insert_debug_marker(
     VkCommandBuffer command_buffer,
     const char* name,
     const float color[4]
 );
-void insert_debug_marker(
-    VkQueue queue,
-    const char* name,
-    const float color[4]
-);
+
 void set_debug_name(
     VkDevice device,
     VkObjectType object_type,
