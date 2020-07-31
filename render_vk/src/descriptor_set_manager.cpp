@@ -1,7 +1,10 @@
+#include "common/log.hpp"
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/descriptor_set_manager.hpp"
 #include "render_vk/texture_manager.hpp"
 #include <mutex>
+
+using namespace common;
 
 namespace render_vk
 {
@@ -77,5 +80,7 @@ void DescriptorSetManager::update_descriptor_sets(TextureManager& texture_mgr) {
     m_texture_timestamp = texture_timestamp;
 
     texture_mgr.get_textures(m_textures);
+
+    log_debug("Texture descriptor sets require update.");
 }
 }

@@ -66,6 +66,8 @@ void TextureManager::load_texture(
     m_textures.push_back(texture);
 
     ++m_timestamp;
+
+    log_debug("Created texture %s.", path.c_str());
 }
 
 //  ----------------------------------------------------------------------------
@@ -93,5 +95,7 @@ void TextureManager::update_textures() {
     m_added.clear();
 
     ++m_timestamp;
+
+    log_debug("Textures updated.");
 }
 }

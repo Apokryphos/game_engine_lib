@@ -114,6 +114,8 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
             case TaskId::LoadTexture: {
                 stopwatch.start(thread_name+"_load_texture");
 
+                log_debug("Creating texture %s...", job.path.c_str());
+
                 Texture texture{};
                 create_texture(
                     m_physical_device,
@@ -123,6 +125,8 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
                     job.path,
                     texture
                 );
+
+                log_debug("Created texture %s.", job.path.c_str());
 
                 texture.id = job.asset_id;
 

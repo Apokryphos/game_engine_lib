@@ -529,7 +529,11 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             break;
         }
 
-        // log_debug("%s: acquired job '%s'.", thread_name.c_str(), task_id_to_string(job.task_id));
+        log_debug(
+            "%s: acquired %s",
+            thread_name.c_str(),
+            task_id_to_string(job.task_id)
+        );
 
         //  Get data for current frame
         ThreadFrame& frame = frames.at(m_current_frame);
@@ -566,12 +570,12 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             //  Check if textures changed
             const auto texture_timestamp = m_texture_mgr.get_timestamp();
             if (frame.texture_timestamp != texture_timestamp) {
-                // log_debug(
-                //     "%s: updating texture descriptor sets (frame: %d, timestamp: %d).",
-                //     frame.name.c_str(),
-                //     m_current_frame,
-                //     frame.texture_timestamp
-                // );
+                log_debug(
+                    "%s: updating texture descriptor sets (frame: %d, timestamp: %d).",
+                    thread_name.c_str(),
+                    m_current_frame,
+                    frame.texture_timestamp
+                );
 
                 m_descriptor_set_mgr.copy_texture_descriptor_set(frame.descriptor.texture_set);
 
@@ -579,7 +583,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
 
                 log_debug(
                     "%s: updated texture descriptor sets (frame: %d, timestamp: %d).",
-                    frame.name.c_str(),
+                    thread_name.c_str(),
                     m_current_frame,
                     frame.texture_timestamp
                 );
@@ -591,10 +595,15 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         //  Get command buffer to use
         VkCommandBuffer command_buffer = frame.command.buffers.at(frame.command_buffer_index);
 
+        log_debug(
+            "%s:  execute %s",
+            thread_name.c_str(),
+            task_id_to_string(job.task_id)
+        );
+
         //  Process job
         switch (job.task_id) {
             case TaskId::DrawBillboards: {
-                // log_debug("%s: draw billboards (frame: %d)", thread_name.c_str(), m_current_frame);
                 stopwatch.start(thread_name+"_draw_billboards");
                 BillboardRenderer* billboard_renderer = static_cast<BillboardRenderer*>(job.renderer);
                 billboard_renderer->draw_billboards(
@@ -607,7 +616,6 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             }
 
             case TaskId::DrawModels: {
-                // log_debug("%s: draw models (frame: %d)", thread_name.c_str(), m_current_frame);
                 stopwatch.start(thread_name+"_draw_models");
                 ModelRenderer* model_renderer = static_cast<ModelRenderer*>(job.renderer);
                 model_renderer->draw_models(
@@ -620,7 +628,6 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             }
 
             case TaskId::DrawSprites: {
-                // log_debug("%s: draw sprites (frame: %d)", thread_name.c_str(), m_current_frame);
                 stopwatch.start(thread_name+"_draw_sprites");
                 SpriteRenderer* sprite_renderer = static_cast<SpriteRenderer*>(job.renderer);
                 sprite_renderer->draw_sprites(
@@ -633,21 +640,23 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             }
 
             case TaskId::UpdateFrameUniforms:
-                // log_debug("%s: update frame uniforms (frame: %d)", thread_name.c_str(), m_current_frame);
                 stopwatch.start(thread_name+"_update_frame_uniforms");
                 task_update_frame_uniforms(job.frame_ubo, m_frame_uniform);
                 stopwatch.stop(thread_name+"_update_frame_uniforms");
                 break;
 
             case TaskId::UpdateObjectUniforms:
-                // log_debug("%s: update object uniforms (frame: %d)", thread_name.c_str(), m_current_frame);
                 stopwatch.start(thread_name+"_update_object_uniforms");
                 task_update_object_uniforms(job.batches, m_object_uniform);
                 stopwatch.stop(thread_name+"_update_object_uniforms");
                 break;
         }
 
-        // log_debug("%s: completed task '%s'.", thread_name.c_str(), task_id_to_string(job.task_id));
+        log_debug(
+            "%s: finished %s",
+            thread_name.c_str(),
+            task_id_to_string(job.task_id)
+        );
 
         //  Post completed work
         post_results(job.task_id, job.order, command_buffer);
