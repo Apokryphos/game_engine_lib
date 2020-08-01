@@ -46,6 +46,6 @@ void record_primary_command_buffer(
     VkExtent2D extent,
     VkFramebuffer framebuffer,
     const std::vector<VkCommandBuffer>& secondary_command_buffers,
-    VkCommandBuffer& command_buffer
+    VkCommandBuffer command_buffer
 );
 }

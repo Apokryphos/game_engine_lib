@@ -5,6 +5,8 @@
 #include "render_vk/vulkan_swapchain.hpp"
 #include <stdexcept>
 
+using namespace common;
+
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
@@ -139,7 +141,7 @@ void record_primary_command_buffer(
     VkExtent2D extent,
     VkFramebuffer framebuffer,
     const std::vector<VkCommandBuffer>& secondary_command_buffers,
-    VkCommandBuffer& command_buffer
+    VkCommandBuffer command_buffer
 ) {
     //  Record command buffer
     VkCommandBufferBeginInfo begin_info{};
