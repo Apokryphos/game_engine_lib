@@ -279,7 +279,7 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         m_instance,
         m_physical_device,
         m_device,
-        m_graphics_queue->get_queue(),
+        *m_graphics_queue,
         m_swapchain,
         m_render_pass,
         m_resource_command_pool

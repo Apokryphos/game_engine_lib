@@ -6,6 +6,8 @@ struct GLFWwindow;
 
 namespace render_vk
 {
+class VulkanQueue;
+
 void imgui_vulkan_discard_frame();
 
 //  Initializes ImGui.
@@ -15,7 +17,7 @@ void imgui_vulkan_init(
     VkInstance instance,
     VkPhysicalDevice physical_device,
     VkDevice device,
-    VkQueue queue,
+    VulkanQueue& queue,
     VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
     VkCommandPool command_pool

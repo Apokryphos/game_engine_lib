@@ -1,4 +1,5 @@
 #include "render_vk/command_buffer.hpp"
+#include "render_vk/vulkan_queue.hpp"
 #include "examples/imgui_impl_glfw.h"
 #include "examples/imgui_impl_vulkan.h"
 #include <stdexcept>
@@ -43,12 +44,12 @@ static void create_imgui_descriptor_pool(
 //  ----------------------------------------------------------------------------
 static void load_imgui_fonts(
     VkDevice device,
-    VkQueue transfer_queue,
+    VulkanQueue& transfer_queue,
     VkCommandPool command_pool
 ) {
     VkCommandBuffer command_buffer = begin_single_time_commands(device, command_pool);
     ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
-    end_single_time_commands(device, command_pool, command_buffer, transfer_queue);
+    transfer_queue.end_single_time_commands(command_pool, command_buffer);
 }
 
 //  ----------------------------------------------------------------------------
@@ -57,7 +58,7 @@ void imgui_vulkan_init(
     VkInstance instance,
     VkPhysicalDevice physical_device,
     VkDevice device,
-    VkQueue queue,
+    VulkanQueue& queue,
     VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
     VkCommandPool command_pool
@@ -72,7 +73,7 @@ void imgui_vulkan_init(
     init_info.PhysicalDevice = physical_device;
     init_info.Device = device;
     init_info.QueueFamily = 0;
-    init_info.Queue = queue;
+    init_info.Queue = queue.get_queue();
     init_info.PipelineCache = VK_NULL_HANDLE;
     init_info.DescriptorPool = s_descriptor_pool;
     init_info.Allocator = nullptr;
