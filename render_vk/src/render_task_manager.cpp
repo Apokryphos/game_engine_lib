@@ -307,19 +307,18 @@ void RenderTaskManager::add_job(Job& job) {
     }
 
     //  Track task call
-    {
-        std::lock_guard<std::mutex> lock(m_tasks_mutex);
-        job.order = m_tasks.add_call(job.task_id);
-    }
+    job.order = m_tasks.add_call(job.task_id);
 
     m_jobs.push(job);
 }
 
 //  ----------------------------------------------------------------------------
 void RenderTaskManager::begin_frame(
-    uint32_t current_frame,
+    uint32_t cumulative_frame,
+    uint8_t current_frame,
     bool discard_frame
 ) {
+    m_cumulative_frame = cumulative_frame;
     m_current_frame = current_frame;
     m_discard_frame = discard_frame;
     m_tasks.clear();
@@ -347,13 +346,9 @@ bool RenderTaskManager::check_tasks_complete() {
         return false;
     }
 
-    {
-        std::lock_guard<std::mutex> lock(m_tasks_mutex);
-
-        if (m_tasks.is_complete()) {
-            //  Worker threads have completed all tasks for this frame
-            return true;
-        }
+    if (m_tasks.is_complete()) {
+        //  Worker threads have completed all tasks for this frame
+        return true;
     }
 
     //  Worker threads are still processing tasks for this frame
@@ -366,6 +361,7 @@ void RenderTaskManager::draw_billboards(
     const std::vector<SpriteBatch>& batches
 ) {
     if (batches.empty()) {
+        log_debug("Discarded draw billboards call with zero batches.");
         return;
     }
 
@@ -378,11 +374,12 @@ void RenderTaskManager::draw_billboards(
         if (m_texture_mgr.texture_exists(batch.texture_id)) {
             job.sprite_batches.push_back(batch);
         } else {
-            log_debug("Discarded batch with pending texture %d.", batch.texture_id);
+            log_debug("Discarded billboard batch with pending texture %d.", batch.texture_id);
         }
     }
 
     if (job.sprite_batches.empty()) {
+        log_debug("Discarded draw billboards call with zero batches.");
         return;
     }
 
@@ -396,6 +393,7 @@ void RenderTaskManager::draw_models(
     const std::vector<ModelBatch>& batches
 ) {
     if (batches.empty()) {
+        log_debug("Discarded draw models call with zero batches.");
         return;
     }
 
@@ -409,11 +407,12 @@ void RenderTaskManager::draw_models(
         if (m_texture_mgr.texture_exists(batch.texture_id)) {
             job.batches.push_back(batch);
         } else {
-            log_debug("Discarded batch with pending texture %d.", batch.texture_id);
+            log_debug("Discarded model batch with pending texture %d.", batch.texture_id);
         }
     }
 
     if (job.batches.empty()) {
+        log_debug("Discarded draw models call with zero batches.");
         return;
     }
 
@@ -426,6 +425,7 @@ void RenderTaskManager::draw_sprites(
     const std::vector<SpriteBatch>& batches
 ) {
     if (batches.empty()) {
+        log_debug("Discarded draw sprites call with zero batches.");
         return;
     }
 
@@ -438,11 +438,12 @@ void RenderTaskManager::draw_sprites(
         if (m_texture_mgr.texture_exists(batch.texture_id)) {
             job.sprite_batches.push_back(batch);
         } else {
-            log_debug("Discarded batch with pending texture %d.", batch.texture_id);
+            log_debug("Discarded sprite batch with pending texture %d.", batch.texture_id);
         }
     }
 
     if (job.sprite_batches.empty()) {
+        log_debug("Discarded draw sprites call with zero batches.");
         return;
     }
 
@@ -468,7 +469,6 @@ void RenderTaskManager::post_results(
     uint32_t order,
     VkCommandBuffer command_buffer
 ) {
-    std::lock_guard<std::mutex> lock(m_tasks_mutex);
     m_tasks.add_results(task_id, order, command_buffer);
 }
 
@@ -511,22 +511,16 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         );
     }
 
-    //  Texture descriptors can only be updated in a frame before the first time
-    //  they are bound.
-    bool texture_descriptors_updated = false;
-
     bool frame_changed = false;
-    uint32_t last_frame = m_frame_count + 1;
+    uint32_t last_frame =  UINT32_MAX;
 
     //  Main loop
     while (true) {
-        //  Check if frame changed or if this thread is working multiple
-        //  times this frame.
-        if (last_frame != m_current_frame) {
-            last_frame = m_current_frame;
-            frame_changed = true;
-            texture_descriptors_updated = false;
-        }
+        // log_debug(
+        //     "%s: waiting (frame %d)",
+        //     thread_name.c_str(),
+        //     m_current_frame
+        // );
 
         //  Wait for a job to process
         Job job{};
@@ -534,10 +528,20 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             break;
         }
 
+        //  Check if frame changed or if this thread is working multiple
+        //  times this frame.
+        //  Note that the frame this thread starts waiting for a job on is
+        //  likely not the frame it will acquire and process a job on.
+        if (last_frame != m_cumulative_frame) {
+            last_frame = m_cumulative_frame;
+            frame_changed = true;
+        }
+
         // log_debug(
-        //     "%s: acquired %s",
+        //     "%s: acquired %s (frame: %d)",
         //     thread_name.c_str(),
-        //     task_id_to_string(job.task_id)
+        //     task_id_to_string(job.task_id),
+        //     m_current_frame
         // );
 
         //  Get data for current frame
@@ -576,12 +580,10 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         //  until the start of a frame. Descriptors only need to be loaded to match
         //  textures changed since the start of the frame, as textures pending after
         //  the start of the frame will be removed from draw batches.
-        if (!texture_descriptors_updated && task_requires_textures(job.task_id)) {
+        if (task_requires_textures(job.task_id)) {
             //  After this task completes, the texture descriptors will be bound
             //  and cannot change again this frame.
-            texture_descriptors_updated = true;
-
-            //  Check if textures changed
+            //  Texture timestamp should only change at the start of frames.
             const auto texture_timestamp = m_texture_mgr.get_timestamp();
             if (frame.texture_timestamp != texture_timestamp) {
                 log_debug(
