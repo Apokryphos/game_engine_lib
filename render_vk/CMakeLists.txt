@@ -18,6 +18,7 @@ set(SOURCE_FILES
     src/dynamic_uniform_buffer.cpp
     src/framebuffers.cpp
     src/gltf.cpp
+    src/image.cpp
     src/image_view.cpp
     src/imgui/imgui_vk.cpp
     src/index_buffer.cpp

@@ -24,6 +24,7 @@
 #include "render_vk/renderers/sprite_renderer.hpp"
 #include "render_vk/vulkan_render_system.hpp"
 #include "render_vk/vulkan_model.hpp"
+#include "render_vk/vulkan_queue.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <cassert>
 #include <thread>
