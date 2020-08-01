@@ -2,7 +2,6 @@
 #include "render_vk/depth.hpp"
 #include "render_vk/image.hpp"
 #include "render_vk/image_view.hpp"
-#include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_queue.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
