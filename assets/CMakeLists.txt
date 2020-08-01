@@ -14,6 +14,7 @@ configure_file(models/model2.mtl ${OUTPUT_DIR}/models/model2.mtl COPYONLY)
 
 # Textures
 configure_file(textures/billboard.png ${OUTPUT_DIR}/textures/billboard.png COPYONLY)
+configure_file(textures/missing.png ${OUTPUT_DIR}/textures/missing.png COPYONLY)
 configure_file(textures/model.png ${OUTPUT_DIR}/textures/model.png COPYONLY)
 configure_file(textures/model2.png ${OUTPUT_DIR}/textures/model2.png COPYONLY)
 configure_file(textures/model3.png ${OUTPUT_DIR}/textures/model3.png COPYONLY)

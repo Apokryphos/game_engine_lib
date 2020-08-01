@@ -250,7 +250,7 @@ static void init_billboards(Game& game) {
         add_billboard_component(
             entity,
             billboard_sys,
-            4,
+            5,
             glm::vec2(1.0f)
         );
     }
@@ -265,7 +265,7 @@ static void init_models(Game& game) {
     PositionSystem& pos_sys = get_position_system(sys_mgr);
 
     std::uniform_int_distribution<int> model_id_dist(0, 2);
-    std::uniform_int_distribution<int> texture_id_dist(0, 2);
+    std::uniform_int_distribution<int> texture_id_dist(1, 3);
     std::uniform_int_distribution<int> position_dist(-100, 100);
 
     Random& random = game.get_random();
@@ -356,7 +356,7 @@ static void init_sprites(Game& game) {
         add_sprite_component(
             entity,
             sprite_sys,
-            3,
+            4,
             glm::vec2(
                 102 * size_dist(random.get_rng()),
                 100 * size_dist(random.get_rng())
@@ -426,6 +426,7 @@ void InitScreen::on_load(Game& game) {
     Renderer& render_sys = engine.get_render_system();
     asset_mgr.load_model(render_sys, "assets/models/model2.glb");
     asset_mgr.load_model(render_sys, "assets/models/model.obj");
+    asset_mgr.load_texture(render_sys, "assets/textures/missing.png");
     asset_mgr.load_texture(render_sys, "assets/textures/model.png");
     asset_mgr.load_texture(render_sys, "assets/textures/model2.png");
     asset_mgr.load_texture(render_sys, "assets/textures/model3.png");
