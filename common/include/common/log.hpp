@@ -89,6 +89,15 @@ inline void log_info(const char* format, Args... args) {
     log_info(stringf(format, args...));
 }
 
+inline void log_trace(const std::string& str) {
+    log(str, rang::fg::magenta, rang::style::bold);
+}
+
+template <typename... Args>
+inline void log_trace(const char* format, Args... args) {
+    log_trace(stringf(format, args...));
+}
+
 inline void log_warn(const std::string& str) {
     log(str, rang::fg::yellow, rang::style::bold);
 }
