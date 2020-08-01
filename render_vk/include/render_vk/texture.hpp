@@ -47,32 +47,10 @@ void create_image(
     VkDeviceMemory& image_memory
 );
 
-void create_texture_image(
-    VkPhysicalDevice physical_device,
-    VkDevice device,
-    VulkanQueue& transfer_queue,
-    VkCommandPool command_pool,
-    const std::string& filename,
-    VkImage& texture_image,
-    uint32_t& mip_levels,
-    VkDeviceMemory& texture_image_memory
-);
-
-void create_texture_image_view(
-    VkDevice device,
-    uint32_t mip_levels,
-    VkImage& texture_image,
-    VkImageView& texture_image_view
-);
-
-void create_texture_sampler(
-    VkDevice device,
-    uint32_t mipmap_levels,
-    VkSampler& texture_sampler
-);
-
 void destroy_texture(VkDevice device, const Texture& texture);
 
+//  Submits transition image layout commands to a queue using single-time
+//  commands.
 void transition_image_layout(
     VkDevice device,
     VulkanQueue& transfer_queue,

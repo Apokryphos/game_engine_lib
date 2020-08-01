@@ -16,16 +16,12 @@ namespace render_vk
 {
 //  ----------------------------------------------------------------------------
 void generate_mipmaps(
-    VkDevice device,
-    VkCommandPool command_pool,
+    VkCommandBuffer command_buffer,
     VkImage image,
-    VulkanQueue& transfer_queue,
     int32_t texture_width,
     int32_t texture_height,
     uint32_t mipmap_levels
 ) {
-    VkCommandBuffer command_buffer = begin_single_time_commands(device, command_pool);
-
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.image = image;
@@ -127,26 +123,17 @@ void generate_mipmaps(
         1,
         &barrier
     );
-
-    transfer_queue.end_single_time_commands(command_pool, command_buffer);
 }
 
 //  ----------------------------------------------------------------------------
-void transition_image_layout(
-    VkDevice device,
-    VulkanQueue& transfer_queue,
-    VkCommandPool command_pool,
+void record_transition_image_layout_commands(
+    VkCommandBuffer command_buffer,
     VkImage image,
     VkFormat format,
     uint32_t mip_levels,
     VkImageLayout old_layout,
     VkImageLayout new_layout
 ) {
-    VkCommandBuffer command_buffer = begin_single_time_commands(
-        device,
-        command_pool
-    );
-
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.oldLayout = old_layout;
@@ -221,25 +208,44 @@ void transition_image_layout(
         1,
         &barrier
     );
-
-    transfer_queue.end_single_time_commands(command_pool, command_buffer);
 }
 
 //  ----------------------------------------------------------------------------
-static void copy_buffer_to_image(
+void transition_image_layout(
     VkDevice device,
     VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
-    VkBuffer buffer,
     VkImage image,
-    uint32_t width,
-    uint32_t height
+    VkFormat format,
+    uint32_t mip_levels,
+    VkImageLayout old_layout,
+    VkImageLayout new_layout
 ) {
     VkCommandBuffer command_buffer = begin_single_time_commands(
         device,
         command_pool
     );
 
+    record_transition_image_layout_commands(
+        command_buffer,
+        image,
+        format,
+        mip_levels,
+        old_layout,
+        new_layout
+    );
+
+    transfer_queue.end_single_time_commands(command_pool, command_buffer);
+}
+
+//  ----------------------------------------------------------------------------
+static void copy_buffer_to_image(
+    VkCommandBuffer command_buffer,
+    VkBuffer buffer,
+    VkImage image,
+    uint32_t width,
+    uint32_t height
+) {
     VkBufferImageCopy region{};
     region.bufferOffset = 0;
     region.bufferRowLength = 0;
@@ -265,8 +271,6 @@ static void copy_buffer_to_image(
         1,
         &region
     );
-
-    transfer_queue.end_single_time_commands(command_pool, command_buffer);
 }
 
 //  ----------------------------------------------------------------------------
@@ -323,7 +327,7 @@ void create_image(
 }
 
 //  ----------------------------------------------------------------------------
-void create_texture_image(
+static void create_texture_image(
     VkPhysicalDevice physical_device,
     VkDevice device,
     VulkanQueue& transfer_queue,
@@ -394,11 +398,11 @@ void create_texture_image(
         (filename + "_image").c_str()
     );
 
+    VkCommandBuffer command_buffer = begin_single_time_commands(device, command_pool);
+
     //  Prepare texture for staging buffer copy
-    transition_image_layout(
-        device,
-        transfer_queue,
-        command_pool,
+    record_transition_image_layout_commands(
+        command_buffer,
         texture_image,
         VK_FORMAT_R8G8B8A8_SRGB,
         mip_levels,
@@ -407,9 +411,7 @@ void create_texture_image(
     );
 
     copy_buffer_to_image(
-        device,
-        transfer_queue,
-        command_pool,
+        command_buffer,
         staging_buffer,
         texture_image,
         static_cast<uint32_t>(width),
@@ -429,21 +431,21 @@ void create_texture_image(
     // );
 
     generate_mipmaps(
-        device,
-        command_pool,
+        command_buffer,
         texture_image,
-        transfer_queue,
         width,
         height,
         mip_levels
     );
+
+    transfer_queue.end_single_time_commands(command_pool, command_buffer);
 
     vkDestroyBuffer(device, staging_buffer, nullptr);
     vkFreeMemory(device, staging_buffer_memory, nullptr);
 }
 
 //  ----------------------------------------------------------------------------
-void create_texture_image_view(
+static void create_texture_image_view(
     VkDevice device,
     uint32_t mip_levels,
     VkImage& texture_image,
@@ -459,7 +461,7 @@ void create_texture_image_view(
 }
 
 //  ----------------------------------------------------------------------------
-void create_texture_sampler(
+static void create_texture_sampler(
     VkDevice device,
     uint32_t mipmap_levels,
     VkSampler& texture_sampler
@@ -527,6 +529,7 @@ void create_texture(
         texture.sampler,
         (filename + "_sampler").c_str()
     );
+
 }
 
 //  ----------------------------------------------------------------------------
