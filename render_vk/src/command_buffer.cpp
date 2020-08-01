@@ -32,33 +32,6 @@ VkCommandBuffer begin_single_time_commands(
 }
 
 //  ----------------------------------------------------------------------------
-void end_single_time_commands(
-    VkDevice device,
-    VkCommandPool command_pool,
-    VkCommandBuffer command_buffer,
-    VkQueue transfer_queue
-) {
-    VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer));
-
-    VkSubmitInfo submit_info{};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &command_buffer;
-
-     //  Create fence to signal when complete
-    VkFenceCreateInfo create_info{};
-    create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    VkFence fence;
-    VK_CHECK_RESULT(vkCreateFence(device, &create_info, nullptr, &fence));
-
-    VK_CHECK_RESULT(vkQueueSubmit(transfer_queue, 1, &submit_info, fence));
-    VK_CHECK_RESULT(vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX));
-
-    vkDestroyFence(device, fence, nullptr);
-    vkFreeCommandBuffers(device, command_pool, 1, &command_buffer);
-}
-
-//  ----------------------------------------------------------------------------
 void create_command_buffers(
     VkDevice device,
     VkCommandPool command_pool,

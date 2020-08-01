@@ -13,13 +13,6 @@ VkCommandBuffer begin_single_time_commands(
     VkCommandPool command_pool
 );
 
-void end_single_time_commands(
-    VkDevice device,
-    VkCommandPool command_pool,
-    VkCommandBuffer command_buffer,
-    VkQueue transfer_queue
-);
-
 void create_command_buffers(
     VkDevice device,
     VkCommandPool command_pool,
