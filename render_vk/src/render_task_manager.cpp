@@ -399,7 +399,6 @@ void RenderTaskManager::draw_models(
 
     Job job{};
     job.task_id = TaskId::DrawModels;
-    job.batches = batches;
     job.renderer = &renderer;
     job.batches.reserve(batches.size());
 
