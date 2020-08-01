@@ -11,6 +11,7 @@ namespace common
 {
 struct Log
 {
+    uint32_t line {1};
     std::ofstream file;
 };
 
@@ -30,7 +31,9 @@ inline void log(
         std::lock_guard<std::mutex> lock(cout_mutex);
 
         (error ? std::cerr : std::cout) <<
-            style << color << str <<
+            style << color <<
+            (s_log == nullptr ? "" : (std::to_string(s_log->line) + ": ")) <<
+            str <<
             rang::style::reset << rang::fg::reset <<
             "\n";
     }
@@ -45,7 +48,12 @@ inline void log(
         std::lock_guard<std::mutex> lock(file_mutex);
 
         //  Write to file and flush immediately in case application locks up.
-        s_log->file << str << std::endl;
+        s_log->file <<
+            (s_log == nullptr ? "" : (std::to_string(s_log->line) + ": ")) <<
+            str <<
+            std::endl;
+
+        ++s_log->line;
     }
 }
 

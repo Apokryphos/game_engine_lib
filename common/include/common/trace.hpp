@@ -5,6 +5,7 @@
 #include <mutex>
 #include <thread>
 #include <string>
+#include <signal.h>
 
 namespace common
 {
@@ -21,6 +22,10 @@ static std::string get_tab_string() {
         tabs += "    ";
     }
     return tabs;
+}
+
+void inline breakpoint() {
+    raise(SIGTRAP);
 }
 
 class Trace
