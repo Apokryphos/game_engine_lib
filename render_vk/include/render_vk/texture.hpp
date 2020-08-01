@@ -28,7 +28,6 @@ void create_texture(
     VkPhysicalDevice physical_device,
     VkDevice device,
     VulkanQueue& transfer_queue,
-    // VkQueue graphics_queue,
     VkCommandPool command_pool,
     const std::string& filename,
     Texture& texture
@@ -51,7 +50,7 @@ void create_image(
 void create_texture_image(
     VkPhysicalDevice physical_device,
     VkDevice device,
-    VkQueue transfer_queue,
+    VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const std::string& filename,
     VkImage& texture_image,
