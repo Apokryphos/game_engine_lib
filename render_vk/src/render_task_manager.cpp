@@ -571,22 +571,16 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             const auto texture_timestamp = m_texture_mgr.get_timestamp();
             if (frame.texture_timestamp != texture_timestamp) {
                 log_debug(
-                    "%s: updating texture descriptor sets (frame: %d, timestamp: %d).",
+                    "%s: updating texture descriptor sets (frame: %d, timestamp: %d -> %d).",
                     thread_name.c_str(),
                     m_current_frame,
-                    frame.texture_timestamp
+                    frame.texture_timestamp,
+                    texture_timestamp
                 );
 
                 m_descriptor_set_mgr.copy_texture_descriptor_set(frame.descriptor.texture_set);
 
                 frame.texture_timestamp = texture_timestamp;
-
-                log_debug(
-                    "%s: updated texture descriptor sets (frame: %d, timestamp: %d).",
-                    thread_name.c_str(),
-                    m_current_frame,
-                    frame.texture_timestamp
-                );
             }
         }
 
