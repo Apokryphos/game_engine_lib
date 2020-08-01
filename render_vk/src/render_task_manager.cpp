@@ -511,6 +511,10 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         );
     }
 
+    //  Texture descriptors can only be updated in a frame before the first time
+    //  they are bound.
+    bool texture_descriptors_updated = false;
+
     bool frame_changed = false;
     uint32_t last_frame = m_frame_count + 1;
 
@@ -521,6 +525,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         if (last_frame != m_current_frame) {
             last_frame = m_current_frame;
             frame_changed = true;
+            texture_descriptors_updated = false;
         }
 
         //  Wait for a job to process
@@ -566,7 +571,16 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             frame.command.buffers.push_back(command_buffer);
         }
 
-        if (task_requires_textures(job.task_id)) {
+        //  Update texture descriptors on the first task that requires them this frame.
+        //  Textures are loaded on separate threads but new textures are not available
+        //  until the start of a frame. Descriptors only need to be loaded to match
+        //  textures changed since the start of the frame, as textures pending after
+        //  the start of the frame will be removed from draw batches.
+        if (!texture_descriptors_updated && task_requires_textures(job.task_id)) {
+            //  After this task completes, the texture descriptors will be bound
+            //  and cannot change again this frame.
+            texture_descriptors_updated = true;
+
             //  Check if textures changed
             const auto texture_timestamp = m_texture_mgr.get_timestamp();
             if (frame.texture_timestamp != texture_timestamp) {
