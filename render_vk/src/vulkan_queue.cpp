@@ -1,4 +1,5 @@
 #include "render_vk/buffer.hpp"
+#include "render_vk/command_buffer.hpp"
 #include "render_vk/vulkan_queue.hpp"
 
 namespace render_vk
@@ -10,15 +11,15 @@ void VulkanQueue::copy_buffer(
     VkBuffer dst,
     VkDeviceSize size
 ) {
-    std::lock_guard<std::mutex> lock(m_queue_mutex);
-    render_vk::copy_buffer(
-        m_device,
-        m_queue,
-        command_pool,
-        src,
-        dst,
-        size
-    );
+    VkCommandBuffer command_buffer = begin_single_time_commands(m_device, command_pool);
+
+    VkBufferCopy copy_region{};
+    copy_region.srcOffset = 0; // Optional
+    copy_region.dstOffset = 0; // Optional
+    copy_region.size = size;
+    vkCmdCopyBuffer(command_buffer, src, dst, 1, &copy_region);
+
+    end_single_time_commands(command_pool, command_buffer);
 }
 
 //  ----------------------------------------------------------------------------

@@ -80,32 +80,4 @@ void create_buffer(
         buffer_memory
     );
 }
-
-//  ----------------------------------------------------------------------------
-void copy_buffer(
-    VkDevice device,
-    VkQueue transfer_queue,
-    VkCommandPool command_pool,
-    VkBuffer src,
-    VkBuffer dst,
-    VkDeviceSize size
-) {
-    //  TODO: Use separate command pool for short-lived buffers so
-    //  driver can apply memory allocation optimizations.
-    //  Use VK_COMMAND_POOL_CREATE_TRANSIENT_BIT when creating command pool.
-    VkCommandBuffer command_buffer = begin_single_time_commands(device, command_pool);
-
-    VkBufferCopy copy_region{};
-    copy_region.srcOffset = 0; // Optional
-    copy_region.dstOffset = 0; // Optional
-    copy_region.size = size;
-    vkCmdCopyBuffer(command_buffer, src, dst, 1, &copy_region);
-
-    end_single_time_commands(
-        device,
-        command_pool,
-        command_buffer,
-        transfer_queue
-    );
-}
 }
