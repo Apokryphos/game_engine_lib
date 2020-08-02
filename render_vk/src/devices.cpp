@@ -35,6 +35,26 @@ static bool check_device_extension_support(
 }
 
 //  ----------------------------------------------------------------------------
+VkSampleCountFlagBits get_max_sample_count(VkPhysicalDevice physical_device) {
+    VkPhysicalDeviceProperties props;
+    vkGetPhysicalDeviceProperties(physical_device, &props);
+
+    const VkSampleCountFlags counts =
+        props.limits.framebufferColorSampleCounts &
+        props.limits.framebufferDepthSampleCounts;
+
+    if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+    if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+    if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+    if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
+    if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
+    if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+
+    return VK_SAMPLE_COUNT_1_BIT;
+}
+
+
+//  ----------------------------------------------------------------------------
 static bool device_is_acceptable(
     VkPhysicalDevice device,
     VkSurfaceKHR surface,
@@ -72,9 +92,10 @@ static bool device_is_acceptable(
 //  ----------------------------------------------------------------------------
 bool init_device(
     VkInstance instance,
-    VkPhysicalDevice& physical_device,
     VkSurfaceKHR surface,
-    const std::vector<const char*>& device_extensions
+    const std::vector<const char*>& device_extensions,
+    VkPhysicalDevice& physical_device,
+    VkSampleCountFlagBits& msaa_samples
 ) {
     physical_device = VK_NULL_HANDLE;
 
@@ -102,6 +123,7 @@ bool init_device(
     for (const auto& device : devices) {
         if (device_is_acceptable(device, surface, device_extensions)) {
             physical_device = device;
+            msaa_samples = get_max_sample_count(physical_device);
             break;
         }
     }

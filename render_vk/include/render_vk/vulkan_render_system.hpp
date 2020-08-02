@@ -61,6 +61,8 @@ private:
     //  Swapchain image index
     uint32_t m_image_index              = 0;
 
+    VkSampleCountFlagBits m_msaa_samples {VK_SAMPLE_COUNT_1_BIT};
+
     VkInstance m_instance               = VK_NULL_HANDLE;
     VkPhysicalDevice m_physical_device  = VK_NULL_HANDLE;
     VkDevice m_device                   = VK_NULL_HANDLE;

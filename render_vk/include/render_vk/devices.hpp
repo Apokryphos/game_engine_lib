@@ -7,9 +7,10 @@ namespace render_vk
 {
 bool init_device(
     VkInstance instance,
-    VkPhysicalDevice& physical_device,
     VkSurfaceKHR surface,
-    const std::vector<const char*>& device_extensions
+    const std::vector<const char*>& device_extensions,
+    VkPhysicalDevice& physical_device,
+    VkSampleCountFlagBits& msaa_samples
 );
 
 bool create_logical_device(

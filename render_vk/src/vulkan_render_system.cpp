@@ -514,9 +514,10 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     //  Initialize physical device
     if (!init_device(
         m_instance,
-        m_physical_device,
         m_surface,
-        device_extensions
+        device_extensions,
+        m_physical_device,
+        m_msaa_samples
     )) {
         return false;
     }
