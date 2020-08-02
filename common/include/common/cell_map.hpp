@@ -64,6 +64,7 @@ public:
     : m_size(size) {
         const uint32_t count = get_count(m_size);
         m_cells.resize(count);
+        assert(m_cells.size() > 0);
     }
 
     inline Cell& get_cell(const Coord& coord) {
