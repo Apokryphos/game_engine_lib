@@ -119,12 +119,6 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
         }
 
         log_debug(
-            "%s: acquired %s",
-            thread_name.c_str(),
-            task_id_to_string(job.task_id)
-        );
-
-        log_debug(
             "%s: execute %s",
             thread_name.c_str(),
             task_id_to_string(job.task_id)
