@@ -85,11 +85,6 @@ void AssetTaskManager::load_texture(uint32_t id, const std::string& path) {
 }
 
 //  ----------------------------------------------------------------------------
-void AssetTaskManager::post_texture_results(TaskId task_id, Texture& texture) {
-    m_texture_mgr.add_texture(texture);
-}
-
-//  ----------------------------------------------------------------------------
 void AssetTaskManager::start_threads() {
     assert(m_thread_count > 0);
     for (auto n = 0; n < m_thread_count; ++n) {
@@ -153,39 +148,13 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
 
             case TaskId::LoadTexture: {
                 stopwatch.start(thread_name+"_load_texture");
-
-                log_debug("Creating texture %s...", job.path.c_str());
-
-                Texture texture{};
-                create_texture(
-                    m_physical_device,
-                    m_device,
-                    m_queue,
-                    state.command_pool,
+                m_texture_mgr.load_texture(
+                    job.asset_id,
                     job.path,
-                    texture
+                    m_queue,
+                    state.command_pool
                 );
-                texture.id = job.asset_id;
-
-                log_debug("Created texture %s (%d).", job.path.c_str(), texture.id);
-
                 stopwatch.stop(thread_name+"_load_texture");
-
-                log_debug(
-                    "%s: finished %s",
-                    thread_name.c_str(),
-                    task_id_to_string(job.task_id)
-                );
-
-                //  Post completed work
-                post_texture_results(job.task_id, texture);
-
-                log_debug(
-                    "%s: posted %s",
-                    thread_name.c_str(),
-                    task_id_to_string(job.task_id)
-                );
-
                 break;
             }
 

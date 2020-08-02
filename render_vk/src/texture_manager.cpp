@@ -20,10 +20,7 @@ TextureManager::TextureManager(
 //  ----------------------------------------------------------------------------
 void TextureManager::add_texture(const Texture& texture) {
     std::lock_guard<std::mutex> lock(m_mutex);
-
     m_added.push_back(texture);
-
-    log_debug("Texture %d completed transfer.", texture.id);
 }
 
 //  ----------------------------------------------------------------------------
@@ -53,8 +50,6 @@ void TextureManager::load_texture(
     VulkanQueue& queue,
     VkCommandPool command_pool
 ) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     Texture texture{};
     create_texture(
         m_physical_device,
@@ -67,11 +62,9 @@ void TextureManager::load_texture(
 
     texture.id = texture_id;
 
-    m_textures.push_back(texture);
+    add_texture(texture);
 
-    ++m_timestamp;
-
-    log_debug("Created texture %s.", path.c_str());
+    log_debug("Loaded texture '%s' (%d).", path.c_str(), texture_id);
 }
 
 //  ----------------------------------------------------------------------------

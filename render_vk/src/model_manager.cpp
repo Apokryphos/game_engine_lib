@@ -133,6 +133,8 @@ void ModelManager::load_model(
     );
 
     add_model(std::move(model));
+
+    log_debug("Loaded model '%s' (%d).", path.c_str(), id);
 }
 
 //  ----------------------------------------------------------------------------

@@ -56,11 +56,6 @@ class AssetTaskManager
 
     //  Adds a new job for a worker thread to process.
     void add_job(Job& job);
-    //  Called by worker threads when work is completed.
-    void post_texture_results(
-        TaskId task_id,
-        Texture& texture
-    );
     void thread_main(uint8_t thread_id);
 
 public:
@@ -75,7 +70,9 @@ public:
     AssetTaskManager(const AssetTaskManager&) = delete;
     AssetTaskManager& operator=(const AssetTaskManager&) = delete;
     void cancel_threads();
+    //  Enqueues a load model job for worker threads to complete
     void load_model(uint32_t id, const std::string& path);
+    //  Enqueues a load texture job for worker threads to complete
     void load_texture(uint32_t id, const std::string& path);
     void start_threads();
 };
