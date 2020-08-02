@@ -159,6 +159,11 @@ const VulkanModel& ModelManager::get_sprite_quad() const {
 }
 
 //  ----------------------------------------------------------------------------
+bool ModelManager::model_exists(const AssetId id) const {
+    return m_models.find(id) != m_models.end();
+}
+
+//  ----------------------------------------------------------------------------
 void ModelManager::unload(VkDevice device) {
     m_billboard_quad->unload();
     m_billboard_quad = nullptr;

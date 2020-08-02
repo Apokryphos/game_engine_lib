@@ -25,9 +25,10 @@ public:
     ~ModelManager();
     ModelManager(const ModelManager&) = delete;
     ModelManager& operator=(const ModelManager&) = delete;
-
     void add_model(std::unique_ptr<VulkanModel> model);
-
+    const VulkanModel& get_billboard_quad() const;
+    VulkanModel* get_model(const AssetId id) const;
+    const VulkanModel& get_sprite_quad() const;
     void initialize(
         VkPhysicalDevice physical_device,
         VkDevice device,
@@ -42,10 +43,7 @@ public:
         VulkanQueue& graphics_queue,
         VkCommandPool command_pool
     );
-
-    const VulkanModel& get_billboard_quad() const;
-    VulkanModel* get_model(const AssetId id) const;
-    const VulkanModel& get_sprite_quad() const;
+    bool model_exists(const AssetId id) const;
     void unload(VkDevice device);
 };
 }
