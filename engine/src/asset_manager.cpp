@@ -61,7 +61,8 @@ AssetId AssetManager::load_model(
 //  ----------------------------------------------------------------------------
 AssetId AssetManager::load_texture(
     Renderer& renderer,
-    const std::string& path
+    const std::string& path,
+    const TextureLoadArgs args
 ) {
     const auto find = std::find_if(
         m_textures.begin(),
@@ -77,7 +78,7 @@ AssetId AssetManager::load_texture(
 
     const AssetId id = get_unique_texture_id();
 
-    renderer.load_texture(id, path);
+    renderer.load_texture(id, path, args);
 
     Entry entry{};
     entry.id = id;

@@ -430,8 +430,15 @@ void InitScreen::on_load(Game& game) {
     asset_mgr.load_texture(render_sys, "assets/textures/model.png");
     asset_mgr.load_texture(render_sys, "assets/textures/model2.png");
     asset_mgr.load_texture(render_sys, "assets/textures/model3.png");
-    asset_mgr.load_texture(render_sys, "assets/textures/sprite.png");
-    asset_mgr.load_texture(render_sys, "assets/textures/billboard.png");
+
+    //  Pixel sprites
+    TextureLoadArgs tex_args{};
+    tex_args.mag_filter = TextureFilter::Nearest;
+    tex_args.min_filter = TextureFilter::Nearest;
+    tex_args.mipmaps = false;
+
+    asset_mgr.load_texture(render_sys, "assets/textures/sprite.png", tex_args);
+    asset_mgr.load_texture(render_sys, "assets/textures/billboard.png", tex_args);
 
     //  Next screen
     load_demo_screen(game);

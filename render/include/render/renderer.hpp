@@ -17,6 +17,7 @@ namespace render
 {
 class Model;
 class ModelRenderer;
+struct TextureLoadArgs;
 
 class Renderer
 {
@@ -52,7 +53,8 @@ public:
     ) = 0;
     virtual void load_texture(
         common::AssetId id,
-        const std::string& path
+        const std::string& path,
+        const TextureLoadArgs& args
     ) = 0;
     virtual void resize() = 0;
     virtual void shutdown() = 0;

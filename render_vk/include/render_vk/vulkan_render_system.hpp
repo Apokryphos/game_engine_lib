@@ -159,7 +159,8 @@ public:
     ) override;
     virtual void load_texture(
         common::AssetId id,
-        const std::string& path
+        const std::string& path,
+        const render::TextureLoadArgs& args
     ) override;
     //  Framebuffer was resized
     virtual void resize() override;

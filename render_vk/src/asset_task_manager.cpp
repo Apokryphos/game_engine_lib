@@ -1,5 +1,6 @@
 #include "common/log.hpp"
 #include "common/stopwatch.hpp"
+#include "render/texture_load_args.hpp"
 #include "render_vk/asset_task_manager.hpp"
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/command_pool.hpp"
@@ -10,6 +11,7 @@
 #include "render_vk/vulkan_queue.hpp"
 
 using namespace common;
+using namespace render;
 
 namespace render_vk
 {
@@ -76,11 +78,16 @@ void AssetTaskManager::load_model(uint32_t id, const std::string& path) {
 }
 
 //  ----------------------------------------------------------------------------
-void AssetTaskManager::load_texture(uint32_t id, const std::string& path) {
+void AssetTaskManager::load_texture(
+    uint32_t id,
+    const std::string& path,
+    const TextureLoadArgs& args
+) {
     Job job{};
     job.task_id = TaskId::LoadTexture;
     job.asset_id = id;
     job.path = path;
+    job.texture_args = args;
     add_job(job);
 }
 
@@ -146,7 +153,8 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
                     job.asset_id,
                     job.path,
                     m_queue,
-                    state.command_pool
+                    state.command_pool,
+                    job.texture_args
                 );
                 stopwatch.stop(thread_name+"_load_texture");
                 break;

@@ -19,7 +19,8 @@ public:
     ) override;
     virtual void load_texture(
         common::AssetId id,
-        const std::string& path
+        const std::string& path,
+        const render::TextureLoadArgs& args
     ) override;
     virtual void resize(GLFWwindow* glfw_window) override;
     virtual void shutdown() override;

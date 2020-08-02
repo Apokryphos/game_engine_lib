@@ -6,6 +6,11 @@
 #include <mutex>
 #include <vector>
 
+namespace render
+{
+struct TextureLoadArgs;
+}
+
 namespace render_vk
 {
 class VulkanQueue;
@@ -45,7 +50,8 @@ public:
         const TextureId texture_id,
         const std::string& path,
         VulkanQueue& queue,
-        VkCommandPool command_pool
+        VkCommandPool command_pool,
+        const render::TextureLoadArgs& args
     );
     bool texture_exists(const TextureId texture_id) const;
     void update_textures();

@@ -3,6 +3,11 @@
 #include "render_vk/vulkan.hpp"
 #include <string>
 
+namespace render
+{
+struct TextureLoadArgs;
+}
+
 namespace render_vk
 {
 class VulkanQueue;
@@ -31,6 +36,7 @@ void create_texture(
     VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const std::string& filename,
+    const render::TextureLoadArgs& args,
     Texture& texture
 );
 

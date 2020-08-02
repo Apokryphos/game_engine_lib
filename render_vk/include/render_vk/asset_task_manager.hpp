@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/job_queue.hpp"
+#include "render/texture_load_args.hpp"
 #include "render_vk/vulkan.hpp"
 #include <mutex>
 #include <queue>
@@ -30,6 +31,7 @@ class AssetTaskManager
         TaskId task_id {TaskId::None};
         uint32_t asset_id;
         std::string path;
+        render::TextureLoadArgs texture_args;
     };
 
     //  Objects for worker threads
@@ -73,7 +75,11 @@ public:
     //  Enqueues a load model job for worker threads to complete
     void load_model(uint32_t id, const std::string& path);
     //  Enqueues a load texture job for worker threads to complete
-    void load_texture(uint32_t id, const std::string& path);
+    void load_texture(
+        uint32_t id,
+        const std::string& path,
+        const render::TextureLoadArgs& args
+    );
     void start_threads();
 };
 }

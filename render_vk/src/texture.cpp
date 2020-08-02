@@ -1,4 +1,5 @@
 #include "common/log.hpp"
+#include "render/texture_load_args.hpp"
 #include "render_vk/buffer.hpp"
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/debug_utils.hpp"
@@ -10,9 +11,22 @@
 #include <stdexcept>
 
 using namespace common;
+using namespace render;
 
 namespace render_vk
 {
+//  ----------------------------------------------------------------------------
+static VkFilter texture_filter_to_vk(const TextureFilter filter) {
+    switch (filter) {
+        default:
+            throw std::runtime_error("Not implemented.");
+        case TextureFilter::Linear:
+            return VK_FILTER_LINEAR;
+        case TextureFilter::Nearest:
+            return VK_FILTER_NEAREST;
+    }
+}
+
 //  ----------------------------------------------------------------------------
 static void generate_mipmaps(
     VkCommandBuffer command_buffer,
@@ -167,6 +181,7 @@ static void create_texture_image(
     VkCommandPool command_pool,
     VkSampleCountFlagBits msaa_sample_count,
     const std::string& filename,
+    bool gen_mipmaps,
     VkImage& texture_image,
     uint32_t& mip_levels,
     VkDeviceMemory& texture_image_memory
@@ -186,10 +201,14 @@ static void create_texture_image(
         throw std::runtime_error("Failed to load texture image.");
     }
 
-    mip_levels = static_cast<uint32_t>(
-        std::floor(
-            std::log2(std::max(width, height)))
-        ) + 1;
+    if (gen_mipmaps) {
+        mip_levels = static_cast<uint32_t>(
+            std::floor(
+                std::log2(std::max(width, height)))
+            ) + 1;
+    } else {
+        mip_levels = 1;
+    }
 
     VkDeviceSize image_size = width * height * 4;
 
@@ -265,13 +284,15 @@ static void create_texture_image(
     //     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     // );
 
-    generate_mipmaps(
-        command_buffer,
-        texture_image,
-        width,
-        height,
-        mip_levels
-    );
+    if (mip_levels > 1) {
+        generate_mipmaps(
+            command_buffer,
+            texture_image,
+            width,
+            height,
+            mip_levels
+        );
+    }
 
     transfer_queue.end_single_time_commands(command_pool, command_buffer);
 
@@ -299,12 +320,14 @@ static void create_texture_image_view(
 static void create_texture_sampler(
     VkDevice device,
     uint32_t mipmap_levels,
-    VkSampler& texture_sampler
+    VkSampler& texture_sampler,
+    VkFilter mag_filter,
+    VkFilter min_filter
 ) {
     VkSamplerCreateInfo sampler_info{};
     sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    sampler_info.magFilter = VK_FILTER_LINEAR;
-    sampler_info.minFilter = VK_FILTER_LINEAR;
+    sampler_info.magFilter = mag_filter;
+    sampler_info.minFilter = min_filter;
 
     sampler_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     sampler_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
@@ -336,6 +359,7 @@ void create_texture(
     VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const std::string& filename,
+    const TextureLoadArgs& args,
     Texture& texture
 ) {
     create_texture_image(
@@ -345,6 +369,7 @@ void create_texture(
         command_pool,
         VK_SAMPLE_COUNT_1_BIT,
         filename,
+        args.mipmaps,
         texture.image,
         texture.mip_levels,
         texture.image_memory
@@ -358,7 +383,13 @@ void create_texture(
         (filename + "_image_view").c_str()
     );
 
-    create_texture_sampler(device, texture.mip_levels, texture.sampler);
+    create_texture_sampler(
+        device,
+        texture.mip_levels,
+        texture.sampler,
+        texture_filter_to_vk(args.mag_filter),
+        texture_filter_to_vk(args.min_filter)
+    );
     set_debug_name(
         device,
         VK_OBJECT_TYPE_SAMPLER,

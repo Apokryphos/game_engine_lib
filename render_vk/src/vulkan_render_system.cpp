@@ -651,8 +651,12 @@ void VulkanRenderSystem::load_model(const AssetId id, const std::string& path) {
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanRenderSystem::load_texture(const AssetId id, const std::string& path) {
-    m_asset_task_mgr->load_texture(id, path);
+void VulkanRenderSystem::load_texture(
+    const AssetId id,
+    const std::string& path,
+    const TextureLoadArgs& args
+) {
+    m_asset_task_mgr->load_texture(id, path, args);
 }
 
 //  ----------------------------------------------------------------------------

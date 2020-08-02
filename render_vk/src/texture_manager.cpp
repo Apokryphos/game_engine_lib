@@ -1,9 +1,11 @@
 #include "common/log.hpp"
+#include "render/texture_load_args.hpp"
 #include "render_vk/texture_manager.hpp"
 #include "render_vk/vulkan_queue.hpp"
 #include <algorithm>
 
 using namespace common;
+using namespace render;
 
 namespace render_vk
 {
@@ -48,7 +50,8 @@ void TextureManager::load_texture(
     const TextureId texture_id,
     const std::string& path,
     VulkanQueue& queue,
-    VkCommandPool command_pool
+    VkCommandPool command_pool,
+    const TextureLoadArgs& args
 ) {
     Texture texture{};
     create_texture(
@@ -57,6 +60,7 @@ void TextureManager::load_texture(
         queue,
         command_pool,
         path,
+        args,
         texture
     );
 

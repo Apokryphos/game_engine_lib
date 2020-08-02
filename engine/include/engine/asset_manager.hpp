@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/asset.hpp"
+#include "render/texture_load_args.hpp"
 #include <memory>
 #include <vector>
 
@@ -37,7 +38,11 @@ public:
     AssetManager(const AssetManager&) = delete;
     AssetManager& operator=(const AssetManager&) = delete;
     AssetId load_model(Renderer& renderer, const std::string& path);
-    AssetId load_texture(Renderer& renderer, const std::string& path);
+    AssetId load_texture(
+        Renderer& renderer,
+        const std::string& path,
+        const render::TextureLoadArgs args = {}
+    );
     void unload_model(const AssetId id);
     void unload_models();
     void shutdown();
