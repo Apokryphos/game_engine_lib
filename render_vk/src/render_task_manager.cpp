@@ -390,7 +390,7 @@ void RenderTaskManager::draw_billboards(
     const std::vector<SpriteBatch>& batches
 ) {
     if (batches.empty()) {
-        log_debug("Discarded draw billboards call with zero batches.");
+        // log_debug("Discarded draw billboards call with zero batches.");
         return;
     }
 
@@ -402,7 +402,7 @@ void RenderTaskManager::draw_billboards(
     filter_pending_textures(batches, m_texture_mgr, job.sprite_batches);
 
     if (job.sprite_batches.empty()) {
-        log_debug("Discarded draw billboards call with zero batches.");
+        // log_debug("Discarded draw billboards call with zero batches.");
         return;
     }
 
@@ -416,7 +416,7 @@ void RenderTaskManager::draw_models(
     const std::vector<ModelBatch>& batches
 ) {
     if (batches.empty()) {
-        log_debug("Discarded draw models call with zero batches.");
+        // log_debug("Discarded draw models call with zero batches.");
         return;
     }
 
@@ -428,7 +428,7 @@ void RenderTaskManager::draw_models(
     filter_pending_textures(batches, m_model_mgr, m_texture_mgr, job.batches);
 
     if (job.batches.empty()) {
-        log_debug("Discarded draw models call with zero batches.");
+        // log_debug("Discarded draw models call with zero batches.");
         return;
     }
 
@@ -441,7 +441,7 @@ void RenderTaskManager::draw_sprites(
     const std::vector<SpriteBatch>& batches
 ) {
     if (batches.empty()) {
-        log_debug("Discarded draw sprites call with zero batches.");
+        // log_debug("Discarded draw sprites call with zero batches.");
         return;
     }
 
@@ -453,7 +453,7 @@ void RenderTaskManager::draw_sprites(
     filter_pending_textures(batches, m_texture_mgr, job.sprite_batches);
 
     if (job.sprite_batches.empty()) {
-        log_debug("Discarded draw sprites call with zero batches.");
+        // log_debug("Discarded draw sprites call with zero batches.");
         return;
     }
 
