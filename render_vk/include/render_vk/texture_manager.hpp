@@ -23,6 +23,14 @@ class TextureManager
     std::vector<Texture> m_textures;
     std::vector<Texture> m_added;
 
+    //  Loads a texture and waits for the queue to finish execution
+    void load_texture(
+        const TextureId texture_id,
+        const std::string& path,
+        VulkanQueue& queue,
+        VkCommandPool command_pool
+    );
+
 public:
     TextureManager(
         VkPhysicalDevice physical_device,
@@ -40,14 +48,6 @@ public:
 
         return m_timestamp;
     }
-
-    //  Loads a texture and waits for the queue to finish execution
-    void load_texture(
-        const TextureId texture_id,
-        const std::string& path,
-        VulkanQueue& queue,
-        VkCommandPool command_pool
-    );
 
     bool texture_exists(const TextureId texture_id) const;
     void update_textures();
