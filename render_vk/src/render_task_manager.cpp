@@ -23,6 +23,20 @@ using namespace render;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
+template <typename T>
+inline void filter_pending_textures(
+    const std::vector<T>& batches,
+    const TextureManager& texture_mgr,
+    std::vector<T>& job_batches
+) {
+    for (const T& batch : batches) {
+        if (texture_mgr.texture_exists(batch.texture_id)) {
+            job_batches.push_back(batch);
+        }
+    }
+}
+
+//  ----------------------------------------------------------------------------
 static void create_descriptor_set(
     const VkDevice device,
     const VkDescriptorSetLayout descriptor_set_layout,
@@ -370,13 +384,7 @@ void RenderTaskManager::draw_billboards(
     job.renderer = &renderer;
     job.sprite_batches.reserve(batches.size());
 
-    for (const SpriteBatch& batch : batches) {
-        if (m_texture_mgr.texture_exists(batch.texture_id)) {
-            job.sprite_batches.push_back(batch);
-        } else {
-            log_debug("Discarded billboard batch with pending texture %d.", batch.texture_id);
-        }
-    }
+    filter_pending_textures(batches, m_texture_mgr, job.sprite_batches);
 
     if (job.sprite_batches.empty()) {
         log_debug("Discarded draw billboards call with zero batches.");
@@ -402,13 +410,7 @@ void RenderTaskManager::draw_models(
     job.renderer = &renderer;
     job.batches.reserve(batches.size());
 
-    for (const ModelBatch& batch : batches) {
-        if (m_texture_mgr.texture_exists(batch.texture_id)) {
-            job.batches.push_back(batch);
-        } else {
-            log_debug("Discarded model batch with pending texture %d.", batch.texture_id);
-        }
-    }
+    filter_pending_textures(batches, m_texture_mgr, job.batches);
 
     if (job.batches.empty()) {
         log_debug("Discarded draw models call with zero batches.");
@@ -433,13 +435,7 @@ void RenderTaskManager::draw_sprites(
     job.renderer = &renderer;
     job.sprite_batches.reserve(batches.size());
 
-    for (const SpriteBatch& batch : batches) {
-        if (m_texture_mgr.texture_exists(batch.texture_id)) {
-            job.sprite_batches.push_back(batch);
-        } else {
-            log_debug("Discarded sprite batch with pending texture %d.", batch.texture_id);
-        }
-    }
+    filter_pending_textures(batches, m_texture_mgr, job.sprite_batches);
 
     if (job.sprite_batches.empty()) {
         log_debug("Discarded draw sprites call with zero batches.");

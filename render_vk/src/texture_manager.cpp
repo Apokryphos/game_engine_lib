@@ -71,7 +71,7 @@ void TextureManager::load_texture(
 }
 
 //  ----------------------------------------------------------------------------
-bool TextureManager::texture_exists(const TextureId texture_id) {
+bool TextureManager::texture_exists(const TextureId texture_id) const {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     return std::find_if(
