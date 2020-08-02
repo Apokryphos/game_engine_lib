@@ -12,6 +12,7 @@ void create_image(
     uint32_t width,
     uint32_t height,
     uint32_t mip_levels,
+    VkSampleCountFlagBits sample_count,
     VkFormat format,
     VkImageTiling tiling,
     VkImageUsageFlags usage,

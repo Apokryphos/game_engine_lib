@@ -19,6 +19,7 @@ class VulkanQueue
         VkDevice device,
         VulkanQueue& queue,
         VulkanSwapchain& swapchain,
+        const VkSampleCountFlagBits msaa_sample_count,
         VkRenderPass render_pass,
         VkCommandPool command_pool
     );

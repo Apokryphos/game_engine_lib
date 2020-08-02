@@ -43,6 +43,7 @@ void create_framebuffers(
 void create_framebuffers(
     VkDevice device,
     VkRenderPass render_pass,
+    VkImageView color_image_view,
     VkImageView depth_image_view,
     VulkanSwapchain& swapchain
 ) {
@@ -50,9 +51,10 @@ void create_framebuffers(
 
     //  Create framebuffer for each image view
     for (size_t n = 0; n < swapchain.image_views.size(); ++n) {
-        std::array<VkImageView, 2> attachments = {
+        std::array<VkImageView, 3> attachments = {
+            color_image_view,
+            depth_image_view,
             swapchain.image_views[n],
-            depth_image_view
         };
 
         VkFramebufferCreateInfo framebuffer_info{};

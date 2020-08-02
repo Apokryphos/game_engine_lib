@@ -12,6 +12,7 @@ void create_image(
     uint32_t width,
     uint32_t height,
     uint32_t mip_levels,
+    VkSampleCountFlagBits sample_count,
     VkFormat format,
     VkImageTiling tiling,
     VkImageUsageFlags usage,
@@ -32,7 +33,7 @@ void create_image(
     image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     image_info.usage = usage;
     image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_info.samples = sample_count;
     image_info.flags = 0; // Optional
 
     if (vkCreateImage(device, &image_info, nullptr, &image) != VK_SUCCESS) {

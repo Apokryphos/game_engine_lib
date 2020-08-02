@@ -15,6 +15,7 @@ void create_framebuffers(
 void create_framebuffers(
     VkDevice device,
     VkRenderPass render_pass,
+    VkImageView color_image_view,
     VkImageView depth_image_view,
     VulkanSwapchain& swapchain
 );

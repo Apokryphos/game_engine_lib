@@ -23,6 +23,7 @@ void create_depth_resources(
     VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const VulkanSwapchain& swapchain,
+    VkSampleCountFlagBits msaa_sample_count,
     VkImage& depth_image,
     VkImageView& depth_image_view,
     VkDeviceMemory& depth_image_memory
@@ -34,6 +35,7 @@ void create_depth_resources(
     VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const VulkanSwapchain& swapchain,
+    VkSampleCountFlagBits msaa_sample_count,
     DepthImage& depth_image
 );
 }

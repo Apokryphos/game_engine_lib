@@ -237,7 +237,13 @@ void VulkanRenderSystem::create_swapchain_objects() {
     );
 
     //  Create render pass
-    create_render_pass(m_device, m_physical_device, m_swapchain, m_render_pass);
+    create_render_pass(
+        m_device,
+        m_physical_device,
+        m_swapchain,
+        m_msaa_samples,
+        m_render_pass
+    );
 }
 
 //  ----------------------------------------------------------------------------
@@ -253,6 +259,7 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         m_device,
         m_swapchain,
         m_render_pass,
+        m_msaa_samples,
         m_descriptor_set_layouts
     );
 
@@ -260,6 +267,7 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         m_device,
         m_swapchain,
         m_render_pass,
+        m_msaa_samples,
         m_descriptor_set_layouts
     );
 
@@ -267,7 +275,16 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         m_device,
         m_swapchain,
         m_render_pass,
+        m_msaa_samples,
         m_descriptor_set_layouts
+    );
+
+    create_color_resources(
+        m_physical_device,
+        m_device,
+        m_swapchain,
+        m_msaa_samples,
+        m_color_image
     );
 
     create_depth_resources(
@@ -276,12 +293,14 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         *m_graphics_queue,
         m_resource_command_pool,
         m_swapchain,
+        m_msaa_samples,
         m_depth_image
     );
 
     create_framebuffers(
         m_device,
         m_render_pass,
+        m_color_image.view,
         m_depth_image.view,
         m_swapchain
     );
@@ -292,6 +311,7 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         m_device,
         *m_graphics_queue,
         m_swapchain,
+        m_msaa_samples,
         m_render_pass,
         m_resource_command_pool
     );
@@ -312,6 +332,11 @@ void VulkanRenderSystem::destroy_frame_resources() {
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::destroy_swapchain() {
     vkDestroyCommandPool(m_device, m_resource_command_pool, nullptr);
+
+    //  MSAA buffer
+    vkDestroyImageView(m_device, m_color_image.view, nullptr);
+    vkDestroyImage(m_device, m_color_image.image, nullptr);
+    vkFreeMemory(m_device, m_color_image.memory, nullptr);
 
     //  Depth testing
     vkDestroyImageView(m_device, m_depth_image.view, nullptr);

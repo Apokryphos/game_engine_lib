@@ -19,6 +19,7 @@ static void create_billboard_pipeline(
     VkDevice device,
     const VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
+    const VkSampleCountFlagBits msaa_sample_count,
     const DescriptorSetLayouts& descriptor_set_layouts,
     VkPipelineLayout& pipeline_layout,
     VkPipeline& pipeline
@@ -34,6 +35,7 @@ void BillboardRenderer::create_objects(
     VkDevice device,
     const VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
+    const VkSampleCountFlagBits msaa_sample_count,
     const DescriptorSetLayouts& descriptor_set_layouts
 ) {
     m_device = device;
@@ -43,6 +45,7 @@ void BillboardRenderer::create_objects(
         device,
         swapchain,
         render_pass,
+        msaa_sample_count,
         descriptor_set_layouts,
         m_pipeline_layout,
         m_pipeline
@@ -193,6 +196,7 @@ static void create_billboard_pipeline(
     VkDevice device,
     const VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
+    const VkSampleCountFlagBits msaa_sample_count,
     const DescriptorSetLayouts& descriptor_set_layouts,
     VkPipelineLayout& pipeline_layout,
     VkPipeline& pipeline
@@ -276,7 +280,7 @@ static void create_billboard_pipeline(
     VkPipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampling.sampleShadingEnable = VK_FALSE;
-    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    multisampling.rasterizationSamples = msaa_sample_count;
     multisampling.minSampleShading = 1.0f; // Optional
     multisampling.pSampleMask = nullptr; // Optional
     multisampling.alphaToCoverageEnable = VK_FALSE; // Optional

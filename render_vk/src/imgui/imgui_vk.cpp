@@ -60,6 +60,7 @@ void imgui_vulkan_init(
     VkDevice device,
     VulkanQueue& queue,
     VulkanSwapchain& swapchain,
+    const VkSampleCountFlagBits msaa_sample_count,
     VkRenderPass render_pass,
     VkCommandPool command_pool
 ) {
@@ -80,6 +81,7 @@ void imgui_vulkan_init(
     init_info.MinImageCount = image_count;
     init_info.ImageCount = image_count;
     init_info.CheckVkResultFn = nullptr;
+    init_info.MSAASamples = msaa_sample_count;
 
     //  Initialize ImGui Vulkan implementation
     ImGui_ImplVulkan_Init(&init_info, render_pass);

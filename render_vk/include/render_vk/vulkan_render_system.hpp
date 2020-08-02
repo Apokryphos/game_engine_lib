@@ -3,6 +3,7 @@
 #include "render/model_batch.hpp"
 #include "render/renderer.hpp"
 #include "render_vk/asset_task_manager.hpp"
+#include "render_vk/color_image.hpp"
 #include "render_vk/descriptor_sets.hpp"
 #include "render_vk/depth.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
@@ -87,6 +88,8 @@ private:
 
     //  Swapchain
     VulkanSwapchain m_swapchain;
+    //  Multisample color image buffer (MSAA)
+    ColorImage m_color_image;
     //  Depth buffer image
     DepthImage m_depth_image;
     //  Per-frame uniform buffer

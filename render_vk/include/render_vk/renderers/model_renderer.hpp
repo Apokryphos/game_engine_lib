@@ -31,6 +31,7 @@ public:
         VkDevice device,
         const VulkanSwapchain& swapchain,
         VkRenderPass render_pass,
+        const VkSampleCountFlagBits msaa_sample_count,
         const DescriptorSetLayouts& descriptor_set_layouts
     );
     //  Destroys resources
