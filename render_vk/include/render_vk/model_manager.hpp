@@ -45,7 +45,7 @@ public:
 
     const VulkanModel& get_billboard_quad() const;
     VulkanModel* get_model(const AssetId id) const;
-    VulkanModel& get_sprite_quad();
+    const VulkanModel& get_sprite_quad() const;
     void unload(VkDevice device);
 };
 }

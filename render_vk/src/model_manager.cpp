@@ -154,7 +154,7 @@ VulkanModel* ModelManager::get_model(const AssetId id) const {
 }
 
 //  ----------------------------------------------------------------------------
-VulkanModel& ModelManager::get_sprite_quad() {
+const VulkanModel& ModelManager::get_sprite_quad() const {
     return *m_sprite_quad;
 }
 

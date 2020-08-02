@@ -125,7 +125,7 @@ void SpriteRenderer::draw_sprites(
     );
 
     //  Get sprite quad
-    VulkanModel& quad = m_model_mgr.get_sprite_quad();
+    const VulkanModel& quad = m_model_mgr.get_sprite_quad();
 
     //  Keep track of model index because of dynamic buffer alignment
     for (const SpriteBatch& batch : batches) {
