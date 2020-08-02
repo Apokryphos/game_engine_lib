@@ -33,7 +33,7 @@ public:
         return m_id;
     }
 
-    inline VkBuffer get_index_buffer() {
+    inline VkBuffer get_index_buffer() const {
         return m_index_buffer;
     }
 
@@ -41,7 +41,7 @@ public:
         return m_index_count;
     }
 
-    inline VkBuffer get_vertex_buffer() {
+    inline VkBuffer get_vertex_buffer() const {
         return m_vertex_buffer;
     }
 
