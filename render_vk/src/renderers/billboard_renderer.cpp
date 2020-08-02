@@ -125,7 +125,7 @@ void BillboardRenderer::draw_billboards(
     );
 
     //  Get sprite quad
-    VulkanModel& quad = m_model_mgr.get_billboard_quad();
+    const VulkanModel& quad = m_model_mgr.get_billboard_quad();
 
     //  Keep track of model index because of dynamic buffer alignment
     for (const SpriteBatch& batch : batches) {
