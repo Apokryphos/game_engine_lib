@@ -8,13 +8,31 @@
 
 namespace render_vk
 {
+struct VulkanSwapchain;
+
 class VulkanQueue
 {
+    //  Requires VkQueue but doesn' seem to actually use it for anything
+    friend void imgui_vulkan_init(
+        VkInstance instance,
+        VkPhysicalDevice physical_device,
+        VkDevice device,
+        VulkanQueue& queue,
+        VulkanSwapchain& swapchain,
+        VkRenderPass render_pass,
+        VkCommandPool command_pool
+    );
+
     VkDevice m_device {VK_NULL_HANDLE};
     VkPhysicalDevice m_physical_device {VK_NULL_HANDLE};
 
     std::mutex m_queue_mutex;
     VkQueue m_queue {VK_NULL_HANDLE};
+
+    //  Only used for ImGui setup.
+    VkQueue get_queue() const {
+        return m_queue;
+    }
 
 public:
     VulkanQueue(
@@ -93,11 +111,6 @@ public:
         VkCommandPool command_pool,
         VkCommandBuffer command_buffer
     );
-
-    //  Only used for ImGui setup.
-    VkQueue get_queue() {
-        return m_queue;
-    }
 
     VkResult present(const VkPresentInfoKHR& present_info);
 
