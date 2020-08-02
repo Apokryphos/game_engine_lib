@@ -136,12 +136,12 @@ void ModelManager::load_model(
 }
 
 //  ----------------------------------------------------------------------------
-VulkanModel& ModelManager::get_billboard_quad() {
+const VulkanModel& ModelManager::get_billboard_quad() const {
     return *m_billboard_quad;
 }
 
 //  ----------------------------------------------------------------------------
-VulkanModel* ModelManager::get_model(const AssetId id) {
+VulkanModel* ModelManager::get_model(const AssetId id) const {
     std::lock_guard<std::mutex> lock(m_models_mutex);
 
     auto find = m_models.find(id);

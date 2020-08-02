@@ -15,7 +15,7 @@ class ModelManager
 {
     using AssetId = common::AssetId;
 
-    std::mutex m_models_mutex;
+    mutable std::mutex m_models_mutex;
     std::map<common::AssetId, std::unique_ptr<VulkanModel>> m_models;
     std::unique_ptr<VulkanModel> m_billboard_quad;
     std::unique_ptr<VulkanModel> m_sprite_quad;
@@ -43,8 +43,8 @@ public:
         VkCommandPool command_pool
     );
 
-    VulkanModel& get_billboard_quad();
-    VulkanModel* get_model(const AssetId id);
+    const VulkanModel& get_billboard_quad() const;
+    VulkanModel* get_model(const AssetId id) const;
     VulkanModel& get_sprite_quad();
     void unload(VkDevice device);
 };
