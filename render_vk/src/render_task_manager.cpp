@@ -23,14 +23,29 @@ using namespace render;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-template <typename T>
 inline void filter_pending_textures(
-    const std::vector<T>& batches,
+    const std::vector<SpriteBatch>& batches,
     const TextureManager& texture_mgr,
-    std::vector<T>& job_batches
+    std::vector<SpriteBatch>& job_batches
 ) {
-    for (const T& batch : batches) {
+    for (const SpriteBatch& batch : batches) {
         if (texture_mgr.texture_exists(batch.texture_id)) {
+            job_batches.push_back(batch);
+        }
+    }
+}
+
+//  ----------------------------------------------------------------------------
+inline void filter_pending_textures(
+    const std::vector<ModelBatch>& batches,
+    const ModelManager& model_mgr,
+    const TextureManager& texture_mgr,
+    std::vector<ModelBatch>& job_batches
+) {
+    for (const ModelBatch& batch : batches) {
+        if (model_mgr.model_exists(batch.model_id) &&
+            texture_mgr.texture_exists(batch.texture_id)
+        ) {
             job_batches.push_back(batch);
         }
     }
@@ -410,7 +425,7 @@ void RenderTaskManager::draw_models(
     job.renderer = &renderer;
     job.batches.reserve(batches.size());
 
-    filter_pending_textures(batches, m_texture_mgr, job.batches);
+    filter_pending_textures(batches, m_model_mgr, m_texture_mgr, job.batches);
 
     if (job.batches.empty()) {
         log_debug("Discarded draw models call with zero batches.");
