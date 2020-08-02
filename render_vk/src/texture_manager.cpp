@@ -31,8 +31,12 @@ void TextureManager::destroy_textures() {
     for (Texture& texture : m_textures) {
         destroy_texture(m_device, texture);
     }
-
     m_textures.clear();
+
+    for (Texture& texture : m_added) {
+        destroy_texture(m_device, texture);
+    }
+    m_added.clear();
 }
 
 //  ----------------------------------------------------------------------------
