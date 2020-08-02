@@ -138,7 +138,10 @@ void VulkanRenderSystem::begin_frame() {
 
     // log_debug("begin_frame: %d", m_current_frame);
 
-    //  Update textures
+    //  Add recently loaded models to the active set
+    m_model_mgr->update_models();
+
+    //  Add recently loaded textures to the active set
     m_texture_mgr->update_textures();
 
     //  Update descriptor sets
@@ -618,26 +621,11 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::load_model(const AssetId id, const std::string& path) {
-    Mesh mesh;
-    load_mesh(mesh, path);
-
-    auto model = std::make_unique<VulkanModel>(id);
-    model->load(
-        m_physical_device,
-        m_device,
-        *m_graphics_queue,
-        m_resource_command_pool,
-        mesh
-    );
-
-    m_model_mgr->add_model(std::move(model));
+    m_asset_task_mgr->load_model(id, path);
 }
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::load_texture(const AssetId id, const std::string& path) {
-    // m_texture_mgr->load_texture(id, path, *m_graphics_queue, m_resource_command_pool);
-
-    //  TODO: Fix locks
     m_asset_task_mgr->load_texture(id, path);
 }
 

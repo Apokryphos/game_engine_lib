@@ -21,8 +21,8 @@ ModelManager::~ModelManager() {
 //  ----------------------------------------------------------------------------
 void ModelManager::add_model(std::unique_ptr<VulkanModel> model) {
     std::lock_guard<std::mutex> lock(m_models_mutex);
-
-    m_models[model->get_id()] = std::move(model);
+    assert(model != nullptr);
+    m_added.push_back(std::move(model));
 }
 
 //  ----------------------------------------------------------------------------
@@ -132,7 +132,7 @@ void ModelManager::load_model(
         mesh
     );
 
-    m_models[id] = std::move(model);
+    add_model(std::move(model));
 }
 
 //  ----------------------------------------------------------------------------
@@ -160,7 +160,18 @@ const VulkanModel& ModelManager::get_sprite_quad() const {
 
 //  ----------------------------------------------------------------------------
 bool ModelManager::model_exists(const AssetId id) const {
+    std::lock_guard<std::mutex> lock(m_models_mutex);
     return m_models.find(id) != m_models.end();
+}
+
+//  ----------------------------------------------------------------------------
+void ModelManager::update_models() {
+    std::lock_guard<std::mutex> lock(m_models_mutex);
+
+    for (auto& model : m_added) {
+        m_models[model->get_id()] = std::move(model);
+    }
+    m_added.clear();
 }
 
 //  ----------------------------------------------------------------------------
@@ -175,5 +186,10 @@ void ModelManager::unload(VkDevice device) {
         pair.second->unload();
     }
     m_models.clear();
+
+    for (auto& model : m_added) {
+        model->unload();
+    }
+    m_added.clear();
 }
 }

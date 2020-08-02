@@ -67,6 +67,15 @@ void AssetTaskManager::cancel_threads() {
 }
 
 //  ----------------------------------------------------------------------------
+void AssetTaskManager::load_model(uint32_t id, const std::string& path) {
+    Job job{};
+    job.task_id = TaskId::LoadModel;
+    job.asset_id = id;
+    job.path = path;
+    add_job(job);
+}
+
+//  ----------------------------------------------------------------------------
 void AssetTaskManager::load_texture(uint32_t id, const std::string& path) {
     Job job{};
     job.task_id = TaskId::LoadTexture;
@@ -130,7 +139,14 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
         switch (job.task_id) {
             case TaskId::LoadModel: {
                 stopwatch.start(thread_name+"_load_model");
-                throw std::runtime_error("Not implemented.");
+                m_model_mgr.load_model(
+                    job.asset_id,
+                    job.path,
+                    m_physical_device,
+                    m_device,
+                    m_queue,
+                    state.command_pool
+                );
                 stopwatch.stop(thread_name+"_load_model");
                 break;
             }

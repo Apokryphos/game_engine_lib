@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <vector>
 
 namespace render_vk
 {
@@ -17,6 +18,7 @@ class ModelManager
 
     mutable std::mutex m_models_mutex;
     std::map<common::AssetId, std::unique_ptr<VulkanModel>> m_models;
+    std::vector<std::unique_ptr<VulkanModel>> m_added;
     std::unique_ptr<VulkanModel> m_billboard_quad;
     std::unique_ptr<VulkanModel> m_sprite_quad;
 
@@ -45,5 +47,6 @@ public:
     );
     bool model_exists(const AssetId id) const;
     void unload(VkDevice device);
+    void update_models();
 };
 }
