@@ -1,8 +1,9 @@
+#include "assets/asset_manager.hpp"
 #include "common/log.hpp"
 #include "render/texture_create_args.hpp"
 #include "render_vk/spine.hpp"
 #include "render_vk/texture.hpp"
-#include "render_vk/vulkan_asset_task_manager.hpp"
+#include "render_vk/texture_id.hpp"
 #include <spine/spine.h>
 #include <future>
 
@@ -35,21 +36,7 @@ public:
 };
 
 //  ----------------------------------------------------------------------------
-void load_spine(
-    const TextureId texture_id,
-    const std::string& path,
-    VulkanAssetTaskManager& asset_task_mgr
-) {
-    //  Load texture
-    TextureLoadArgs load_args {};
-    load_args.path = path;
-    load_args.promise = TextureAssetPromise();
-    TextureCreateArgs create_args {};
-    asset_task_mgr.load_texture(texture_id, load_args, create_args);
-
-    std::future future = load_args.promise.value().get_future();
-    TextureAsset texture_asset = future.get();
-
+static void load_spine(const std::string& path, TextureAsset& texture_asset) {
     //  Create a new texture loader
     auto texture_loader = std::make_unique<SpineTextureLoader>(texture_asset);
 
@@ -79,5 +66,25 @@ void load_spine(
 
     //  Create skeleton
     auto skeleton = std::make_unique<Skeleton>(skeleton_data);
+}
+
+//  ----------------------------------------------------------------------------
+void load_spine(
+    const TextureId texture_id,
+    const std::string& path,
+    AssetManager& asset_mgr
+) {
+    //  Load texture through asset manager
+    TextureLoadArgs load_args {};
+    load_args.path = path;
+    load_args.promise = TextureAssetPromise();
+    TextureCreateArgs create_args {};
+    asset_mgr.load_texture(load_args, create_args);
+
+    //  Wait for texture to finish loading on worker threads
+    std::future future = load_args.promise.value().get_future();
+    TextureAsset texture_asset = future.get();
+
+    load_spine(path, texture_asset);
 }
 }

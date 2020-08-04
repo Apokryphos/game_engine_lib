@@ -1,5 +1,6 @@
 #pragma once
 
+#include "render_vk/texture_id.hpp"
 #include "render_vk/vulkan.hpp"
 #include <string>
 
@@ -11,8 +12,6 @@ struct TextureCreateArgs;
 namespace render_vk
 {
 class VulkanQueue;
-
-typedef uint32_t TextureId;
 
 static const uint32_t MAX_TEXTURES = 4096;
 
