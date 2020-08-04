@@ -8,7 +8,7 @@
 
 namespace render
 {
-struct TextureLoadArgs;
+struct TextureCreateArgs;
 }
 
 namespace render_vk
@@ -37,7 +37,7 @@ public:
     TextureManager& operator=(const TextureManager&) = delete;
     void add_texture(const Texture& texture);
     void destroy_textures();
-    void get_textures(std::vector<Texture>& textures);
+    void get_textures(std::vector<Texture>& textures) const;
 
     //  Returns timestamp used to determine if textures were added or removed
     inline uint32_t get_timestamp() const {
@@ -46,12 +46,12 @@ public:
         return m_timestamp;
     }
 
-    void load_texture(
+    Texture load_texture(
         const TextureId texture_id,
         const std::string& path,
         VulkanQueue& queue,
         VkCommandPool command_pool,
-        const render::TextureLoadArgs& args
+        const render::TextureCreateArgs& args
     );
     bool texture_exists(const TextureId texture_id) const;
     void update_textures();

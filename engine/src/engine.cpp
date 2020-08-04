@@ -1,5 +1,6 @@
+#include "assets/asset_manager.hpp"
+#include "assets/asset_task_manager.hpp"
 #include "common/log.hpp"
-#include "engine/asset_manager.hpp"
 #include "engine/engine.hpp"
 #include "engine/imgui/imgui_base.hpp"
 #include "engine/screens/screen_manager.hpp"
@@ -12,6 +13,7 @@
 #include "render_vk/vulkan_render_system.hpp"
 #include <cassert>
 
+using namespace assets;
 using namespace common;
 using namespace input;
 using namespace platform;
@@ -133,6 +135,8 @@ bool Engine::initialize(
     //  Render system will setup ImGui rendering specifics
     imgui_init(glfw_window, render_api);
 
+    std::shared_ptr<AssetTaskManager> asset_task_mgr;
+
     //  Create render system for API
     if (render_api == RenderApi::OpenGl) {
         throw std::runtime_error("Not implemented.");
@@ -154,7 +158,14 @@ bool Engine::initialize(
     glfwSetWindowUserPointer(glfw_window, this);
     glfwSetFramebufferSizeCallback(glfw_window, framebuffer_size_callback);
 
-    m_asset_mgr = std::make_unique<AssetManager>();
+    //  Create asset manager
+    if (render_api == RenderApi::Vulkan) {
+        auto vk_render_sys = static_cast<VulkanRenderSystem*>(m_render_sys.get());
+        auto asset_task_mgr = vk_render_sys->get_asset_task_manager();
+        m_asset_mgr = std::make_unique<AssetManager>(asset_task_mgr);
+    } else {
+        throw std::runtime_error("Not implemented.");
+    }
 
     return true;
 }

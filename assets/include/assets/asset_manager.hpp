@@ -1,22 +1,21 @@
 #pragma once
 
-#include "common/asset.hpp"
-#include "render/texture_load_args.hpp"
+#include "assets/asset_id.hpp"
+#include "assets/texture_load_args.hpp"
+#include "render/texture_create_args.hpp"
+#include <future>
 #include <memory>
+#include <optional>
+#include <string>
 #include <vector>
 
-namespace render
+namespace assets
 {
-class Renderer;
-};
+class AssetTaskManager;
 
-namespace engine
-{
 class AssetManager
 {
-    using AssetId = common::AssetId;
-    using Renderer = render::Renderer;
-
+public:
     struct Entry
     {
         AssetId id;
@@ -29,19 +28,24 @@ class AssetManager
     std::vector<Entry> m_models;
     std::vector<Entry> m_textures;
 
+    std::shared_ptr<AssetTaskManager> m_asset_task_mgr;
+
     AssetId get_unique_model_id();
     AssetId get_unique_texture_id();
 
 public:
-    AssetManager();
+    AssetManager(std::shared_ptr<AssetTaskManager> asset_task_mgr);
     ~AssetManager();
     AssetManager(const AssetManager&) = delete;
     AssetManager& operator=(const AssetManager&) = delete;
-    AssetId load_model(Renderer& renderer, const std::string& path);
+    AssetId load_model(const std::string& path);
     AssetId load_texture(
-        Renderer& renderer,
+        TextureLoadArgs& load_args,
+        const render::TextureCreateArgs args = {}
+    );
+    AssetId load_texture(
         const std::string& path,
-        const render::TextureLoadArgs args = {}
+        const render::TextureCreateArgs args = {}
     );
     void unload_model(const AssetId id);
     void unload_models();

@@ -1,3 +1,4 @@
+#include "assets/asset_manager.hpp"
 #include "common/log.hpp"
 #include "demo/input/input_action_ids.hpp"
 #include "demo/prefabs/entity_prefabs.hpp"
@@ -5,7 +6,6 @@
 #include "demo/screens/init_screen.hpp"
 #include "demo/systems/demo_system.hpp"
 #include "ecs/ecs_root.hpp"
-#include "engine/asset_manager.hpp"
 #include "engine/base_systems/config_system.hpp"
 #include "engine/base_systems/editor_system.hpp"
 #include "engine/base_systems/name_system.hpp"
@@ -31,6 +31,7 @@
 #include "systems/system_util.hpp"
 #include <set>
 
+using namespace assets;
 using namespace common;
 using namespace demo;
 using namespace ecs;
@@ -424,21 +425,21 @@ void InitScreen::on_load(Game& game) {
     //  Load assets
     AssetManager& asset_mgr = engine.get_asset_manager();
     Renderer& render_sys = engine.get_render_system();
-    asset_mgr.load_model(render_sys, "assets/models/model2.glb");
-    asset_mgr.load_model(render_sys, "assets/models/model.obj");
-    asset_mgr.load_texture(render_sys, "assets/textures/missing.png");
-    asset_mgr.load_texture(render_sys, "assets/textures/model.png");
-    asset_mgr.load_texture(render_sys, "assets/textures/model2.png");
-    asset_mgr.load_texture(render_sys, "assets/textures/model3.png");
+    asset_mgr.load_model("assets/models/model2.glb");
+    asset_mgr.load_model("assets/models/model.obj");
+    asset_mgr.load_texture("assets/textures/missing.png");
+    asset_mgr.load_texture("assets/textures/model.png");
+    asset_mgr.load_texture("assets/textures/model2.png");
+    asset_mgr.load_texture("assets/textures/model3.png");
 
     //  Pixel sprites
-    TextureLoadArgs tex_args{};
+    TextureCreateArgs tex_args{};
     tex_args.mag_filter = TextureFilter::Nearest;
     tex_args.min_filter = TextureFilter::Nearest;
     tex_args.mipmaps = false;
 
-    asset_mgr.load_texture(render_sys, "assets/textures/sprite.png", tex_args);
-    asset_mgr.load_texture(render_sys, "assets/textures/billboard.png", tex_args);
+    asset_mgr.load_texture("assets/textures/sprite.png", tex_args);
+    asset_mgr.load_texture("assets/textures/billboard.png", tex_args);
 
     //  Next screen
     load_demo_screen(game);

@@ -1,7 +1,8 @@
 #pragma once
 
+#include "assets/asset_task_manager.hpp"
 #include "common/job_queue.hpp"
-#include "render/texture_load_args.hpp"
+#include "render/texture_create_args.hpp"
 #include "render_vk/vulkan.hpp"
 #include <future>
 #include <memory>
@@ -18,13 +19,10 @@ class Texture;
 class TextureManager;
 class VulkanQueue;
 
-class AssetTaskManager
+class VulkanAssetTaskManager : public assets::AssetTaskManager
 {
 public:
     struct Job;
-
-    template <typename T>
-    using JobPromise = std::optional<std::promise<T>>;
 
 private:
     enum class TaskId
@@ -64,26 +62,26 @@ private:
     void thread_main(uint8_t thread_id);
 
 public:
-    AssetTaskManager(
+    VulkanAssetTaskManager(
         VkPhysicalDevice physical_device,
         VkDevice device,
         VulkanQueue& queue,
         ModelManager& model_mgr,
         TextureManager& texture_mgr
     );
-    ~AssetTaskManager();
-    AssetTaskManager(const AssetTaskManager&) = delete;
-    AssetTaskManager& operator=(const AssetTaskManager&) = delete;
+    ~VulkanAssetTaskManager();
+    VulkanAssetTaskManager(const VulkanAssetTaskManager&) = delete;
+    VulkanAssetTaskManager& operator=(const VulkanAssetTaskManager&) = delete;
     void cancel_threads();
     //  Enqueues a load model job for worker threads to complete
-    void load_model(uint32_t id, const std::string& path);
+    virtual void load_model(uint32_t id, const std::string& path) override;
     //  Enqueues a load texture job for worker threads to complete
-    void load_texture(
-        uint32_t id,
-        const std::string& path,
-        const render::TextureLoadArgs& args,
-        JobPromise<bool> promise = {}
-    );
+    virtual void load_texture(
+        assets::AssetId id,
+        assets::TextureLoadArgs& load_args,
+        const render::TextureCreateArgs& create_args
+    ) override;
+    void shutdown();
     void start_threads();
 };
 }

@@ -24,6 +24,9 @@ project(lodepng)
 add_library(lodepng lodepng/lodepng.cpp)
 target_include_directories(lodepng PUBLIC lodepng)
 
+# spine-cpp
+add_subdirectory(spine-runtimes/spine-cpp)
+
 # tinyglft
 project(tinygltf)
 add_library(tinygltf INTERFACE)

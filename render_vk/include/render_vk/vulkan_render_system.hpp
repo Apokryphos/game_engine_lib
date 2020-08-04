@@ -2,7 +2,6 @@
 
 #include "render/model_batch.hpp"
 #include "render/renderer.hpp"
-#include "render_vk/asset_task_manager.hpp"
 #include "render_vk/color_image.hpp"
 #include "render_vk/descriptor_sets.hpp"
 #include "render_vk/depth.hpp"
@@ -10,6 +9,7 @@
 #include "render_vk/frame_objects.hpp"
 #include "render_vk/uniform_buffer.hpp"
 #include "render_vk/vulkan.hpp"
+#include "render_vk/vulkan_asset_task_manager.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
 #include <memory>
 #include <vector>
@@ -103,7 +103,7 @@ private:
     std::unique_ptr<ModelManager> m_model_mgr;
     std::unique_ptr<TextureManager> m_texture_mgr;
 
-    std::unique_ptr<AssetTaskManager> m_asset_task_mgr;
+    std::shared_ptr<VulkanAssetTaskManager> m_asset_task_mgr;
     //  Manages rendering task worker threads
     std::unique_ptr<RenderTaskManager> m_render_task_mgr;
     std::unique_ptr<DescriptorSetManager> m_descriptor_set_mgr;
@@ -133,6 +133,7 @@ public:
     ~VulkanRenderSystem();
     //  Starts a new frame.
     virtual void begin_frame() override;
+    std::shared_ptr<VulkanAssetTaskManager> get_asset_task_manager();
     virtual void draw_billboards(
         std::vector<render::SpriteBatch>& batches
     ) override;
@@ -153,15 +154,6 @@ public:
 
     //  Initializes objects.
     virtual bool initialize(GLFWwindow* glfw_window) override;
-    virtual void load_model(
-        common::AssetId id,
-        const std::string& path
-    ) override;
-    virtual void load_texture(
-        common::AssetId id,
-        const std::string& path,
-        const render::TextureLoadArgs& args
-    ) override;
     //  Framebuffer was resized
     virtual void resize() override;
     virtual void update_frame_uniforms(

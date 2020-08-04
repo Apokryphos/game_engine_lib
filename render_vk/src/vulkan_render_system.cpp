@@ -204,6 +204,11 @@ bool VulkanRenderSystem::check_render_tasks_complete() {
 }
 
 //  ----------------------------------------------------------------------------
+std::shared_ptr<VulkanAssetTaskManager> VulkanRenderSystem::get_asset_task_manager() {
+    return m_asset_task_mgr;
+}
+
+//  ----------------------------------------------------------------------------
 void VulkanRenderSystem::create_frame_resources() {
     //  Create frame resources
     m_frames.resize(m_frame_count);
@@ -621,7 +626,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         m_resource_command_pool
     );
 
-    m_asset_task_mgr = std::make_unique<AssetTaskManager>(
+    m_asset_task_mgr = std::make_shared<VulkanAssetTaskManager>(
         m_physical_device,
         m_device,
         *m_graphics_queue,
@@ -643,20 +648,6 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     );
 
     return true;
-}
-
-//  ----------------------------------------------------------------------------
-void VulkanRenderSystem::load_model(const AssetId id, const std::string& path) {
-    m_asset_task_mgr->load_model(id, path);
-}
-
-//  ----------------------------------------------------------------------------
-void VulkanRenderSystem::load_texture(
-    const AssetId id,
-    const std::string& path,
-    const TextureLoadArgs& args
-) {
-    m_asset_task_mgr->load_texture(id, path, args);
 }
 
 //  ----------------------------------------------------------------------------

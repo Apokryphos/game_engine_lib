@@ -1,21 +1,22 @@
-cmake_minimum_required (VERSION 3.17)
+cmake_minimum_required(VERSION 3.17)
 
-project(assets NONE)
+project(assets)
 
-set(OUTPUT_DIR ${CMAKE_BINARY_DIR}/demo/assets)
+set(SOURCE_FILES
+    src/asset_manager.cpp
+    src/asset_task_manager.cpp
+)
 
-# Config .ini files
-configure_file(config/config.ini ${OUTPUT_DIR}/config/config.ini COPYONLY)
+add_library(assets ${SOURCE_FILES})
 
-# Models
-configure_file(models/model.obj ${OUTPUT_DIR}/models/model.obj COPYONLY)
-configure_file(models/model2.glb ${OUTPUT_DIR}/models/model2.glb COPYONLY)
-configure_file(models/model2.mtl ${OUTPUT_DIR}/models/model2.mtl COPYONLY)
+set_property(TARGET assets PROPERTY CXX_STANDARD 17)
 
-# Textures
-configure_file(textures/billboard.png ${OUTPUT_DIR}/textures/billboard.png COPYONLY)
-configure_file(textures/missing.png ${OUTPUT_DIR}/textures/missing.png COPYONLY)
-configure_file(textures/model.png ${OUTPUT_DIR}/textures/model.png COPYONLY)
-configure_file(textures/model2.png ${OUTPUT_DIR}/textures/model2.png COPYONLY)
-configure_file(textures/model3.png ${OUTPUT_DIR}/textures/model3.png COPYONLY)
-configure_file(textures/sprite.png ${OUTPUT_DIR}/textures/sprite.png COPYONLY)
+target_compile_definitions(assets PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
+
+target_include_directories(assets PUBLIC include)
+
+target_link_libraries(assets
+    common
+    render
+)
+

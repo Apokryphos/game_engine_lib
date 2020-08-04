@@ -5,7 +5,7 @@
 
 namespace render
 {
-struct TextureLoadArgs;
+struct TextureCreateArgs;
 }
 
 namespace render_vk
@@ -36,7 +36,7 @@ void create_texture(
     VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const std::string& filename,
-    const render::TextureLoadArgs& args,
+    const render::TextureCreateArgs& args,
     Texture& texture
 );
 

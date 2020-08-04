@@ -14,13 +14,13 @@ public:
     virtual render::ModelRenderer& get_model_renderer() override;
     virtual bool initialize(GLFWwindow* glfw_window) override;
     virtual void load_model(
-        common::AssetId id,
+        assets::AssetId id,
         const std::string& path
     ) override;
     virtual void load_texture(
-        common::AssetId id,
+        assets::AssetId id,
         const std::string& path,
-        const render::TextureLoadArgs& args
+        const render::TextureCreateArgs& args
     ) override;
     virtual void resize(GLFWwindow* glfw_window) override;
     virtual void shutdown() override;

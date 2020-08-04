@@ -1,6 +1,5 @@
 #pragma once
 
-#include "common/asset.hpp"
 #include "render/model_batch.hpp"
 #include "render/render_api.hpp"
 #include "render/sprite_batch.hpp"
@@ -17,7 +16,7 @@ namespace render
 {
 class Model;
 class ModelRenderer;
-struct TextureLoadArgs;
+struct TextureCreateArgs;
 
 class Renderer
 {
@@ -47,15 +46,6 @@ public:
     virtual float get_aspect_ratio() const = 0;
     virtual glm::vec2 get_size() const = 0;
     virtual bool initialize(GLFWwindow* glfw_window) = 0;
-    virtual void load_model(
-        common::AssetId id,
-        const std::string& path
-    ) = 0;
-    virtual void load_texture(
-        common::AssetId id,
-        const std::string& path,
-        const TextureLoadArgs& args
-    ) = 0;
     virtual void resize() = 0;
     virtual void shutdown() = 0;
     virtual void update_frame_uniforms(

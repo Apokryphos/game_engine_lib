@@ -4,7 +4,7 @@
 
 namespace render
 {
-struct TextureLoadArgs
+struct TextureCreateArgs
 {
     // Generate mipmaps
     bool mipmaps {true};

@@ -3,10 +3,15 @@
 #include <memory>
 #include <string>
 
+namespace assets
+{
+class AssetManager;
+}
+
 namespace input
 {
 class InputManager;
-};
+}
 
 namespace platform
 {
@@ -21,12 +26,12 @@ class Renderer;
 
 namespace engine
 {
-class AssetManager;
 class ScreenManager;
 class UiStateManager;
 
 class Engine
 {
+    using AssetManager = assets::AssetManager;
     using InputManager = input::InputManager;
     using RenderSystem = render::Renderer;
     using Window = platform::Window;

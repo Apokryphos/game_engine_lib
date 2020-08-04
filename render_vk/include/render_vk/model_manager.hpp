@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/asset.hpp"
+#include "assets/asset_id.hpp"
 #include "render_vk/vulkan.hpp"
 #include <map>
 #include <memory>
@@ -14,10 +14,10 @@ class VulkanQueue;
 
 class ModelManager
 {
-    using AssetId = common::AssetId;
+    using AssetId = assets::AssetId;
 
     mutable std::mutex m_models_mutex;
-    std::map<common::AssetId, std::unique_ptr<VulkanModel>> m_models;
+    std::map<assets::AssetId, std::unique_ptr<VulkanModel>> m_models;
     std::vector<std::unique_ptr<VulkanModel>> m_added;
     std::unique_ptr<VulkanModel> m_billboard_quad;
     std::unique_ptr<VulkanModel> m_sprite_quad;

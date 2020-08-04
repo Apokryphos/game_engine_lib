@@ -1,4 +1,4 @@
-#include "common/asset.hpp"
+#include "assets/asset_id.hpp"
 #include "render_vk/mesh.hpp"
 #include "render_vk/model_manager.hpp"
 #include "render_vk/vulkan_model.hpp"

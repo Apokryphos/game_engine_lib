@@ -1,5 +1,5 @@
 #include "common/log.hpp"
-#include "render/texture_load_args.hpp"
+#include "render/texture_create_args.hpp"
 #include "render_vk/texture_manager.hpp"
 #include "render_vk/vulkan_queue.hpp"
 #include <algorithm>
@@ -39,19 +39,18 @@ void TextureManager::destroy_textures() {
 }
 
 //  ----------------------------------------------------------------------------
-void TextureManager::get_textures(std::vector<Texture>& textures) {
+void TextureManager::get_textures(std::vector<Texture>& textures) const {
     std::lock_guard<std::mutex> lock(m_mutex);
-
     textures = m_textures;
 }
 
 //  ----------------------------------------------------------------------------
-void TextureManager::load_texture(
+Texture TextureManager::load_texture(
     const TextureId texture_id,
     const std::string& path,
     VulkanQueue& queue,
     VkCommandPool command_pool,
-    const TextureLoadArgs& args
+    const TextureCreateArgs& args
 ) {
     Texture texture{};
     create_texture(
@@ -69,6 +68,8 @@ void TextureManager::load_texture(
     add_texture(texture);
 
     log_debug("Loaded texture '%s' (%d).", path.c_str(), texture_id);
+
+    return texture;
 }
 
 //  ----------------------------------------------------------------------------

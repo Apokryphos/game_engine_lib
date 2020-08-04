@@ -4,6 +4,7 @@ project(game_engine_build)
 
 add_subdirectory(extlibs)
 add_subdirectory(common)
+add_subdirectory(assets)
 add_subdirectory(filesystem)
 add_subdirectory(ecs)
 add_subdirectory(platform)

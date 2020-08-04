@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/asset.hpp"
+#include "assets/asset_id.hpp"
 
 namespace render_vk
 {
@@ -9,7 +9,7 @@ class VulkanQueue;
 
 class VulkanModel
 {
-    using AssetId = common::AssetId;
+    using AssetId = assets::AssetId;
 
     AssetId m_id;
     uint32_t m_index_count;
@@ -20,7 +20,7 @@ class VulkanModel
     VkDeviceMemory m_index_buffer_memory;
 
 public:
-    VulkanModel(const common::AssetId id)
+    VulkanModel(const assets::AssetId id)
     : m_id(id),
       m_device(nullptr) {
     }

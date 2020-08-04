@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.17)
 project(render_vk)
 
 set(SOURCE_FILES
-    src/asset_task_manager.cpp
     src/buffer.cpp
     src/color_image.cpp
     src/command_buffer.cpp
@@ -34,9 +33,11 @@ set(SOURCE_FILES
     src/renderers/model_renderer.cpp
     src/renderers/sprite_renderer.cpp
     src/shader.cpp
+    src/spine.cpp
     src/texture.cpp
     src/texture_manager.cpp
     src/vertex_buffer.cpp
+    src/vulkan_asset_task_manager.cpp
     src/vulkan_model.cpp
     src/vulkan_queue.cpp
     src/vulkan_render_system.cpp
@@ -65,11 +66,13 @@ target_compile_definitions(render_vk PUBLIC TINYOBJLOADER_IMPLEMENTATION)
 target_include_directories(render_vk PUBLIC include)
 
 target_link_libraries(render_vk
+    assets
     common
     glfw
     imgui
     platform
     render
+    spine-cpp
     tinyobjloader
     tinygltf
     volk

@@ -1,15 +1,16 @@
+#include "assets/asset_manager.hpp"
+#include "assets/asset_task_manager.hpp"
 #include "common/log.hpp"
-#include "engine/asset_manager.hpp"
-#include "render/renderer.hpp"
 #include <algorithm>
 
 using namespace common;
 using namespace render;
 
-namespace engine
+namespace assets
 {
 //  ----------------------------------------------------------------------------
-AssetManager::AssetManager() {
+AssetManager::AssetManager(std::shared_ptr<AssetTaskManager> asset_task_mgr)
+: m_asset_task_mgr(std::move(asset_task_mgr)) {
 }
 
 //  ----------------------------------------------------------------------------
@@ -29,7 +30,6 @@ AssetId AssetManager::get_unique_texture_id() {
 
 //  ----------------------------------------------------------------------------
 AssetId AssetManager::load_model(
-    Renderer& renderer,
     const std::string& path
 ) {
     const auto find = std::find_if(
@@ -46,7 +46,7 @@ AssetId AssetManager::load_model(
 
     const AssetId id = get_unique_model_id();
 
-    renderer.load_model(id, path);
+    m_asset_task_mgr->load_model(id, path);
 
     Entry entry{};
     entry.id = id;
@@ -60,10 +60,11 @@ AssetId AssetManager::load_model(
 
 //  ----------------------------------------------------------------------------
 AssetId AssetManager::load_texture(
-    Renderer& renderer,
-    const std::string& path,
-    const TextureLoadArgs args
+    TextureLoadArgs& load_args,
+    const TextureCreateArgs create_args
 ) {
+    const std::string& path = load_args.path;
+
     const auto find = std::find_if(
         m_textures.begin(),
         m_textures.end(),
@@ -78,7 +79,7 @@ AssetId AssetManager::load_texture(
 
     const AssetId id = get_unique_texture_id();
 
-    renderer.load_texture(id, path, args);
+    m_asset_task_mgr->load_texture(id, load_args, create_args);
 
     Entry entry{};
     entry.id = id;
@@ -88,6 +89,16 @@ AssetId AssetManager::load_texture(
     log_debug("Loaded texture '%s' (%d).", path.c_str(), id);
 
     return id;
+}
+
+//  ----------------------------------------------------------------------------
+AssetId AssetManager::load_texture(
+    const std::string& path,
+    const render::TextureCreateArgs args
+) {
+    TextureLoadArgs load_args {};
+    load_args.path = path;
+    return load_texture(load_args, args);
 }
 
 //  ----------------------------------------------------------------------------

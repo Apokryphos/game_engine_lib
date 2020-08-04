@@ -1,5 +1,5 @@
 #include "common/log.hpp"
-#include "render/texture_load_args.hpp"
+#include "render/texture_create_args.hpp"
 #include "render_vk/buffer.hpp"
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/debug_utils.hpp"
@@ -360,7 +360,7 @@ void create_texture(
     VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const std::string& filename,
-    const TextureLoadArgs& args,
+    const TextureCreateArgs& args,
     Texture& texture
 ) {
     create_texture_image(

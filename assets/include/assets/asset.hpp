@@ -1,12 +1,11 @@
 #pragma once
 
+#include "assets/asset_id.hpp"
 #include <cstdint>
 #include <string>
 
-namespace common
+namespace assets
 {
-typedef uint32_t AssetId;
-
 //  A resource loaded from the filesystem
 class Asset
 {

@@ -54,7 +54,7 @@ void GlRenderer::load_model(
 void GlRenderer::load_texture(
     AssetId id,
     const std::string& path,
-    const TextureLoadArgs& args
+    const TextureCreateArgs& args
 ) {
     throw std::runtime_error("Not implemented.");
 }

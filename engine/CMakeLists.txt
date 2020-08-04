@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.17)
 project(engine)
 
 set(SOURCE_FILES
-    src/asset_manager.cpp
     src/base_systems/base_system_util.cpp
     src/base_systems/config_system.cpp
     src/base_systems/debug_gui_system.cpp
@@ -37,6 +36,7 @@ target_compile_definitions(engine PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 target_include_directories(engine PUBLIC include)
 
 target_link_libraries(engine
+    assets
     common
     ecs
     filesystem

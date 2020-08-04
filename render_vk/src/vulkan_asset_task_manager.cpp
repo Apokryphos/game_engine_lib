@@ -1,7 +1,6 @@
 #include "common/log.hpp"
 #include "common/stopwatch.hpp"
-#include "render/texture_load_args.hpp"
-#include "render_vk/asset_task_manager.hpp"
+#include "render/texture_create_args.hpp"
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/command_pool.hpp"
 #include "render_vk/debug_utils.hpp"
@@ -9,27 +8,29 @@
 #include "render_vk/texture.hpp"
 #include "render_vk/texture_manager.hpp"
 #include "render_vk/vulkan_queue.hpp"
+#include "render_vk/vulkan_asset_task_manager.hpp"
 
+using namespace assets;
 using namespace common;
 using namespace render;
 
 namespace render_vk
 {
-struct AssetTaskManager::Job
+struct VulkanAssetTaskManager::Job
 {
     TaskId task_id {TaskId::None};
     uint32_t asset_id {0};
     std::string path;
 };
 
-struct TextureJob : AssetTaskManager::Job
+struct TextureJob : VulkanAssetTaskManager::Job
 {
-    AssetTaskManager::JobPromise<bool> promise;
-    TextureLoadArgs args;
+    TextureAssetPromise promise;
+    TextureCreateArgs args;
 };
 
 //  ----------------------------------------------------------------------------
-const char* AssetTaskManager::task_id_to_string(TaskId task_id) {
+const char* VulkanAssetTaskManager::task_id_to_string(TaskId task_id) {
     switch (task_id) {
         default:
             return "?";
@@ -41,7 +42,7 @@ const char* AssetTaskManager::task_id_to_string(TaskId task_id) {
 }
 
 //  ----------------------------------------------------------------------------
-AssetTaskManager::AssetTaskManager(
+VulkanAssetTaskManager::VulkanAssetTaskManager(
     VkPhysicalDevice physical_device,
     VkDevice device,
     VulkanQueue& queue,
@@ -56,12 +57,12 @@ AssetTaskManager::AssetTaskManager(
 }
 
 //  ----------------------------------------------------------------------------
-AssetTaskManager::~AssetTaskManager() {
+VulkanAssetTaskManager::~VulkanAssetTaskManager() {
     cancel_threads();
 }
 
 //  ----------------------------------------------------------------------------
-void AssetTaskManager::add_job(std::unique_ptr<Job> job) {
+void VulkanAssetTaskManager::add_job(std::unique_ptr<Job> job) {
     //  Check that a valid task ID was assigned
     if (job->task_id == TaskId::None) {
         throw std::runtime_error("Invalid job task ID.");
@@ -72,7 +73,7 @@ void AssetTaskManager::add_job(std::unique_ptr<Job> job) {
 }
 
 //  ----------------------------------------------------------------------------
-void AssetTaskManager::cancel_threads() {
+void VulkanAssetTaskManager::cancel_threads() {
     m_jobs.cancel();
     for (std::thread& thread : m_threads) {
         thread.join();
@@ -82,7 +83,7 @@ void AssetTaskManager::cancel_threads() {
 }
 
 //  ----------------------------------------------------------------------------
-void AssetTaskManager::load_model(uint32_t id, const std::string& path) {
+void VulkanAssetTaskManager::load_model(uint32_t id, const std::string& path) {
     auto job = std::make_unique<Job>();
     job->task_id = TaskId::LoadModel;
     job->asset_id = id;
@@ -91,31 +92,35 @@ void AssetTaskManager::load_model(uint32_t id, const std::string& path) {
 }
 
 //  ----------------------------------------------------------------------------
-void AssetTaskManager::load_texture(
+void VulkanAssetTaskManager::load_texture(
     uint32_t id,
-    const std::string& path,
-    const TextureLoadArgs& args,
-    JobPromise<bool> promise
+    TextureLoadArgs& load_args,
+    const TextureCreateArgs& create_args
 ) {
     auto job = std::make_unique<TextureJob>();
     job->task_id = TaskId::LoadTexture;
     job->asset_id = id;
-    job->path = path;
-    job->args = args;
-    job->promise = std::move(promise);
+    job->path = load_args.path;
+    job->args = create_args;
+    job->promise = std::move(load_args.promise);
     add_job(std::move(job));
 }
 
 //  ----------------------------------------------------------------------------
-void AssetTaskManager::start_threads() {
+void VulkanAssetTaskManager::shutdown() {
+    cancel_threads();
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanAssetTaskManager::start_threads() {
     assert(m_thread_count > 0);
     for (auto n = 0; n < m_thread_count; ++n) {
-        m_threads.emplace_back(&AssetTaskManager::thread_main, this, n);
+        m_threads.emplace_back(&VulkanAssetTaskManager::thread_main, this, n);
     }
 }
 
 //  ----------------------------------------------------------------------------
-void AssetTaskManager::thread_main(uint8_t thread_id) {
+void VulkanAssetTaskManager::thread_main(uint8_t thread_id) {
     Stopwatch stopwatch;
 
     log_debug("Asset thread %d started (%p).", thread_id, std::this_thread::get_id());
@@ -166,7 +171,7 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
                 TextureJob* texture_job = static_cast<TextureJob*>(job.get());
 
                 stopwatch.start(thread_name+"_load_texture");
-                m_texture_mgr.load_texture(
+                Texture texture = m_texture_mgr.load_texture(
                     job->asset_id,
                     job->path,
                     m_queue,
@@ -175,7 +180,11 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
                 );
 
                 if (texture_job->promise.has_value()) {
-                    texture_job->promise.value().set_value(true);
+                    TextureAsset texture_asset {};
+                    texture_asset.id = texture.id;
+                    texture_asset.width = texture.width;
+                    texture_asset.height = texture.height;
+                    texture_job->promise.value().set_value(texture_asset);
                 }
 
                 stopwatch.stop(thread_name+"_load_texture");
