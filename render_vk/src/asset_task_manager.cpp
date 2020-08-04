@@ -24,6 +24,7 @@ struct AssetTaskManager::Job
 
 struct TextureJob : AssetTaskManager::Job
 {
+    AssetTaskManager::JobPromise<bool> promise;
     TextureLoadArgs args;
 };
 
@@ -93,13 +94,15 @@ void AssetTaskManager::load_model(uint32_t id, const std::string& path) {
 void AssetTaskManager::load_texture(
     uint32_t id,
     const std::string& path,
-    const TextureLoadArgs& args
+    const TextureLoadArgs& args,
+    JobPromise<bool> promise
 ) {
     auto job = std::make_unique<TextureJob>();
     job->task_id = TaskId::LoadTexture;
     job->asset_id = id;
     job->path = path;
     job->args = args;
+    job->promise = std::move(promise);
     add_job(std::move(job));
 }
 
@@ -170,6 +173,11 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
                     state.command_pool,
                     texture_job->args
                 );
+
+                if (texture_job->promise.has_value()) {
+                    texture_job->promise.value().set_value(true);
+                }
+
                 stopwatch.stop(thread_name+"_load_texture");
                 break;
             }

@@ -3,8 +3,10 @@
 #include "common/job_queue.hpp"
 #include "render/texture_load_args.hpp"
 #include "render_vk/vulkan.hpp"
+#include <future>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <queue>
 #include <thread>
 #include <vector>
@@ -20,6 +22,9 @@ class AssetTaskManager
 {
 public:
     struct Job;
+
+    template <typename T>
+    using JobPromise = std::optional<std::promise<T>>;
 
 private:
     enum class TaskId
@@ -76,7 +81,8 @@ public:
     void load_texture(
         uint32_t id,
         const std::string& path,
-        const render::TextureLoadArgs& args
+        const render::TextureLoadArgs& args,
+        JobPromise<bool> promise = {}
     );
     void start_threads();
 };
