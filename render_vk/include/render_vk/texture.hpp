@@ -20,8 +20,8 @@ class Texture
 {
 public:
     TextureId id;
-    // uint32_t width;
-    // uint32_t height;
+    uint32_t width;
+    uint32_t height;
     uint32_t mip_levels;
     VkImage image;
     VkDeviceMemory image_memory;

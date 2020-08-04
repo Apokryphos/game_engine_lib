@@ -182,15 +182,16 @@ static void create_texture_image(
     VkSampleCountFlagBits msaa_sample_count,
     const std::string& filename,
     bool gen_mipmaps,
-    VkImage& texture_image,
-    uint32_t& mip_levels,
-    VkDeviceMemory& texture_image_memory
+    Texture& texture
 ) {
     //  Decode PNG file
-    unsigned width;
-    unsigned height;
     std::vector<unsigned char> image;
-    const auto error = lodepng::decode(image, width, height, filename);
+    const auto error = lodepng::decode(
+        image,
+        texture.width,
+        texture.height,
+        filename
+    );
     if (error != 0) {
         log_error(
             "Error decoding PNG '%s': %s",
@@ -202,15 +203,15 @@ static void create_texture_image(
     }
 
     if (gen_mipmaps) {
-        mip_levels = static_cast<uint32_t>(
+        texture.mip_levels = static_cast<uint32_t>(
             std::floor(
-                std::log2(std::max(width, height)))
+                std::log2(std::max(texture.width, texture.height)))
             ) + 1;
     } else {
-        mip_levels = 1;
+        texture.mip_levels = 1;
     }
 
-    VkDeviceSize image_size = width * height * 4;
+    VkDeviceSize image_size = texture.width * texture.height * 4;
 
     VkBuffer staging_buffer;
     VkDeviceMemory staging_buffer_memory;
@@ -233,22 +234,22 @@ static void create_texture_image(
     create_image(
         physical_device,
         device,
-        width,
-        height,
-        mip_levels,
+        texture.width,
+        texture.height,
+        texture.mip_levels,
         msaa_sample_count,
         VK_FORMAT_R8G8B8A8_SRGB,
         VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        texture_image,
-        texture_image_memory
+        texture.image,
+        texture.image_memory
     );
 
     set_debug_name(
         device,
         VK_OBJECT_TYPE_IMAGE,
-        texture_image,
+        texture.image,
         (filename + "_image").c_str()
     );
 
@@ -257,9 +258,9 @@ static void create_texture_image(
     //  Prepare texture for staging buffer copy
     record_transition_image_layout_commands(
         command_buffer,
-        texture_image,
+        texture.image,
         VK_FORMAT_R8G8B8A8_SRGB,
-        mip_levels,
+        texture.mip_levels,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
     );
@@ -267,9 +268,9 @@ static void create_texture_image(
     copy_buffer_to_image(
         command_buffer,
         staging_buffer,
-        texture_image,
-        static_cast<uint32_t>(width),
-        static_cast<uint32_t>(height)
+        texture.image,
+        static_cast<uint32_t>(texture.width),
+        static_cast<uint32_t>(texture.height)
     );
 
     //  Prepare texture for shader access
@@ -284,13 +285,13 @@ static void create_texture_image(
     //     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     // );
 
-    if (mip_levels > 1) {
+    if (texture.mip_levels > 1) {
         generate_mipmaps(
             command_buffer,
-            texture_image,
-            width,
-            height,
-            mip_levels
+            texture.image,
+            texture.width,
+            texture.height,
+            texture.mip_levels
         );
     }
 
@@ -370,9 +371,7 @@ void create_texture(
         VK_SAMPLE_COUNT_1_BIT,
         filename,
         args.mipmaps,
-        texture.image,
-        texture.mip_levels,
-        texture.image_memory
+        texture
     );
 
     create_texture_image_view(device, texture.mip_levels, texture.image, texture.view);
