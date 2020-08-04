@@ -18,6 +18,10 @@ class VulkanQueue;
 
 class AssetTaskManager
 {
+public:
+    struct Job;
+
+private:
     enum class TaskId
     {
         None,
@@ -27,7 +31,6 @@ class AssetTaskManager
 
     static const char* task_id_to_string(TaskId task_id);
 
-    struct Job;
 
     //  Objects for worker threads
     struct ThreadState

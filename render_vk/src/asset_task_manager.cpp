@@ -20,7 +20,11 @@ struct AssetTaskManager::Job
     TaskId task_id {TaskId::None};
     uint32_t asset_id {0};
     std::string path;
-    TextureLoadArgs texture_args;
+};
+
+struct TextureJob : AssetTaskManager::Job
+{
+    TextureLoadArgs args;
 };
 
 //  ----------------------------------------------------------------------------
@@ -91,11 +95,11 @@ void AssetTaskManager::load_texture(
     const std::string& path,
     const TextureLoadArgs& args
 ) {
-    auto job = std::make_unique<Job>();
+    auto job = std::make_unique<TextureJob>();
     job->task_id = TaskId::LoadTexture;
     job->asset_id = id;
     job->path = path;
-    job->texture_args = args;
+    job->args = args;
     add_job(std::move(job));
 }
 
@@ -156,13 +160,15 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
             }
 
             case TaskId::LoadTexture: {
+                TextureJob* texture_job = static_cast<TextureJob*>(job.get());
+
                 stopwatch.start(thread_name+"_load_texture");
                 m_texture_mgr.load_texture(
                     job->asset_id,
                     job->path,
                     m_queue,
                     state.command_pool,
-                    job->texture_args
+                    texture_job->args
                 );
                 stopwatch.stop(thread_name+"_load_texture");
                 break;
