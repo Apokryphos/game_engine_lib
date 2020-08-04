@@ -1,9 +1,9 @@
 .vscode/*
-assets/*
+demo_assets/*
 build/*
 extlibs/*
 
-!assets/config/
-!assets/shaders/
-!assets/CMakeLists.txt
+!demo_assets/config/
+!demo_assets/shaders/
+!demo_assets/CMakeLists.txt
 !extlibs/CMakeLists.txt
