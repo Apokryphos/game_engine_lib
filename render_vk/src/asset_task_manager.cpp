@@ -15,6 +15,14 @@ using namespace render;
 
 namespace render_vk
 {
+struct AssetTaskManager::Job
+{
+    TaskId task_id {TaskId::None};
+    uint32_t asset_id {0};
+    std::string path;
+    TextureLoadArgs texture_args;
+};
+
 //  ----------------------------------------------------------------------------
 const char* AssetTaskManager::task_id_to_string(TaskId task_id) {
     switch (task_id) {
@@ -48,14 +56,14 @@ AssetTaskManager::~AssetTaskManager() {
 }
 
 //  ----------------------------------------------------------------------------
-void AssetTaskManager::add_job(Job& job) {
+void AssetTaskManager::add_job(std::unique_ptr<Job> job) {
     //  Check that a valid task ID was assigned
-    if (job.task_id == TaskId::None) {
+    if (job->task_id == TaskId::None) {
         throw std::runtime_error("Invalid job task ID.");
     }
 
     //  Enqueue job
-    m_jobs.push(job);
+    m_jobs.push(std::move(job));
 }
 
 //  ----------------------------------------------------------------------------
@@ -70,11 +78,11 @@ void AssetTaskManager::cancel_threads() {
 
 //  ----------------------------------------------------------------------------
 void AssetTaskManager::load_model(uint32_t id, const std::string& path) {
-    Job job{};
-    job.task_id = TaskId::LoadModel;
-    job.asset_id = id;
-    job.path = path;
-    add_job(job);
+    auto job = std::make_unique<Job>();
+    job->task_id = TaskId::LoadModel;
+    job->asset_id = id;
+    job->path = path;
+    add_job(std::move(job));
 }
 
 //  ----------------------------------------------------------------------------
@@ -83,12 +91,12 @@ void AssetTaskManager::load_texture(
     const std::string& path,
     const TextureLoadArgs& args
 ) {
-    Job job{};
-    job.task_id = TaskId::LoadTexture;
-    job.asset_id = id;
-    job.path = path;
-    job.texture_args = args;
-    add_job(job);
+    auto job = std::make_unique<Job>();
+    job->task_id = TaskId::LoadTexture;
+    job->asset_id = id;
+    job->path = path;
+    job->texture_args = args;
+    add_job(std::move(job));
 }
 
 //  ----------------------------------------------------------------------------
@@ -119,7 +127,7 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
 
     //  Main loop
     while (true) {
-        Job job{};
+        std::unique_ptr<Job> job;
         //  Sleep until job is available
         if (!m_jobs.wait_and_pop(job)) {
             break;
@@ -128,16 +136,16 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
         log_debug(
             "%s: execute %s",
             thread_name.c_str(),
-            task_id_to_string(job.task_id)
+            task_id_to_string(job->task_id)
         );
 
         //  Process job
-        switch (job.task_id) {
+        switch (job->task_id) {
             case TaskId::LoadModel: {
                 stopwatch.start(thread_name+"_load_model");
                 m_model_mgr.load_model(
-                    job.asset_id,
-                    job.path,
+                    job->asset_id,
+                    job->path,
                     m_physical_device,
                     m_device,
                     m_queue,
@@ -150,11 +158,11 @@ void AssetTaskManager::thread_main(uint8_t thread_id) {
             case TaskId::LoadTexture: {
                 stopwatch.start(thread_name+"_load_texture");
                 m_texture_mgr.load_texture(
-                    job.asset_id,
-                    job.path,
+                    job->asset_id,
+                    job->path,
                     m_queue,
                     state.command_pool,
-                    job.texture_args
+                    job->texture_args
                 );
                 stopwatch.stop(thread_name+"_load_texture");
                 break;

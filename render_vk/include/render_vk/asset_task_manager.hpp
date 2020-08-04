@@ -3,6 +3,7 @@
 #include "common/job_queue.hpp"
 #include "render/texture_load_args.hpp"
 #include "render_vk/vulkan.hpp"
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <thread>
@@ -26,13 +27,7 @@ class AssetTaskManager
 
     static const char* task_id_to_string(TaskId task_id);
 
-    struct Job
-    {
-        TaskId task_id {TaskId::None};
-        uint32_t asset_id;
-        std::string path;
-        render::TextureLoadArgs texture_args;
-    };
+    struct Job;
 
     //  Objects for worker threads
     struct ThreadState
@@ -50,14 +45,14 @@ class AssetTaskManager
     std::vector<std::thread> m_threads;
 
     //  Job queue
-    common::JobQueue<Job> m_jobs;
+    common::JobQueue<std::unique_ptr<Job>> m_jobs;
 
     VulkanQueue& m_queue;
     ModelManager& m_model_mgr;
     TextureManager& m_texture_mgr;
 
     //  Adds a new job for a worker thread to process.
-    void add_job(Job& job);
+    void add_job(std::unique_ptr<Job> job);
     void thread_main(uint8_t thread_id);
 
 public:
