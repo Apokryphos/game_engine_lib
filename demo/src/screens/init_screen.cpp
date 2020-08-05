@@ -54,9 +54,10 @@ bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
 
 namespace demo
 {
-const int BILLBOARD_COUNT = 100;
-const int MODEL_COUNT = 5000;
-const int SPRITE_COUNT = 100;
+const int BILLBOARD_COUNT = 50;
+const int MODEL_COUNT     = 50;
+const int SPINE_COUNT     = 1;
+const int SPRITE_COUNT    = 10;
 
 //  ----------------------------------------------------------------------------
 static void init_input_actions(InputManager& input_mgr) {
@@ -212,9 +213,6 @@ static void init_billboards(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
 
-    NameSystem& name_sys = get_name_system(sys_mgr);
-    PositionSystem& pos_sys = get_position_system(sys_mgr);
-
     std::uniform_int_distribution<int> x_dist(-50, 50);
     std::uniform_int_distribution<int> y_dist(-50, 50);
 
@@ -234,6 +232,10 @@ static void init_billboards(Game& game) {
     std::vector<glm::vec3> positions;
     std::copy(position_set.begin(), position_set.end(), std::back_inserter(positions));
 
+    BillboardSystem& billboard_sys = get_billboard_system(sys_mgr);
+    NameSystem& name_sys = get_name_system(sys_mgr);
+    PositionSystem& pos_sys = get_position_system(sys_mgr);
+
     const int entity_count = positions.size();
     for (int n = 0; n < entity_count; ++n) {
         Entity entity = ecs.create_entity();
@@ -246,10 +248,8 @@ static void init_billboards(Game& game) {
 
         const glm::vec3 position = positions[n];
 
-        PositionSystem& pos_sys = get_position_system(sys_mgr);
         add_position_component(entity, pos_sys, position);
 
-        BillboardSystem& billboard_sys = get_billboard_system(sys_mgr);
         add_billboard_component(
             entity,
             billboard_sys,
@@ -263,9 +263,6 @@ static void init_billboards(Game& game) {
 static void init_models(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
-
-    NameSystem& name_sys = get_name_system(sys_mgr);
-    PositionSystem& pos_sys = get_position_system(sys_mgr);
 
     std::uniform_int_distribution<int> model_id_dist(0, 2);
     std::uniform_int_distribution<int> texture_id_dist(1, 3);
@@ -287,6 +284,10 @@ static void init_models(Game& game) {
     std::vector<glm::vec3> positions;
     std::copy(position_set.begin(), position_set.end(), std::back_inserter(positions));
 
+    PositionSystem& pos_sys = get_position_system(sys_mgr);
+    ModelSystem& model_sys = get_model_system(sys_mgr);
+    NameSystem& name_sys = get_name_system(sys_mgr);
+
     const int entity_count = positions.size();
     for (int n = 0; n < entity_count; ++n) {
         Entity entity = ecs.create_entity();
@@ -299,10 +300,8 @@ static void init_models(Game& game) {
 
         const glm::vec3 position = positions[n];
 
-        PositionSystem& pos_sys = get_position_system(sys_mgr);
         add_position_component(entity, pos_sys, position);
 
-        ModelSystem& model_sys = get_model_system(sys_mgr);
         add_model_component(
             entity,
             model_sys,
@@ -313,12 +312,54 @@ static void init_models(Game& game) {
 }
 
 //  ----------------------------------------------------------------------------
-static void init_sprites(Game& game) {
+static void init_spines(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
 
+    std::uniform_int_distribution<int> x_dist(0, 0);
+    std::uniform_int_distribution<int> y_dist(0, 0);
+
+    Random& random = game.get_random();
+
+    std::set<glm::vec3> position_set;
+    while (position_set.size() < SPINE_COUNT) {
+        const glm::vec3 position = {
+            x_dist(random.get_rng()),
+            y_dist(random.get_rng()),
+            0.0f
+        };
+
+        position_set.insert(position);
+    }
+
+    std::vector<glm::vec3> positions;
+    std::copy(position_set.begin(), position_set.end(), std::back_inserter(positions));
+
     NameSystem& name_sys = get_name_system(sys_mgr);
     PositionSystem& pos_sys = get_position_system(sys_mgr);
+    SpineSystem& spine_sys = get_spine_system(sys_mgr);
+
+    const int entity_count = positions.size();
+    for (int n = 0; n < entity_count; ++n) {
+        Entity entity = ecs.create_entity();
+
+        const std::string name = "entity_" + std::to_string(entity.id);
+
+        name_sys.add_component(entity);
+        const auto name_cmpnt = name_sys.get_component(entity);
+        name_sys.set_name(name_cmpnt, name);
+
+        const glm::vec3 position = positions[n];
+        add_position_component(entity, pos_sys, position);
+
+        add_spine_component(entity, spine_sys, 0);
+    }
+}
+
+//  ----------------------------------------------------------------------------
+static void init_sprites(Game& game) {
+    EcsRoot& ecs = game.get_ecs_root();
+    SystemManager& sys_mgr = game.get_system_manager();
 
     std::uniform_real_distribution<float> size_dist(0.5f, 1.0f);
     std::uniform_int_distribution<int> x_dist(0, 3000);
@@ -340,6 +381,10 @@ static void init_sprites(Game& game) {
     std::vector<glm::vec3> positions;
     std::copy(position_set.begin(), position_set.end(), std::back_inserter(positions));
 
+    NameSystem& name_sys = get_name_system(sys_mgr);
+    PositionSystem& pos_sys = get_position_system(sys_mgr);
+    SpriteSystem& sprite_sys = get_sprite_system(sys_mgr);
+
     const int entity_count = positions.size();
     for (int n = 0; n < entity_count; ++n) {
         Entity entity = ecs.create_entity();
@@ -352,10 +397,8 @@ static void init_sprites(Game& game) {
 
         const glm::vec3 position = positions[n];
 
-        PositionSystem& pos_sys = get_position_system(sys_mgr);
         add_position_component(entity, pos_sys, position);
 
-        SpriteSystem& sprite_sys = get_sprite_system(sys_mgr);
         add_sprite_component(
             entity,
             sprite_sys,
@@ -396,6 +439,7 @@ static void init_entities(Game& game) {
 
     init_billboards(game);
     init_models(game);
+    init_spines(game);
     init_sprites(game);
 }
 
