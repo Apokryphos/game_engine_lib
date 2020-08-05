@@ -5,6 +5,7 @@
 #include "render_vk/command_pool.hpp"
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/model_manager.hpp"
+#include "render_vk/spine.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/texture_manager.hpp"
 #include "render_vk/vulkan_queue.hpp"
@@ -23,10 +24,17 @@ struct VulkanAssetTaskManager::Job
     std::string path;
 };
 
+struct SpineJob : VulkanAssetTaskManager::Job
+{
+    AssetManager* asset_mgr {nullptr};
+    SpineAssetPromise promise;
+    TextureCreateArgs args {};
+};
+
 struct TextureJob : VulkanAssetTaskManager::Job
 {
     TextureAssetPromise promise;
-    TextureCreateArgs args;
+    TextureCreateArgs args {};
 };
 
 //  ----------------------------------------------------------------------------
@@ -88,6 +96,22 @@ void VulkanAssetTaskManager::load_model(uint32_t id, const std::string& path) {
     job->task_id = TaskId::LoadModel;
     job->asset_id = id;
     job->path = path;
+    add_job(std::move(job));
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanAssetTaskManager::load_spine(
+    AssetId id,
+    SpineLoadArgs& load_args,
+    const render::TextureCreateArgs& create_args
+) {
+    auto job = std::make_unique<SpineJob>();
+    job->task_id = TaskId::LoadSpine;
+    job->asset_id = id;
+    job->asset_mgr = load_args.asset_mgr;
+    job->path = load_args.path;
+    job->args = create_args;
+    job->promise = std::move(load_args.promise);
     add_job(std::move(job));
 }
 
@@ -164,6 +188,22 @@ void VulkanAssetTaskManager::thread_main(uint8_t thread_id) {
                     state.command_pool
                 );
                 stopwatch.stop(thread_name+"_load_model");
+                break;
+            }
+
+            case TaskId::LoadSpine: {
+                SpineJob* spine_job = static_cast<SpineJob*>(job.get());
+
+                stopwatch.start(thread_name+"_load_spine");
+                render_vk::load_spine(job->asset_id, job->path, *spine_job->asset_mgr);
+
+                if (spine_job->promise.has_value()) {
+                    SpineAsset spine_asset {};
+                    spine_asset.id = job->asset_id;
+                    spine_job->promise.value().set_value(spine_asset);
+                }
+
+                stopwatch.stop(thread_name+"_load_spine");
                 break;
             }
 

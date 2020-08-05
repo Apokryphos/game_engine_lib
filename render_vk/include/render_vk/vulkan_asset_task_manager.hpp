@@ -29,6 +29,7 @@ private:
     {
         None,
         LoadModel,
+        LoadSpine,
         LoadTexture,
     };
 
@@ -75,6 +76,12 @@ public:
     void cancel_threads();
     //  Enqueues a load model job for worker threads to complete
     virtual void load_model(uint32_t id, const std::string& path) override;
+    //  Enqueues a Spine skeleton for worker threads to complete
+    virtual void load_spine(
+        assets::AssetId id,
+        assets::SpineLoadArgs& load_args,
+        const render::TextureCreateArgs& args
+    ) override;
     //  Enqueues a load texture job for worker threads to complete
     virtual void load_texture(
         assets::AssetId id,

@@ -25,7 +25,8 @@ add_library(lodepng lodepng/lodepng.cpp)
 target_include_directories(lodepng PUBLIC lodepng)
 
 # spine-cpp
-add_subdirectory(spine-runtimes/spine-cpp)
+# Linking to spine-cpp gives linker errors
+# add_subdirectory(spine-runtimes/spine-cpp)
 
 # tinyglft
 project(tinygltf)

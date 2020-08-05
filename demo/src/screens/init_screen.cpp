@@ -427,6 +427,9 @@ void InitScreen::on_load(Game& game) {
     Renderer& render_sys = engine.get_render_system();
     asset_mgr.load_model("assets/models/model2.glb");
     asset_mgr.load_model("assets/models/model.obj");
+
+    asset_mgr.load_spine("assets/spine/goblins/goblins");
+
     asset_mgr.load_texture("assets/textures/missing.png");
     asset_mgr.load_texture("assets/textures/model.png");
     asset_mgr.load_texture("assets/textures/model2.png");

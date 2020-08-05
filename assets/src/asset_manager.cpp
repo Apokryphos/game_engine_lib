@@ -24,6 +24,11 @@ AssetId AssetManager::get_unique_model_id() {
 }
 
 //  ----------------------------------------------------------------------------
+AssetId AssetManager::get_unique_spine_id() {
+    return m_unique_spine_id++;
+}
+
+//  ----------------------------------------------------------------------------
 AssetId AssetManager::get_unique_texture_id() {
     return m_unique_texture_id++;
 }
@@ -56,6 +61,51 @@ AssetId AssetManager::load_model(
     log_debug("Loaded model '%s' (%d).", path.c_str(), id);
 
     return id;
+}
+
+//  ----------------------------------------------------------------------------
+AssetId AssetManager::load_spine(
+    SpineLoadArgs& load_args,
+    const TextureCreateArgs create_args
+) {
+    const std::string& path = load_args.path;
+
+    const auto find = std::find_if(
+        m_spines.begin(),
+        m_spines.end(),
+        [&path](const Entry& entry) {
+            return entry.path == path;
+        }
+    );
+
+    if (find != m_spines.end()) {
+        return (*find).id;
+    }
+
+    load_args.asset_mgr = this;
+
+    const AssetId id = get_unique_spine_id();
+
+    m_asset_task_mgr->load_spine(id, load_args, create_args);
+
+    Entry entry{};
+    entry.id = id;
+    entry.path = path;
+    m_spines.push_back(entry);
+
+    log_debug("Loaded Spine '%s' (%d).", path.c_str(), id);
+
+    return id;
+}
+
+//  ----------------------------------------------------------------------------
+AssetId AssetManager::load_spine(
+    const std::string& path,
+    const render::TextureCreateArgs args
+) {
+    SpineLoadArgs load_args {};
+    load_args.path = path;
+    return load_spine(load_args, args);
 }
 
 //  ----------------------------------------------------------------------------
