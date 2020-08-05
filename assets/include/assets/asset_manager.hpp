@@ -4,15 +4,14 @@
 #include "assets/spine_load_args.hpp"
 #include "assets/texture_load_args.hpp"
 #include "render/texture_create_args.hpp"
-#include <future>
 #include <memory>
-#include <optional>
 #include <string>
 #include <vector>
 
 namespace assets
 {
 class AssetTaskManager;
+class SpineManager;
 
 class AssetManager
 {
@@ -32,6 +31,7 @@ public:
     std::vector<Entry> m_textures;
 
     std::shared_ptr<AssetTaskManager> m_asset_task_mgr;
+    std::shared_ptr<SpineManager> m_spine_mgr;
 
     AssetId get_unique_model_id();
     AssetId get_unique_spine_id();
@@ -40,10 +40,14 @@ public:
     std::vector<Entry>::const_iterator find_texture(const TextureLoadArgs& args) const;
 
 public:
-    AssetManager(std::shared_ptr<AssetTaskManager> asset_task_mgr);
+    AssetManager(
+        std::shared_ptr<AssetTaskManager> asset_task_mgr,
+        std::shared_ptr<SpineManager> spine_mgr
+    );
     ~AssetManager();
     AssetManager(const AssetManager&) = delete;
     AssetManager& operator=(const AssetManager&) = delete;
+    SpineManager& get_spine_manager();
     AssetId load_model(const std::string& path);
     AssetId load_spine(
         SpineLoadArgs& load_args,

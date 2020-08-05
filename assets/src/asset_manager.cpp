@@ -9,13 +9,22 @@ using namespace render;
 namespace assets
 {
 //  ----------------------------------------------------------------------------
-AssetManager::AssetManager(std::shared_ptr<AssetTaskManager> asset_task_mgr)
-: m_asset_task_mgr(std::move(asset_task_mgr)) {
+AssetManager::AssetManager(
+    std::shared_ptr<AssetTaskManager> asset_task_mgr,
+    std::shared_ptr<SpineManager> spine_mgr
+)
+: m_asset_task_mgr(std::move(asset_task_mgr)),
+  m_spine_mgr(std::move(spine_mgr)) {
 }
 
 //  ----------------------------------------------------------------------------
 AssetManager::~AssetManager() {
     shutdown();
+}
+
+//  ----------------------------------------------------------------------------
+SpineManager& AssetManager::get_spine_manager() {
+    return *m_spine_mgr;
 }
 
 //  ----------------------------------------------------------------------------

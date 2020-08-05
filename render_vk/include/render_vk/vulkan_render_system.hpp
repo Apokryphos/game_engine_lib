@@ -102,7 +102,7 @@ private:
     std::vector<Frame> m_frames;
 
     std::unique_ptr<ModelManager> m_model_mgr;
-    std::unique_ptr<VulkanSpineManager> m_spine_mgr;
+    std::shared_ptr<VulkanSpineManager> m_spine_mgr;
     std::unique_ptr<TextureManager> m_texture_mgr;
 
     std::shared_ptr<VulkanAssetTaskManager> m_asset_task_mgr;
@@ -136,6 +136,7 @@ public:
     //  Starts a new frame.
     virtual void begin_frame() override;
     std::shared_ptr<VulkanAssetTaskManager> get_asset_task_manager();
+    std::shared_ptr<VulkanSpineManager> get_spine_manager();
     virtual void draw_billboards(
         std::vector<render::SpriteBatch>& batches
     ) override;

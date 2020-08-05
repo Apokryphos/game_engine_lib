@@ -1,5 +1,5 @@
 #include "assets/asset_manager.hpp"
-#include "assets/asset_task_manager.hpp"
+#include "assets/spine_manager.hpp"
 #include "common/log.hpp"
 #include "engine/engine.hpp"
 #include "engine/imgui/imgui_base.hpp"
@@ -10,6 +10,7 @@
 #include "platform/window.hpp"
 #include "platform/window_options.hpp"
 // #include "render_gl/gl_renderer.hpp"
+#include "render_vk/vulkan_spine_manager.hpp"
 #include "render_vk/vulkan_render_system.hpp"
 #include <cassert>
 
@@ -162,7 +163,8 @@ bool Engine::initialize(
     if (render_api == RenderApi::Vulkan) {
         auto vk_render_sys = static_cast<VulkanRenderSystem*>(m_render_sys.get());
         auto asset_task_mgr = vk_render_sys->get_asset_task_manager();
-        m_asset_mgr = std::make_unique<AssetManager>(asset_task_mgr);
+        auto spine_mgr = vk_render_sys->get_spine_manager();
+        m_asset_mgr = std::make_unique<AssetManager>(asset_task_mgr, spine_mgr);
     } else {
         throw std::runtime_error("Not implemented.");
     }

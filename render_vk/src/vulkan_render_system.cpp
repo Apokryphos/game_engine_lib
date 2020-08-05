@@ -204,11 +204,6 @@ bool VulkanRenderSystem::check_render_tasks_complete() {
 }
 
 //  ----------------------------------------------------------------------------
-std::shared_ptr<VulkanAssetTaskManager> VulkanRenderSystem::get_asset_task_manager() {
-    return m_asset_task_mgr;
-}
-
-//  ----------------------------------------------------------------------------
 void VulkanRenderSystem::create_frame_resources() {
     //  Create frame resources
     m_frames.resize(m_frame_count);
@@ -494,6 +489,16 @@ float VulkanRenderSystem::get_aspect_ratio() const {
 }
 
 //  ----------------------------------------------------------------------------
+std::shared_ptr<VulkanAssetTaskManager> VulkanRenderSystem::get_asset_task_manager() {
+    return m_asset_task_mgr;
+}
+
+//  ----------------------------------------------------------------------------
+std::shared_ptr<VulkanSpineManager> VulkanRenderSystem::get_spine_manager() {
+    return m_spine_mgr;
+}
+
+//  ----------------------------------------------------------------------------
 glm::vec2 VulkanRenderSystem::get_size() const {
     return { m_swapchain.extent.width, m_swapchain.extent.height };
 }
@@ -626,7 +631,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         m_resource_command_pool
     );
 
-    m_spine_mgr = std::make_unique<VulkanSpineManager>();
+    m_spine_mgr = std::make_shared<VulkanSpineManager>();
 
     m_asset_task_mgr = std::make_shared<VulkanAssetTaskManager>(
         m_physical_device,

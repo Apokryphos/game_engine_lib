@@ -31,9 +31,9 @@ static void create_sprite_pipeline(
 
 //  ----------------------------------------------------------------------------
 static void draw_spine_sprite_batch(SpineSpriteBatch batch) {
-    assert(batch.skeleton != nullptr);
+    assert(batch.asset.skeleton != nullptr);
 
-    spine::Skeleton* skeleton = batch.skeleton;
+    spine::Skeleton* skeleton = batch.asset.skeleton;
 
     const auto& slots = skeleton->getSlots();
     const auto slot_count = slots.size();
@@ -229,7 +229,7 @@ void SpineSpriteRenderer::draw_sprites(
             VK_SHADER_STAGE_FRAGMENT_BIT,
             sizeof(glm::mat4),
             sizeof(uint32_t),
-            &batch.texture_id
+            &batch.spine_id
         );
 
         //  Draw each object

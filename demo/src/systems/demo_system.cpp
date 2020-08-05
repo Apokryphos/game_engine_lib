@@ -1,4 +1,7 @@
+#include "assets/asset_manager.hpp"
+#include "assets/spine_manager.hpp"
 #include "demo/systems/demo_system.hpp"
+#include "engine/engine.hpp"
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
 #include "render/frustum.hpp"
@@ -14,6 +17,7 @@
 #include <glm/gtx/norm.hpp>
 #include <map>
 
+using namespace assets;
 using namespace ecs;
 using namespace engine;
 using namespace render;
@@ -207,14 +211,25 @@ void DemoSystem::batch_spines(
 
     // Frustum frustum(proj * view);
 
+    Engine& engine = game.get_engine();
+    AssetManager& asset_mgr = engine.get_asset_manager();
+    SpineManager& spine_mgr = asset_mgr.get_spine_manager();
+
     const PositionSystem& pos_sys = get_position_system(sys_mgr);
+
     for (size_t n = 0; n < entity_count; ++n) {
+        const auto spine_cmpnt = spine_sys.get_component(entities[n]);
+        const uint32_t spine_id = spine_sys.get_spine_id(spine_cmpnt);
+
+        //  Check if assets are ready
+        const SpineAsset* asset = spine_mgr.get_asset(spine_id);
+        if (asset == nullptr) {
+            continue;
+        }
+
         //  Get positions
         const auto pos_cmpnt = pos_sys.get_component(entities[n]);
         glm::vec3 position = pos_sys.get_position(pos_cmpnt);
-
-        const auto spine_cmpnt = spine_sys.get_component(entities[n]);
-        const uint32_t texture_id = spine_sys.get_spine_id(spine_cmpnt);
 
         //  Sprite bounding box
         // const glm::vec3 maxp(
@@ -234,10 +249,11 @@ void DemoSystem::batch_spines(
         //     continue;
         // }
 
-        SpineSpriteBatch& batch = batches[texture_id];
-        batch.texture_id = texture_id;
+        SpineSpriteBatch& batch = batches[spine_id];
+        batch.spine_id = spine_id;
         batch.positions.push_back(position);
         batch.sizes.push_back({1.0f, 1.0f, 1.0f});
+        batch.asset = *asset;
     }
 
     for (const auto& pair : batches) {
