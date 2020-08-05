@@ -2,10 +2,12 @@
 #include "engine/game.hpp"
 #include "engine/system_manager.hpp"
 #include "render/frustum.hpp"
+#include "render/spine_sprite_batch.hpp"
 #include "render/sprite_batch.hpp"
 #include "systems/billboard_system.hpp"
 #include "systems/model_system.hpp"
 #include "systems/position_system.hpp"
+#include "systems/spine_system.hpp"
 #include "systems/sprite_system.hpp"
 #include "systems/system_util.hpp"
 #include <glm/glm.hpp>
@@ -182,6 +184,64 @@ void DemoSystem::batch_models(
 
     for (const auto& pair : batches) {
         model_batches.push_back(pair.second);
+    }
+}
+
+//  ----------------------------------------------------------------------------
+void DemoSystem::batch_spines(
+    Game& game,
+    glm::mat4 view,
+    glm::mat4 proj,
+    std::vector<SpineSpriteBatch>& spine_batches
+) {
+    SystemManager& sys_mgr = game.get_system_manager();
+
+    //  Get drawable entities
+    const SpineSystem& spine_sys = get_spine_system(sys_mgr);
+    std::vector<Entity> entities;
+    spine_sys.get_entities(entities);
+
+    const size_t entity_count = entities.size();
+
+    std::map<uint32_t, SpineSpriteBatch> batches;
+
+    // Frustum frustum(proj * view);
+
+    const PositionSystem& pos_sys = get_position_system(sys_mgr);
+    for (size_t n = 0; n < entity_count; ++n) {
+        //  Get positions
+        const auto pos_cmpnt = pos_sys.get_component(entities[n]);
+        glm::vec3 position = pos_sys.get_position(pos_cmpnt);
+
+        const auto spine_cmpnt = spine_sys.get_component(entities[n]);
+        const uint32_t texture_id = spine_sys.get_spine_id(spine_cmpnt);
+
+        //  Sprite bounding box
+        // const glm::vec3 maxp(
+        //     position.x + size.x,
+        //     position.y + size.y,
+        //     1.0f
+        // );
+
+        // const glm::vec3 minp(
+        //     position.x - size.x,
+        //     position.y - size.y,
+        //     0.0f
+        // );
+
+        //  Skip objects outside frustum
+        // if (!frustum.is_box_visible(minp, maxp)) {
+        //     continue;
+        // }
+
+        SpineSpriteBatch& batch = batches[texture_id];
+        batch.texture_id = texture_id;
+        batch.positions.push_back(position);
+        batch.sizes.push_back({1.0f, 1.0f, 1.0f});
+    }
+
+    for (const auto& pair : batches) {
+        spine_batches.push_back(pair.second);
     }
 }
 
