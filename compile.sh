@@ -3,7 +3,7 @@
 # Compiles shaders
 
 VULKAN_SDK_BIN_PATH=extlibs/vulkan_1.2.141.2/x86_64/bin
-INPUT_PATH=assets/shaders/vk
+INPUT_PATH=demo_assets/shaders/vk
 OUTPUT_PATH=build/demo/assets/shaders/vk
 
 mkdir -p $OUTPUT_PATH
