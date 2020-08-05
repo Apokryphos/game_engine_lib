@@ -4,10 +4,12 @@
 #include "systems/model_system.hpp"
 #include "systems/move_system.hpp"
 #include "systems/position_system.hpp"
+#include "systems/spine_system.hpp"
 #include "systems/sprite_system.hpp"
 #include "systems/system_util.hpp"
 #include <glm/vec3.hpp>
 
+using namespace assets;
 using namespace ecs;
 using namespace engine;
 
@@ -94,6 +96,20 @@ void add_position_component(
 }
 
 //  ----------------------------------------------------------------------------
+void add_spine_component(
+    const Entity entity,
+    SpineSystem& spine_sys,
+    AssetId spine_id
+) {
+    if (!spine_sys.has_component(entity)) {
+        spine_sys.add_component(entity);
+    }
+
+    const auto spine_cmpnt = spine_sys.get_component(entity);
+    spine_sys.set_spine_id(spine_cmpnt, spine_id);
+}
+
+//  ----------------------------------------------------------------------------
 void add_sprite_component(
     const Entity entity,
     SpriteSystem& sprite_sys,
@@ -132,6 +148,11 @@ MoveSystem& get_move_system(SystemManager& sys_mgr) {
 //  ----------------------------------------------------------------------------
 PositionSystem& get_position_system(SystemManager& sys_mgr) {
     return sys_mgr.get_system<PositionSystem>(SYSTEM_ID_POSITION);
+}
+
+//  ----------------------------------------------------------------------------
+SpineSystem& get_spine_system(engine::SystemManager& sys_mgr) {
+    return sys_mgr.get_system<SpineSystem>(SYSTEM_ID_SPINE);
 }
 
 //  ----------------------------------------------------------------------------

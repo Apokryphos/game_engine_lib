@@ -122,6 +122,12 @@ std::unique_ptr<SpineModel> load_spine(
     //  Estimate mesh vertex and index count
     reserve_mesh(spine_model->mesh, *skeleton_data);
 
+    log_debug(
+        "Loaded Spine model '%s' (%d).",
+        path.c_str(),
+        spine_model->model.get_id()
+    );
+
     return spine_model;
 }
 }

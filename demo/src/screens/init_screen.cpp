@@ -27,6 +27,7 @@
 #include "systems/model_system.hpp"
 #include "systems/move_system.hpp"
 #include "systems/position_system.hpp"
+#include "systems/spine_system.hpp"
 #include "systems/sprite_system.hpp"
 #include "systems/system_util.hpp"
 #include <set>
@@ -187,6 +188,7 @@ static void init_ecs_systems(Game& game) {
     sys_mgr.add_system(std::make_unique<CameraSystem>(ecs, 10000));
     sys_mgr.add_system(std::make_unique<ModelSystem>(ecs, 10000));
     sys_mgr.add_system(std::make_unique<MoveSystem>(ecs, 10000));
+    sys_mgr.add_system(std::make_unique<SpineSystem>(ecs, 10000));
     sys_mgr.add_system(std::make_unique<SpriteSystem>(ecs, 10000));
 
     //  Editors
