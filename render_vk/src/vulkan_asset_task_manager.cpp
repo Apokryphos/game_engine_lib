@@ -1,11 +1,15 @@
+#include "assets/spine_asset_promise.hpp"
 #include "common/log.hpp"
 #include "common/stopwatch.hpp"
 #include "render/texture_create_args.hpp"
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/command_pool.hpp"
 #include "render_vk/debug_utils.hpp"
+#include "render_vk/mesh.hpp"
 #include "render_vk/model_manager.hpp"
 #include "render_vk/spine.hpp"
+#include "render_vk/spine_model.hpp"
+#include "render_vk/spine_manager.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/texture_manager.hpp"
 #include "render_vk/vulkan_queue.hpp"
@@ -24,9 +28,17 @@ struct VulkanAssetTaskManager::Job
     std::string path;
 };
 
+struct MeshJob : VulkanAssetTaskManager::Job
+{
+    Mesh mesh;
+    TextureAssetPromise promise;
+    TextureCreateArgs args {};
+};
+
 struct SpineJob : VulkanAssetTaskManager::Job
 {
     AssetManager* asset_mgr {nullptr};
+    TextureAssetFuture texture_future;
     SpineAssetPromise promise;
     TextureCreateArgs args {};
 };
@@ -34,7 +46,7 @@ struct SpineJob : VulkanAssetTaskManager::Job
 struct TextureJob : VulkanAssetTaskManager::Job
 {
     TextureAssetPromise promise;
-    TextureCreateArgs args {};
+    TextureCreateArgs create_args {};
 };
 
 //  ----------------------------------------------------------------------------
@@ -55,12 +67,14 @@ VulkanAssetTaskManager::VulkanAssetTaskManager(
     VkDevice device,
     VulkanQueue& queue,
     ModelManager& model_mgr,
+    SpineManager& spine_mgr,
     TextureManager& texture_mgr
 )
 : m_physical_device(physical_device),
   m_device(device),
   m_queue(queue),
   m_model_mgr(model_mgr),
+  m_spine_mgr(spine_mgr),
   m_texture_mgr(texture_mgr) {
 }
 
@@ -91,6 +105,15 @@ void VulkanAssetTaskManager::cancel_threads() {
 }
 
 //  ----------------------------------------------------------------------------
+void VulkanAssetTaskManager::load_model(uint32_t id, const Mesh& mesh) {
+    auto job = std::make_unique<MeshJob>();
+    job->task_id = TaskId::LoadMesh;
+    job->asset_id = id;
+    job->mesh = mesh;
+    add_job(std::move(job));
+}
+
+//  ----------------------------------------------------------------------------
 void VulkanAssetTaskManager::load_model(uint32_t id, const std::string& path) {
     auto job = std::make_unique<Job>();
     job->task_id = TaskId::LoadModel;
@@ -108,10 +131,9 @@ void VulkanAssetTaskManager::load_spine(
     auto job = std::make_unique<SpineJob>();
     job->task_id = TaskId::LoadSpine;
     job->asset_id = id;
-    job->asset_mgr = load_args.asset_mgr;
     job->path = load_args.path;
     job->args = create_args;
-    job->promise = std::move(load_args.promise);
+    job->texture_future = std::move(load_args.texture_future);
     add_job(std::move(job));
 }
 
@@ -125,7 +147,7 @@ void VulkanAssetTaskManager::load_texture(
     job->task_id = TaskId::LoadTexture;
     job->asset_id = id;
     job->path = load_args.path;
-    job->args = create_args;
+    job->create_args = create_args;
     job->promise = std::move(load_args.promise);
     add_job(std::move(job));
 }
@@ -141,6 +163,34 @@ void VulkanAssetTaskManager::start_threads() {
     for (auto n = 0; n < m_thread_count; ++n) {
         m_threads.emplace_back(&VulkanAssetTaskManager::thread_main, this, n);
     }
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanAssetTaskManager::thread_load_model(ThreadState& state, Job* job) {
+    m_model_mgr.load_model(
+        job->asset_id,
+        job->path,
+        m_physical_device,
+        m_device,
+        m_queue,
+        state.command_pool
+    );
+}
+
+//  ----------------------------------------------------------------------------
+Texture VulkanAssetTaskManager::thread_load_texture(
+    const TextureId texture_id,
+    const std::string& path,
+    const TextureCreateArgs& create_args,
+    ThreadState& state
+) {
+    return m_texture_mgr.load_texture(
+        texture_id,
+        path,
+        m_queue,
+        state.command_pool,
+        create_args
+    );
 }
 
 //  ----------------------------------------------------------------------------
@@ -179,44 +229,60 @@ void VulkanAssetTaskManager::thread_main(uint8_t thread_id) {
         switch (job->task_id) {
             case TaskId::LoadModel: {
                 stopwatch.start(thread_name+"_load_model");
-                m_model_mgr.load_model(
-                    job->asset_id,
-                    job->path,
-                    m_physical_device,
-                    m_device,
-                    m_queue,
-                    state.command_pool
-                );
+                thread_load_model(state, job.get());
                 stopwatch.stop(thread_name+"_load_model");
                 break;
             }
 
             case TaskId::LoadSpine: {
+                stopwatch.start(thread_name+"_load_spine");
+
                 SpineJob* spine_job = static_cast<SpineJob*>(job.get());
 
-                stopwatch.start(thread_name+"_load_spine");
-                render_vk::load_spine(job->asset_id, job->path, *spine_job->asset_mgr);
+                //  If the texture wasn't already loaded, AssetManager will have
+                //  enqueued a job for it. Wait for the texture to finish loading.
+                TextureAsset texture_asset {};
+                if (spine_job->texture_future.valid()) {
+                    texture_asset = spine_job->texture_future.get();
+                } else {
+                    throw std::runtime_error("Fetch texture asset not implemented.");
+                }
 
+                //  Load Spine data
+                auto spine_model = render_vk::load_spine(job->path, texture_asset);
+
+                //  Create model using mesh data
+                spine_model->model.load(
+                    m_physical_device,
+                    m_device,
+                    m_queue,
+                    state.command_pool,
+                    spine_model->mesh
+                );
+
+                //  Fulfill optional promise
                 if (spine_job->promise.has_value()) {
                     SpineAsset spine_asset {};
                     spine_asset.id = job->asset_id;
                     spine_job->promise.value().set_value(spine_asset);
                 }
 
+                m_spine_mgr.add_spine_model(std::move(spine_model));
+
                 stopwatch.stop(thread_name+"_load_spine");
                 break;
             }
 
             case TaskId::LoadTexture: {
+                stopwatch.start(thread_name+"_load_texture");
+
                 TextureJob* texture_job = static_cast<TextureJob*>(job.get());
 
-                stopwatch.start(thread_name+"_load_texture");
-                Texture texture = m_texture_mgr.load_texture(
+                Texture texture = thread_load_texture(
                     job->asset_id,
                     job->path,
-                    m_queue,
-                    state.command_pool,
-                    texture_job->args
+                    texture_job->create_args,
+                    state
                 );
 
                 if (texture_job->promise.has_value()) {

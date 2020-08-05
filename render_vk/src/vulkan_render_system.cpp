@@ -14,6 +14,7 @@
 #include "render_vk/mesh.hpp"
 #include "render_vk/model_manager.hpp"
 #include "render_vk/render_pass.hpp"
+#include "render_vk/spine_manager.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/texture_manager.hpp"
 #include "render_vk/vulkan.hpp"
@@ -138,11 +139,10 @@ void VulkanRenderSystem::begin_frame() {
 
     // log_debug("begin_frame: %d", m_current_frame);
 
-    //  Add recently loaded models to the active set
+    //  Add recently loaded assets to active sets
     m_model_mgr->update_models();
-
-    //  Add recently loaded textures to the active set
     m_texture_mgr->update_textures();
+    m_spine_mgr->update_models();
 
     //  Update descriptor sets
     m_descriptor_set_mgr->update_descriptor_sets(*m_texture_mgr);
@@ -626,11 +626,14 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         m_resource_command_pool
     );
 
+    m_spine_mgr = std::make_unique<SpineManager>();
+
     m_asset_task_mgr = std::make_shared<VulkanAssetTaskManager>(
         m_physical_device,
         m_device,
         *m_graphics_queue,
         *m_model_mgr,
+        *m_spine_mgr,
         *m_texture_mgr
     );
 
@@ -711,6 +714,8 @@ void VulkanRenderSystem::shutdown() {
     m_model_mgr->unload(m_device);
 
     m_texture_mgr->destroy_textures();
+
+    m_spine_mgr->unload();
 
     vkDestroyDevice(m_device, nullptr);
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);

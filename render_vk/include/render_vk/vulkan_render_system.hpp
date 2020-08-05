@@ -23,6 +23,7 @@ class DescriptorSetManager;
 class ModelManager;
 class ModelRenderer;
 class RenderTaskManager;
+class SpineManager;
 class SpriteRenderer;
 class TextureManager;
 
@@ -101,6 +102,7 @@ private:
     std::vector<Frame> m_frames;
 
     std::unique_ptr<ModelManager> m_model_mgr;
+    std::unique_ptr<SpineManager> m_spine_mgr;
     std::unique_ptr<TextureManager> m_texture_mgr;
 
     std::shared_ptr<VulkanAssetTaskManager> m_asset_task_mgr;

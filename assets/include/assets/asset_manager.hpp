@@ -37,6 +37,8 @@ public:
     AssetId get_unique_spine_id();
     AssetId get_unique_texture_id();
 
+    std::vector<Entry>::const_iterator find_texture(const TextureLoadArgs& args) const;
+
 public:
     AssetManager(std::shared_ptr<AssetTaskManager> asset_task_mgr);
     ~AssetManager();

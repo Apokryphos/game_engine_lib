@@ -82,7 +82,18 @@ AssetId AssetManager::load_spine(
         return (*find).id;
     }
 
-    load_args.asset_mgr = this;
+    //  Check if texture is loaded
+    TextureLoadArgs texture_load_args {};
+    texture_load_args.path = load_args.path + ".png";
+    const auto texture_itr = find_texture(texture_load_args);
+    if (texture_itr == m_textures.end()) {
+        assert(!load_args.texture_future.valid());
+
+        //  Load texture on worker thread and wait for it later
+        texture_load_args.promise = make_texture_asset_promise();
+        load_args.texture_future = get_texture_asset_future(texture_load_args.promise);
+        load_texture(texture_load_args, create_args);
+    }
 
     const AssetId id = get_unique_spine_id();
 
@@ -113,16 +124,8 @@ AssetId AssetManager::load_texture(
     TextureLoadArgs& load_args,
     const TextureCreateArgs create_args
 ) {
-    const std::string& path = load_args.path;
-
-    const auto find = std::find_if(
-        m_textures.begin(),
-        m_textures.end(),
-        [&path](const Entry& entry) {
-            return entry.path == path;
-        }
-    );
-
+    //  Check if texture is loaded
+    const auto find = find_texture(load_args);
     if (find != m_textures.end()) {
         return (*find).id;
     }
@@ -133,10 +136,10 @@ AssetId AssetManager::load_texture(
 
     Entry entry{};
     entry.id = id;
-    entry.path = path;
+    entry.path = load_args.path;
     m_textures.push_back(entry);
 
-    log_debug("Loaded texture '%s' (%d).", path.c_str(), id);
+    log_debug("Loaded texture '%s' (%d).", load_args.path.c_str(), id);
 
     return id;
 }
@@ -149,6 +152,19 @@ AssetId AssetManager::load_texture(
     TextureLoadArgs load_args {};
     load_args.path = path;
     return load_texture(load_args, args);
+}
+
+//  ----------------------------------------------------------------------------
+std::vector<AssetManager::Entry>::const_iterator AssetManager::find_texture(
+    const TextureLoadArgs& args
+) const {
+    return std::find_if(
+        m_textures.begin(),
+        m_textures.end(),
+        [&args](const Entry& entry) {
+            return entry.path == args.path;
+        }
+    );
 }
 
 //  ----------------------------------------------------------------------------

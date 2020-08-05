@@ -14,7 +14,9 @@
 
 namespace render_vk
 {
+struct Mesh;
 class ModelManager;
+class SpineManager;
 class Texture;
 class TextureManager;
 class VulkanQueue;
@@ -28,6 +30,7 @@ private:
     enum class TaskId
     {
         None,
+        LoadMesh,
         LoadModel,
         LoadSpine,
         LoadTexture,
@@ -56,10 +59,18 @@ private:
 
     VulkanQueue& m_queue;
     ModelManager& m_model_mgr;
+    SpineManager& m_spine_mgr;
     TextureManager& m_texture_mgr;
 
     //  Adds a new job for a worker thread to process.
     void add_job(std::unique_ptr<Job> job);
+    void thread_load_model(ThreadState& state, Job* job);
+    Texture thread_load_texture(
+        const TextureId texture_id,
+        const std::string& path,
+        const render::TextureCreateArgs& create_args,
+        ThreadState& state
+    );
     void thread_main(uint8_t thread_id);
 
 public:
@@ -68,12 +79,15 @@ public:
         VkDevice device,
         VulkanQueue& queue,
         ModelManager& model_mgr,
+        SpineManager& spine_mgr,
         TextureManager& texture_mgr
     );
     ~VulkanAssetTaskManager();
     VulkanAssetTaskManager(const VulkanAssetTaskManager&) = delete;
     VulkanAssetTaskManager& operator=(const VulkanAssetTaskManager&) = delete;
     void cancel_threads();
+        //  Enqueues a load model job for worker threads to complete
+    void load_model(uint32_t id, const Mesh& mesh);
     //  Enqueues a load model job for worker threads to complete
     virtual void load_model(uint32_t id, const std::string& path) override;
     //  Enqueues a Spine skeleton for worker threads to complete

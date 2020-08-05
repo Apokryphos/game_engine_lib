@@ -3,6 +3,7 @@
 #include "render/texture_create_args.hpp"
 #include "render_vk/mesh.hpp"
 #include "render_vk/spine.hpp"
+#include "render_vk/spine_model.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/texture_id.hpp"
 #include <spine/spine.h>
@@ -28,6 +29,7 @@ public:
     // virtual ~SpineTextureLoader() {}
 
     virtual void load(spine::AtlasPage& page, const spine::String& path) override {
+        page.setRendererObject(this);
         page.width = m_texture_asset.width;
         page.height = m_texture_asset.height;
     }
@@ -76,7 +78,10 @@ static void reserve_mesh(Mesh& mesh, SkeletonData& skeleton_data) {
 }
 
 //  ----------------------------------------------------------------------------
-static void load_spine(const std::string& path, TextureAsset& texture_asset) {
+std::unique_ptr<SpineModel> load_spine(
+    const std::string& path,
+    TextureAsset& texture_asset
+) {
     //  Create a new texture loader
     auto texture_loader = std::make_unique<SpineTextureLoader>(texture_asset);
 
@@ -107,31 +112,16 @@ static void load_spine(const std::string& path, TextureAsset& texture_asset) {
     //  Create skeleton
     auto skeleton = std::make_unique<Skeleton>(skeleton_data);
 
+    auto spine_model = std::make_unique<SpineModel>();
+    spine_model->atlas = std::move(atlas);
+    spine_model->anim_state_data = std::move(anim_state_data);
+    spine_model->skeleton_data = skeleton_data;
+    spine_model->skeleton = std::move(skeleton);
+    spine_model->texture_loader = std::move(texture_loader);
+
     //  Estimate mesh vertex and index count
-    Mesh mesh;
-    reserve_mesh(mesh, *skeleton_data);
-}
+    reserve_mesh(spine_model->mesh, *skeleton_data);
 
-//  ----------------------------------------------------------------------------
-void load_spine(
-    const TextureId texture_id,
-    const std::string& path,
-    AssetManager& asset_mgr
-) {
-    //  Load texture through asset manager
-    TextureLoadArgs load_args {};
-    load_args.path = path + ".png";
-    load_args.promise = make_texture_asset_promise();
-    TextureAssetFuture future = get_texture_asset_future(load_args.promise);
-
-    TextureCreateArgs create_args {};
-    asset_mgr.load_texture(load_args, create_args);
-
-    assert(load_args.promise.has_value());
-
-    //  Wait for texture to finish loading on worker threads
-    TextureAsset texture_asset = future.get();
-
-    load_spine(path, texture_asset);
+    return spine_model;
 }
 }

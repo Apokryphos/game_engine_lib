@@ -1,6 +1,6 @@
 #pragma once
 
-#include "assets/spine_asset_promise.hpp"
+#include "assets/texture_asset_promise.hpp"
 #include <string>
 
 namespace assets
@@ -9,8 +9,9 @@ class AssetManager;
 
 struct SpineLoadArgs
 {
-    AssetManager* asset_mgr;
+    //  Path to Spine assets folder
     std::string path;
-    SpineAssetPromise promise;
+    //  Used by AssetManager to schedule texture loading on a worker thread.
+    TextureAssetFuture texture_future;
 };
 }
