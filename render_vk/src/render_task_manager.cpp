@@ -38,6 +38,19 @@ inline void filter_pending_textures(
 
 //  ----------------------------------------------------------------------------
 inline void filter_pending_textures(
+    const std::vector<SpineSpriteBatch>& batches,
+    const TextureManager& texture_mgr,
+    std::vector<SpineSpriteBatch>& job_batches
+) {
+    for (const SpineSpriteBatch& batch : batches) {
+        if (texture_mgr.texture_exists(batch.texture_id)) {
+            job_batches.push_back(batch);
+        }
+    }
+}
+
+//  ----------------------------------------------------------------------------
+inline void filter_pending_textures(
     const std::vector<ModelBatch>& batches,
     const ModelManager& model_mgr,
     const TextureManager& texture_mgr,
@@ -452,6 +465,13 @@ void RenderTaskManager::draw_spines(
     job.task_id = TaskId::DrawSpines;
     job.renderer = &renderer;
     job.spine_batches.reserve(batches.size());
+
+    filter_pending_textures(batches, m_texture_mgr, job.spine_batches);
+
+    if (job.spine_batches.empty()) {
+        // log_debug("Discarded draw Spine sprites call with zero batches.");
+        return;
+    }
 
     add_job(job);
 }

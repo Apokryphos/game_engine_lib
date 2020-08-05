@@ -28,7 +28,10 @@ public:
     ~VulkanSpineManager();
     VulkanSpineManager(const VulkanSpineManager&) = delete;
     VulkanSpineManager& operator=(const VulkanSpineManager&) = delete;
-    void add_spine_model(std::unique_ptr<SpineModel> model);
+    void add_spine_model(
+        std::unique_ptr<SpineModel> model,
+        const AssetId texture_id
+    );
     virtual const assets::SpineAsset* get_asset(const assets::AssetId id) const override;
     SpineModel* get_spine_model(const AssetId id) const;
     bool spine_model_exists(const AssetId id) const;

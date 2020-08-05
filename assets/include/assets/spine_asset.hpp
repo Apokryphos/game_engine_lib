@@ -15,7 +15,8 @@ namespace assets
 {
 struct SpineAsset
 {
-    AssetId id      {0};
+    AssetId id         {0};
+    AssetId texture_id {0};
 
     spine::AnimationStateData* anim_state_data {nullptr};
     spine::Atlas* atlas                        {nullptr};

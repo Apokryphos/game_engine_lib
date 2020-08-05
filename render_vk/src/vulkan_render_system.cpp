@@ -629,6 +629,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     );
 
     m_model_mgr = std::make_unique<ModelManager>();
+    m_spine_mgr = std::make_shared<VulkanSpineManager>();
     m_texture_mgr = std::make_unique<TextureManager>(m_physical_device, m_device);
 
     m_billboard_renderer = std::make_unique<BillboardRenderer>(*m_model_mgr);
@@ -648,8 +649,6 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         *m_graphics_queue,
         m_resource_command_pool
     );
-
-    m_spine_mgr = std::make_shared<VulkanSpineManager>();
 
     m_asset_task_mgr = std::make_shared<VulkanAssetTaskManager>(
         m_physical_device,

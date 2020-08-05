@@ -1,4 +1,5 @@
 #include "assets/asset_manager.hpp"
+#include "assets/spine_asset.hpp"
 #include "assets/spine_manager.hpp"
 #include "demo/systems/demo_system.hpp"
 #include "engine/engine.hpp"
@@ -251,9 +252,9 @@ void DemoSystem::batch_spines(
 
         SpineSpriteBatch& batch = batches[spine_id];
         batch.spine_id = spine_id;
+        batch.texture_id = asset->texture_id;
         batch.positions.push_back(position);
         batch.sizes.push_back({1.0f, 1.0f, 1.0f});
-        batch.asset = *asset;
     }
 
     for (const auto& pair : batches) {

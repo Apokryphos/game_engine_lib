@@ -31,77 +31,6 @@ static void create_sprite_pipeline(
 );
 
 //  ----------------------------------------------------------------------------
-static void draw_spine_sprite_batch(SpineSpriteBatch batch) {
-    assert(batch.asset.skeleton != nullptr);
-
-    spine::Skeleton* skeleton = batch.asset.skeleton;
-
-    const auto& slots = skeleton->getSlots();
-    const auto slot_count = slots.size();
-
-    for (int s = 0; s < slot_count; ++s) {
-        Slot* slot = skeleton->getDrawOrder()[s];
-
-        Attachment* attachment = slot->getAttachment();
-        if (attachment == nullptr) {
-            continue;
-        }
-
-        Texture* texture = NULL;
-        unsigned short* indices = NULL;
-
-        Color skeleton_color = skeleton->getColor();
-        Color slot_solor = slot->getColor();
-        Color tint(
-            skeleton_color.r * slot_solor.r,
-            skeleton_color.g * slot_solor.g,
-            skeleton_color.b * slot_solor.b,
-            skeleton_color.a * slot_solor.a
-        );
-
-        spine::Vector<Vertex> vertices;
-        unsigned short quadIndices[] = {0, 1, 2, 2, 3, 0};
-
-        if (attachment->getRTTI().isExactly(RegionAttachment::rtti)) {
-            RegionAttachment* regionAttachment = (RegionAttachment*)attachment;
-
-            // Our engine specific Texture is stored in the AtlasRegion which was
-            // assigned to the attachment on load. It represents the texture atlas
-            // page that contains the image the region attachment is mapped to.
-            texture = (Texture*)((AtlasRegion*)regionAttachment->getRendererObject())->page->getRendererObject();
-
-            // Ensure there is enough room for vertices
-            vertices.setSize(4, Vertex());
-
-            // Computed the world vertices positions for the 4 vertices that make up
-            // the rectangular region attachment. This assumes the world transform of the
-            // bone to which the slot (and hence attachment) is attached has been calculated
-            // before rendering via Skeleton::updateWorldTransform(). The vertex positions
-            // will be written directoy into the vertices array, with a stride of sizeof(Vertex)
-            regionAttachment->computeWorldVertices(
-                slot->getBone(),
-                &vertices.buffer()->position.x,
-                0,
-                sizeof(Vertex)
-            );
-
-            // copy color and UVs to the vertices
-            for (size_t j = 0, l = 0; j < 4; j++, l+=2) {
-                Vertex& vertex = vertices[j];
-                vertex.color = glm::vec3(tint.r, tint.g, tint.b);
-                vertex.tex_coord = glm::vec2(
-                    regionAttachment->getUVs()[l],
-                    regionAttachment->getUVs()[l + 1]
-                );
-            }
-
-            // set the indices, 2 triangles forming a quad
-            indices = quadIndices;
-        }
-    }
-}
-
-//  ----------------------------------------------------------------------------
 SpineSpriteRenderer::SpineSpriteRenderer(VulkanSpineManager& spine_mgr)
 : m_spine_mgr(spine_mgr) {
 }
@@ -204,12 +133,11 @@ void SpineSpriteRenderer::draw_sprites(
     );
 
     for (const SpineSpriteBatch& batch : batches) {
-        //  Get sprite quad
-        const SpineModel* spine_model = m_spine_mgr.get_spine_model(batch.asset.id);
+        //  Get model
+        const SpineModel* spine_model = m_spine_mgr.get_spine_model(batch.spine_id);
         if (spine_model == nullptr) {
             continue;
         }
-
         const VulkanModel& model = spine_model->model;
 
         //  Bind vertex buffer
@@ -234,7 +162,7 @@ void SpineSpriteRenderer::draw_sprites(
             VK_SHADER_STAGE_FRAGMENT_BIT,
             sizeof(glm::mat4),
             sizeof(uint32_t),
-            &batch.spine_id
+            &batch.texture_id
         );
 
         //  Draw each object

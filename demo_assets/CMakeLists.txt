@@ -13,10 +13,12 @@ configure_file(models/model2.glb ${OUTPUT_DIR}/models/model2.glb COPYONLY)
 configure_file(models/model2.mtl ${OUTPUT_DIR}/models/model2.mtl COPYONLY)
 
 # Spine
+configure_file(spine/spineboy/spineboy.atlas ${OUTPUT_DIR}/spine/spineboy/spineboy.atlas COPYONLY)
+configure_file(spine/spineboy/spineboy.png ${OUTPUT_DIR}/spine/spineboy/spineboy.png COPYONLY)
+configure_file(spine/spineboy/spineboy.json ${OUTPUT_DIR}/spine/spineboy/spineboy.json COPYONLY)
 configure_file(spine/goblins/goblins.atlas ${OUTPUT_DIR}/spine/goblins/goblins.atlas COPYONLY)
 configure_file(spine/goblins/goblins.png ${OUTPUT_DIR}/spine/goblins/goblins.png COPYONLY)
 configure_file(spine/goblins/goblins.json ${OUTPUT_DIR}/spine/goblins/goblins.json COPYONLY)
-
 
 # Textures
 configure_file(textures/billboard.png ${OUTPUT_DIR}/textures/billboard.png COPYONLY)

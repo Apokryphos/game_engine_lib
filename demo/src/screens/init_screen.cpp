@@ -54,10 +54,10 @@ bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
 
 namespace demo
 {
-const int BILLBOARD_COUNT = 50;
-const int MODEL_COUNT     = 50;
-const int SPINE_COUNT     = 1;
-const int SPRITE_COUNT    = 10;
+const int BILLBOARD_COUNT = 0;
+const int MODEL_COUNT     = 0;
+const int SPINE_COUNT     = 5;
+const int SPRITE_COUNT    = 0;
 
 //  ----------------------------------------------------------------------------
 static void init_input_actions(InputManager& input_mgr) {
@@ -316,8 +316,8 @@ static void init_spines(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
 
-    std::uniform_int_distribution<int> x_dist(0, 0);
-    std::uniform_int_distribution<int> y_dist(0, 0);
+    std::uniform_int_distribution<int> x_dist(0, 1400);
+    std::uniform_int_distribution<int> y_dist(0, 1400);
 
     Random& random = game.get_random();
 
@@ -489,7 +489,7 @@ void InitScreen::on_load(Game& game) {
     asset_mgr.load_texture("assets/textures/billboard.png", tex_args);
 
     //  Load Spine assets
-    asset_mgr.load_spine("assets/spine/goblins/goblins");
+    asset_mgr.load_spine("assets/spine/spineboy/spineboy");
 
     //  Next screen
     load_demo_screen(game);

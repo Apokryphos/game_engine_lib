@@ -25,12 +25,16 @@ VulkanSpineManager::~VulkanSpineManager() {
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanSpineManager::add_spine_model(std::unique_ptr<SpineModel> model) {
+void VulkanSpineManager::add_spine_model(
+    std::unique_ptr<SpineModel> model,
+    const AssetId texture_id
+) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     //  Create asset
     SpineAsset asset {};
     asset.id = model->model.get_id();
+    asset.texture_id = texture_id;
     asset.anim_state_data = model->anim_state_data.get();
     asset.atlas = model->atlas.get();
     asset.skeleton = model->skeleton.get();

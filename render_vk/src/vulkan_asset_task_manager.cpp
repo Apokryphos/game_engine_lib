@@ -266,7 +266,7 @@ void VulkanAssetTaskManager::thread_main(uint8_t thread_id) {
                     spine_job->promise.value().set_value(spine_asset);
                 }
 
-                m_spine_mgr.add_spine_model(std::move(spine_model));
+                m_spine_mgr.add_spine_model(std::move(spine_model), texture_asset.id);
 
                 stopwatch.stop(thread_name+"_load_spine");
                 break;

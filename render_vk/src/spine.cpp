@@ -37,6 +37,95 @@ public:
     virtual void unload(void* texture) override {}
 };
 
+
+//  ----------------------------------------------------------------------------
+static void populate_mesh(spine::Skeleton* skeleton, Mesh& mesh) {
+    assert(skeleton != nullptr);
+
+    const auto& slots = skeleton->getSlots();
+    const auto slot_count = slots.size();
+
+    uint32_t quad = 0;
+    uint32_t vrt = 0;
+    uint32_t idx = 0;
+
+    for (int s = 0; s < slot_count; ++s) {
+        Slot* slot = skeleton->getDrawOrder()[s];
+
+        Attachment* attachment = slot->getAttachment();
+        if (attachment == nullptr) {
+            continue;
+        }
+
+        // Texture* texture = NULL;
+        unsigned short* indices = NULL;
+
+        Color skeleton_color = skeleton->getColor();
+        Color slot_solor = slot->getColor();
+        Color tint(
+            skeleton_color.r * slot_solor.r,
+            skeleton_color.g * slot_solor.g,
+            skeleton_color.b * slot_solor.b,
+            skeleton_color.a * slot_solor.a
+        );
+
+        Vector<float> vertices;
+        unsigned short quadIndices[] = {0, 1, 2, 2, 3, 0};
+        // unsigned short quadIndices[] = {2, 1, 0, 0, 3, 2};
+
+        if (attachment->getRTTI().isExactly(MeshAttachment::rtti)) {
+            continue;
+        }
+
+        if (attachment->getRTTI().isExactly(RegionAttachment::rtti)) {
+            RegionAttachment* regionAttachment = (RegionAttachment*)attachment;
+
+            // Our engine specific Texture is stored in the AtlasRegion which was
+            // assigned to the attachment on load. It represents the texture atlas
+            // page that contains the image the region attachment is mapped to.
+            // texture = (Texture*)((AtlasRegion*)regionAttachment->getRendererObject())->page->getRendererObject();
+
+            // Ensure there is enough room for vertices
+            vertices.setSize(8, 0);
+
+            // Computed the world vertices positions for the 4 vertices that make up
+            // the rectangular region attachment. This assumes the world transform of the
+            // bone to which the slot (and hence attachment) is attached has been calculated
+            // before rendering via Skeleton::updateWorldTransform(). The vertex positions
+            // will be written directoy into the vertices array, with a stride of sizeof(Vertex)
+            regionAttachment->computeWorldVertices(
+                slot->getBone(),
+                &vertices.buffer()[0],
+                0,
+                2
+            );
+
+            // copy color and UVs to the vertices
+            for (size_t j = 0, l = 0; j < 4; j++, l+=2) {
+
+                mesh.vertices[vrt].position = glm::vec3(vertices[l+0], vertices[l+1], 0.0f);
+                mesh.vertices[vrt].color = glm::vec3(tint.r, tint.g, tint.b);
+                mesh.vertices[vrt].tex_coord = glm::vec2(
+                    regionAttachment->getUVs()[l],
+                    regionAttachment->getUVs()[l + 1]
+                );
+                ++vrt;
+            }
+
+            //  Counter-clockwise order
+            //  set the indices, 2 triangles forming a quad
+            for (int n = 0; n < 6; ++n) {
+                mesh.indices[idx++] = quad + quadIndices[n];
+            }
+            quad += 4;
+            // indices = quadIndices;
+        }
+    }
+
+    mesh.vertices.resize(vrt);
+    mesh.indices.resize(idx);
+}
+
 //  ----------------------------------------------------------------------------
 static void reserve_mesh(Mesh& mesh, SkeletonData& skeleton_data) {
     const Vector<SlotData*>& slots = skeleton_data.getSlots();
@@ -120,6 +209,7 @@ std::unique_ptr<SpineModel> load_spine(
 
     //  Estimate mesh vertex and index count
     reserve_mesh(spine_model->mesh, *skeleton_data);
+    populate_mesh(spine_model->skeleton.get(), spine_model->mesh);
 
     log_debug(
         "Loaded Spine model '%s' (%d).",
