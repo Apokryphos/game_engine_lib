@@ -16,10 +16,10 @@ namespace render_vk
 {
 struct Mesh;
 class ModelManager;
-class SpineManager;
 class Texture;
 class TextureManager;
 class VulkanQueue;
+class VulkanSpineManager;
 
 class VulkanAssetTaskManager : public assets::AssetTaskManager
 {
@@ -59,7 +59,7 @@ private:
 
     VulkanQueue& m_queue;
     ModelManager& m_model_mgr;
-    SpineManager& m_spine_mgr;
+    VulkanSpineManager& m_spine_mgr;
     TextureManager& m_texture_mgr;
 
     //  Adds a new job for a worker thread to process.
@@ -79,7 +79,7 @@ public:
         VkDevice device,
         VulkanQueue& queue,
         ModelManager& model_mgr,
-        SpineManager& spine_mgr,
+        VulkanSpineManager& spine_mgr,
         TextureManager& texture_mgr
     );
     ~VulkanAssetTaskManager();

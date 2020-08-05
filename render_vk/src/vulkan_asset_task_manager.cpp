@@ -9,11 +9,11 @@
 #include "render_vk/model_manager.hpp"
 #include "render_vk/spine.hpp"
 #include "render_vk/spine_model.hpp"
-#include "render_vk/spine_manager.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/texture_manager.hpp"
-#include "render_vk/vulkan_queue.hpp"
 #include "render_vk/vulkan_asset_task_manager.hpp"
+#include "render_vk/vulkan_queue.hpp"
+#include "render_vk/vulkan_spine_manager.hpp"
 
 using namespace assets;
 using namespace common;
@@ -67,7 +67,7 @@ VulkanAssetTaskManager::VulkanAssetTaskManager(
     VkDevice device,
     VulkanQueue& queue,
     ModelManager& model_mgr,
-    SpineManager& spine_mgr,
+    VulkanSpineManager& spine_mgr,
     TextureManager& texture_mgr
 )
 : m_physical_device(physical_device),

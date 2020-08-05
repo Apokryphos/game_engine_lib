@@ -1,5 +1,8 @@
-#include "render_vk/spine_manager.hpp"
+#include "assets/spine_asset.hpp"
 #include "render_vk/spine_model.hpp"
+#include "render_vk/vulkan_spine_manager.hpp"
+
+using namespace assets;
 
 namespace render_vk
 {
@@ -14,21 +17,45 @@ static void unload_spine_model(std::unique_ptr<SpineModel>& model) {
 }
 
 //  ----------------------------------------------------------------------------
-SpineManager::SpineManager() {
+VulkanSpineManager::VulkanSpineManager() {
 }
 
 //  ----------------------------------------------------------------------------
-SpineManager::~SpineManager() {
+VulkanSpineManager::~VulkanSpineManager() {
 }
 
 //  ----------------------------------------------------------------------------
-void SpineManager::add_spine_model(std::unique_ptr<SpineModel> model) {
+void VulkanSpineManager::add_spine_model(std::unique_ptr<SpineModel> model) {
     std::lock_guard<std::mutex> lock(m_mutex);
+
+    //  Create asset
+    SpineAsset asset {};
+    asset.id = model->model.get_id();
+    asset.anim_state_data = model->anim_state_data.get();
+    asset.atlas = model->atlas.get();
+    asset.skeleton = model->skeleton.get();
+    asset.skeleton_data = model->skeleton_data;
+
+    //  Add asset
+    m_assets[asset.id] = asset;
+
+    //  Add model to active set
     m_added.push_back(std::move(model));
 }
 
 //  ----------------------------------------------------------------------------
-SpineModel* SpineManager::get_spine_model(const AssetId id) const {
+const SpineAsset* VulkanSpineManager::get_asset(const AssetId id) const {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    const auto asset_itr = m_assets.find(id);
+    if (asset_itr != m_assets.end()) {
+        return &(asset_itr->second);
+    }
+    return nullptr;
+}
+
+//  ----------------------------------------------------------------------------
+SpineModel* VulkanSpineManager::get_spine_model(const AssetId id) const {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     auto find = m_models.find(id);
@@ -41,13 +68,13 @@ SpineModel* SpineManager::get_spine_model(const AssetId id) const {
 }
 
 //  ----------------------------------------------------------------------------
-bool SpineManager::spine_model_exists(const AssetId id) const {
+bool VulkanSpineManager::spine_model_exists(const AssetId id) const {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_models.find(id) != m_models.end();
 }
 
 //  ----------------------------------------------------------------------------
-void SpineManager::unload() {
+void VulkanSpineManager::unload() {
     for (auto& pair : m_models) {
         unload_spine_model(pair.second);
     }
@@ -60,7 +87,7 @@ void SpineManager::unload() {
 }
 
 //  ----------------------------------------------------------------------------
-void SpineManager::update_models() {
+void VulkanSpineManager::update_models() {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for (auto& model : m_added) {

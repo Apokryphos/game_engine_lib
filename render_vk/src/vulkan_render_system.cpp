@@ -14,7 +14,6 @@
 #include "render_vk/mesh.hpp"
 #include "render_vk/model_manager.hpp"
 #include "render_vk/render_pass.hpp"
-#include "render_vk/spine_manager.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/texture_manager.hpp"
 #include "render_vk/vulkan.hpp"
@@ -25,6 +24,7 @@
 #include "render_vk/vulkan_render_system.hpp"
 #include "render_vk/vulkan_model.hpp"
 #include "render_vk/vulkan_queue.hpp"
+#include "render_vk/vulkan_spine_manager.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <cassert>
 #include <thread>
@@ -626,7 +626,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         m_resource_command_pool
     );
 
-    m_spine_mgr = std::make_unique<SpineManager>();
+    m_spine_mgr = std::make_unique<VulkanSpineManager>();
 
     m_asset_task_mgr = std::make_shared<VulkanAssetTaskManager>(
         m_physical_device,

@@ -36,7 +36,6 @@ set(SOURCE_FILES
     src/shader.cpp
     src/spine.cpp
     src/spine_extension.cpp
-    src/spine_manager.cpp
     src/texture.cpp
     src/texture_manager.cpp
     src/vertex_buffer.cpp
@@ -44,6 +43,7 @@ set(SOURCE_FILES
     src/vulkan_model.cpp
     src/vulkan_queue.cpp
     src/vulkan_render_system.cpp
+    src/vulkan_spine_manager.cpp
     src/vulkan_swapchain.cpp
 )
 
