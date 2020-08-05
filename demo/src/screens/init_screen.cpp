@@ -424,12 +424,10 @@ void InitScreen::on_load(Game& game) {
 
     //  Load assets
     AssetManager& asset_mgr = engine.get_asset_manager();
-    Renderer& render_sys = engine.get_render_system();
     asset_mgr.load_model("assets/models/model2.glb");
     asset_mgr.load_model("assets/models/model.obj");
 
-    asset_mgr.load_spine("assets/spine/goblins/goblins");
-
+    //  Load textures
     asset_mgr.load_texture("assets/textures/missing.png");
     asset_mgr.load_texture("assets/textures/model.png");
     asset_mgr.load_texture("assets/textures/model2.png");
@@ -443,6 +441,9 @@ void InitScreen::on_load(Game& game) {
 
     asset_mgr.load_texture("assets/textures/sprite.png", tex_args);
     asset_mgr.load_texture("assets/textures/billboard.png", tex_args);
+
+    //  Load Spine assets
+    asset_mgr.load_spine("assets/spine/goblins/goblins");
 
     //  Next screen
     load_demo_screen(game);
