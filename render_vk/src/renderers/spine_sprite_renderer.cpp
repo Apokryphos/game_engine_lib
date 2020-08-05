@@ -2,12 +2,13 @@
 #include "render_vk/command_pool.hpp"
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/descriptor_set_layout.hpp"
-#include "render_vk/model_manager.hpp"
 #include "render_vk/renderers/spine_sprite_renderer.hpp"
 #include "render_vk/shader.hpp"
+#include "render_vk/spine_model.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/vertex.hpp"
 #include "render_vk/vulkan_model.hpp"
+#include "render_vk/vulkan_spine_manager.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <cassert>
 #include <spine/spine.h>
@@ -101,8 +102,8 @@ static void draw_spine_sprite_batch(SpineSpriteBatch batch) {
 }
 
 //  ----------------------------------------------------------------------------
-SpineSpriteRenderer::SpineSpriteRenderer(ModelManager& model_mgr)
-: m_model_mgr(model_mgr) {
+SpineSpriteRenderer::SpineSpriteRenderer(VulkanSpineManager& spine_mgr)
+: m_spine_mgr(spine_mgr) {
 }
 
 //  ----------------------------------------------------------------------------
@@ -202,25 +203,29 @@ void SpineSpriteRenderer::draw_sprites(
         nullptr
     );
 
-    //  Get sprite quad
-    const VulkanModel& quad = m_model_mgr.get_sprite_quad();
-
-    //  Keep track of model index because of dynamic buffer alignment
     for (const SpineSpriteBatch& batch : batches) {
+        //  Get sprite quad
+        const SpineModel* spine_model = m_spine_mgr.get_spine_model(batch.asset.id);
+        if (spine_model == nullptr) {
+            continue;
+        }
+
+        const VulkanModel& model = spine_model->model;
+
         //  Bind vertex buffer
-        VkBuffer vertex_buffers[] = { quad.get_vertex_buffer() };
+        VkBuffer vertex_buffers[] = { model.get_vertex_buffer() };
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
 
         //  Bind index buffer
         vkCmdBindIndexBuffer(
             command_buffer,
-            quad.get_index_buffer(),
+            model.get_index_buffer(),
             0,
             VK_INDEX_TYPE_UINT32
         );
 
-        const uint32_t index_count = quad.get_index_count();
+        const uint32_t index_count = model.get_index_count();
 
         //  Texture ID
         vkCmdPushConstants(

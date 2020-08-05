@@ -1,5 +1,5 @@
 #include "common/log.hpp"
-#include "render/texture_create_args.hpp"
+#include "assets/texture_create_args.hpp"
 #include "render_vk/buffer.hpp"
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/debug_utils.hpp"
@@ -10,8 +10,8 @@
 #include <lodepng.h>
 #include <stdexcept>
 
+using namespace assets;
 using namespace common;
-using namespace render;
 
 namespace render_vk
 {

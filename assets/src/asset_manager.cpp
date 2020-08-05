@@ -4,7 +4,6 @@
 #include <algorithm>
 
 using namespace common;
-using namespace render;
 
 namespace assets
 {
@@ -121,7 +120,7 @@ AssetId AssetManager::load_spine(
 //  ----------------------------------------------------------------------------
 AssetId AssetManager::load_spine(
     const std::string& path,
-    const render::TextureCreateArgs args
+    const TextureCreateArgs args
 ) {
     SpineLoadArgs load_args {};
     load_args.path = path;
@@ -156,7 +155,7 @@ AssetId AssetManager::load_texture(
 //  ----------------------------------------------------------------------------
 AssetId AssetManager::load_texture(
     const std::string& path,
-    const render::TextureCreateArgs args
+    const TextureCreateArgs args
 ) {
     TextureLoadArgs load_args {};
     load_args.path = path;

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "assets/asset_task_manager.hpp"
+#include "assets/texture_create_args.hpp"
 #include "common/job_queue.hpp"
-#include "render/texture_create_args.hpp"
 #include "render_vk/vulkan.hpp"
 #include <future>
 #include <memory>
@@ -68,7 +68,7 @@ private:
     Texture thread_load_texture(
         const TextureId texture_id,
         const std::string& path,
-        const render::TextureCreateArgs& create_args,
+        const assets::TextureCreateArgs& create_args,
         ThreadState& state
     );
     void thread_main(uint8_t thread_id);
@@ -94,13 +94,13 @@ public:
     virtual void load_spine(
         assets::AssetId id,
         assets::SpineLoadArgs& load_args,
-        const render::TextureCreateArgs& args
+        const assets::TextureCreateArgs& args
     ) override;
     //  Enqueues a load texture job for worker threads to complete
     virtual void load_texture(
         assets::AssetId id,
         assets::TextureLoadArgs& load_args,
-        const render::TextureCreateArgs& create_args
+        const assets::TextureCreateArgs& create_args
     ) override;
     void shutdown();
     void start_threads();

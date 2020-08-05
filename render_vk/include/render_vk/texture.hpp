@@ -4,7 +4,7 @@
 #include "render_vk/vulkan.hpp"
 #include <string>
 
-namespace render
+namespace assets
 {
 struct TextureCreateArgs;
 }
@@ -35,7 +35,7 @@ void create_texture(
     VulkanQueue& transfer_queue,
     VkCommandPool command_pool,
     const std::string& filename,
-    const render::TextureCreateArgs& args,
+    const assets::TextureCreateArgs& args,
     Texture& texture
 );
 

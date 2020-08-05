@@ -10,6 +10,7 @@ add_library(render ${SOURCE_FILES})
 target_include_directories(render PUBLIC include)
 
 target_link_libraries(render
+    assets
     common
     glm
     platform

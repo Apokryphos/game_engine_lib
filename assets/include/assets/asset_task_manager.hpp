@@ -3,8 +3,8 @@
 #include "assets/asset_id.hpp"
 #include "assets/spine_load_args.hpp"
 #include "assets/texture_asset.hpp"
+#include "assets/texture_create_args.hpp"
 #include "assets/texture_load_args.hpp"
-#include "render/texture_create_args.hpp"
 #include <future>
 #include <memory>
 #include <mutex>
@@ -15,6 +15,8 @@
 
 namespace assets
 {
+struct TextureCreateArgs;
+
 class AssetTaskManager
 {
 public:
@@ -32,13 +34,13 @@ public:
     virtual void load_spine(
         AssetId id,
         SpineLoadArgs& load_args,
-        const render::TextureCreateArgs& args
+        const TextureCreateArgs& args
     ) = 0;
     //  Enqueues a load texture job for worker threads to complete
     virtual void load_texture(
         AssetId id,
         TextureLoadArgs& load_args,
-        const render::TextureCreateArgs& args
+        const TextureCreateArgs& args
     ) = 0;
 };
 }

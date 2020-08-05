@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render/model_batch.hpp"
+#include "render/spine_sprite_batch.hpp"
 #include "render/renderer.hpp"
 #include "render_vk/color_image.hpp"
 #include "render_vk/descriptor_sets.hpp"
@@ -24,6 +25,7 @@ class ModelManager;
 class ModelRenderer;
 class RenderTaskManager;
 class SpriteRenderer;
+class SpineSpriteRenderer;
 class TextureManager;
 class VulkanSpineManager;
 
@@ -113,6 +115,7 @@ private:
     //  Renderers
     std::unique_ptr<BillboardRenderer> m_billboard_renderer;
     std::unique_ptr<ModelRenderer> m_model_renderer;
+    std::unique_ptr<SpineSpriteRenderer> m_spine_sprite_renderer;
     std::unique_ptr<SpriteRenderer> m_sprite_renderer;
 
     //  Checks the status of the current frame's rendering tasks.
@@ -142,6 +145,9 @@ public:
     ) override;
     virtual void draw_models(
         std::vector<render::ModelBatch>& batches
+    ) override;
+    virtual void draw_spines(
+        std::vector<render::SpineSpriteBatch>& batches
     ) override;
     virtual void draw_sprites(
         std::vector<render::SpriteBatch>& batches

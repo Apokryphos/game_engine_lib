@@ -3,7 +3,7 @@
 #include "assets/asset_id.hpp"
 #include "assets/spine_load_args.hpp"
 #include "assets/texture_load_args.hpp"
-#include "render/texture_create_args.hpp"
+#include "assets/texture_create_args.hpp"
 #include <memory>
 #include <string>
 #include <vector>
@@ -51,19 +51,19 @@ public:
     AssetId load_model(const std::string& path);
     AssetId load_spine(
         SpineLoadArgs& load_args,
-        const render::TextureCreateArgs args = {}
+        const TextureCreateArgs args = {}
     );
     AssetId load_spine(
         const std::string& path,
-        const render::TextureCreateArgs args = {}
+        const TextureCreateArgs args = {}
     );
     AssetId load_texture(
         TextureLoadArgs& load_args,
-        const render::TextureCreateArgs args = {}
+        const TextureCreateArgs args = {}
     );
     AssetId load_texture(
         const std::string& path,
-        const render::TextureCreateArgs args = {}
+        const TextureCreateArgs args = {}
     );
     void unload_model(const AssetId id);
     void unload_models();

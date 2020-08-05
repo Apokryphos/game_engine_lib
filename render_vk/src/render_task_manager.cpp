@@ -11,6 +11,7 @@
 #include "render_vk/render_tasks/task_update_uniforms.hpp"
 #include "render_vk/renderers/billboard_renderer.hpp"
 #include "render_vk/renderers/model_renderer.hpp"
+#include "render_vk/renderers/spine_sprite_renderer.hpp"
 #include "render_vk/renderers/sprite_renderer.hpp"
 #include "render_vk/texture.hpp"
 #include "render_vk/texture_manager.hpp"
@@ -436,6 +437,26 @@ void RenderTaskManager::draw_models(
 }
 
 //  ----------------------------------------------------------------------------
+void RenderTaskManager::draw_spines(
+    SpineSpriteRenderer& renderer,
+    const std::vector<SpineSpriteBatch>& batches
+) {
+    //  Ignore empty batches. Batches with pending assets will have already been
+    //  discarded.
+    if (batches.empty()) {
+        // log_debug("Discarded draw Spine sprites call with zero batches.");
+        return;
+    }
+
+    Job job{};
+    job.task_id = TaskId::DrawSpines;
+    job.renderer = &renderer;
+    job.spine_batches.reserve(batches.size());
+
+    add_job(job);
+}
+
+//  ----------------------------------------------------------------------------
 void RenderTaskManager::draw_sprites(
     SpriteRenderer& renderer,
     const std::vector<SpriteBatch>& batches
@@ -656,6 +677,18 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
                     command_buffer
                 );
                 stopwatch.stop(thread_name+"_draw_sprites");
+                break;
+            }
+
+            case TaskId::DrawSpines: {
+                stopwatch.start(thread_name+"_draw_spines");
+                SpineSpriteRenderer* spine_renderer = static_cast<SpineSpriteRenderer*>(job.renderer);
+                spine_renderer->draw_sprites(
+                    job.spine_batches,
+                    frame.descriptor,
+                    command_buffer
+                );
+                stopwatch.stop(thread_name+"_draw_spines");
                 break;
             }
 

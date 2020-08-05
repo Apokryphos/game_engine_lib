@@ -8,7 +8,7 @@
 namespace render_vk
 {
 struct DescriptorSetLayouts;
-class ModelManager;
+class VulkanSpineManager;
 struct VulkanSwapchain;
 
 //  Draws 2D Spine sprites.
@@ -20,10 +20,10 @@ class SpineSpriteRenderer
     VkPipelineLayout m_pipeline_layout  {VK_NULL_HANDLE};
     VkPipeline m_pipeline               {VK_NULL_HANDLE};
 
-    ModelManager& m_model_mgr;
+    VulkanSpineManager& m_spine_mgr;
 
 public:
-    SpineSpriteRenderer(ModelManager& model_mgr);
+    SpineSpriteRenderer(VulkanSpineManager& model_mgr);
     SpineSpriteRenderer(const SpineSpriteRenderer&) = delete;
     SpineSpriteRenderer& operator=(const SpineSpriteRenderer&) = delete;
     //  Creates resources

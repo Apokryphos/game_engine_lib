@@ -1,6 +1,6 @@
 #include "assets/asset_manager.hpp"
+#include "assets/texture_create_args.hpp"
 #include "common/log.hpp"
-#include "render/texture_create_args.hpp"
 #include "render_vk/mesh.hpp"
 #include "render_vk/spine.hpp"
 #include "render_vk/spine_model.hpp"
@@ -11,7 +11,6 @@
 
 using namespace assets;
 using namespace common;
-using namespace render;
 using namespace spine;
 
 namespace render_vk

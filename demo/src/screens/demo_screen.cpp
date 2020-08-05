@@ -103,6 +103,7 @@ void DemoScreen::on_render(Game& game) {
     //  Batch Spine sprites
     std::vector<SpineSpriteBatch> spine_sprite_batches;
     demo_sys.batch_spines(game, view, proj, spine_sprite_batches);
+    render_sys.draw_spines(spine_sprite_batches);
 
     //  Batch sprites
     std::vector<SpriteBatch> sprite_batches;

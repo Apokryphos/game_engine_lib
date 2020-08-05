@@ -3,6 +3,7 @@
 #include "render/model_batch.hpp"
 #include "render/render_api.hpp"
 #include "render/sprite_batch.hpp"
+#include "render/spine_sprite_batch.hpp"
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -16,7 +17,6 @@ namespace render
 {
 class Model;
 class ModelRenderer;
-struct TextureCreateArgs;
 
 class Renderer
 {
@@ -33,6 +33,9 @@ public:
     ) = 0;
     virtual void draw_models(
         std::vector<ModelBatch>& batches
+    ) = 0;
+    virtual void draw_spines(
+        std::vector<SpineSpriteBatch>& batches
     ) = 0;
     virtual void draw_sprites(
         std::vector<SpriteBatch>& batches

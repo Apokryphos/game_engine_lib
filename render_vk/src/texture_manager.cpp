@@ -1,11 +1,11 @@
+#include "assets/texture_create_args.hpp"
 #include "common/log.hpp"
-#include "render/texture_create_args.hpp"
 #include "render_vk/texture_manager.hpp"
 #include "render_vk/vulkan_queue.hpp"
 #include <algorithm>
 
+using namespace assets;
 using namespace common;
-using namespace render;
 
 namespace render_vk
 {

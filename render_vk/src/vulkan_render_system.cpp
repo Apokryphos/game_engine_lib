@@ -21,6 +21,7 @@
 #include "render_vk/renderers/billboard_renderer.hpp"
 #include "render_vk/renderers/model_renderer.hpp"
 #include "render_vk/renderers/sprite_renderer.hpp"
+#include "render_vk/renderers/spine_sprite_renderer.hpp"
 #include "render_vk/vulkan_render_system.hpp"
 #include "render_vk/vulkan_model.hpp"
 #include "render_vk/vulkan_queue.hpp"
@@ -271,6 +272,14 @@ void VulkanRenderSystem::create_swapchain_dependents() {
         m_descriptor_set_layouts
     );
 
+    m_spine_sprite_renderer->create_objects(
+        m_device,
+        m_swapchain,
+        m_render_pass,
+        m_msaa_samples,
+        m_descriptor_set_layouts
+    );
+
     m_sprite_renderer->create_objects(
         m_device,
         m_swapchain,
@@ -350,6 +359,7 @@ void VulkanRenderSystem::destroy_swapchain() {
 
     m_billboard_renderer->destroy_objects();
     m_model_renderer->destroy_objects();
+    m_spine_sprite_renderer->destroy_objects();
     m_sprite_renderer->destroy_objects();
 
     imgui_vulkan_cleanup_swapchain(m_device);
@@ -377,6 +387,13 @@ void VulkanRenderSystem::draw_models(
     std::vector<render::ModelBatch>& batches
 ) {
     m_render_task_mgr->draw_models(*m_model_renderer, batches);
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanRenderSystem::draw_spines(
+    std::vector<render::SpineSpriteBatch>& batches
+) {
+    m_render_task_mgr->draw_spines(*m_spine_sprite_renderer, batches);
 }
 
 //  ----------------------------------------------------------------------------
@@ -616,6 +633,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
 
     m_billboard_renderer = std::make_unique<BillboardRenderer>(*m_model_mgr);
     m_model_renderer = std::make_unique<ModelRenderer>(*m_model_mgr);
+    m_spine_sprite_renderer = std::make_unique<SpineSpriteRenderer>(*m_spine_mgr);
     m_sprite_renderer = std::make_unique<SpriteRenderer>(*m_model_mgr);
 
     create_swapchain_objects();

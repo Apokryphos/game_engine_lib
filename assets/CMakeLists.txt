@@ -17,6 +17,5 @@ target_include_directories(assets PUBLIC include)
 
 target_link_libraries(assets
     common
-    render
 )
 

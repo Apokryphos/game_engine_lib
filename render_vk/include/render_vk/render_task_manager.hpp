@@ -4,6 +4,7 @@
 #include "common/job_queue.hpp"
 #include "render/model_batch.hpp"
 #include "render/sprite_batch.hpp"
+#include "render/spine_sprite_batch.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
 #include "render_vk/frame_objects.hpp"
 #include "render_vk/ubo.hpp"
@@ -24,6 +25,7 @@ class DescriptorSetManager;
 class BillboardRenderer;
 class ModelManager;
 class ModelRenderer;
+class SpineSpriteRenderer;
 class SpriteRenderer;
 class TextureManager;
 
@@ -42,6 +44,7 @@ class RenderTaskManager
         None,
         DrawBillboards,
         DrawModels,
+        DrawSpines,
         DrawSprites,
         UpdateFrameUniforms,
         UpdateObjectUniforms,
@@ -60,6 +63,7 @@ class RenderTaskManager
         FrameUbo frame_ubo;
         std::vector<render::ModelBatch> batches;
         std::vector<render::SpriteBatch> sprite_batches;
+        std::vector<render::SpineSpriteBatch> spine_batches;
     };
 
     //  Frame objects for worker threads
@@ -121,6 +125,7 @@ class RenderTaskManager
                 //  Tasks that generate secondary command buffers
                 case TaskId::DrawBillboards:
                 case TaskId::DrawModels:
+                case TaskId::DrawSpines:
                 case TaskId::DrawSprites:
                     m_command_buffers[order] = command_buffer;
                     break;
@@ -233,6 +238,10 @@ public:
     void draw_models(
         ModelRenderer& renderer,
         const std::vector<render::ModelBatch>& batches
+    );
+    void draw_spines(
+        SpineSpriteRenderer& renderer,
+        const std::vector<render::SpineSpriteBatch>& batches
     );
     void draw_sprites(
         SpriteRenderer& renderer,

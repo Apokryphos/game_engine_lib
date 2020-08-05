@@ -6,7 +6,7 @@
 #include <mutex>
 #include <vector>
 
-namespace render
+namespace assets
 {
 struct TextureCreateArgs;
 }
@@ -51,7 +51,7 @@ public:
         const std::string& path,
         VulkanQueue& queue,
         VkCommandPool command_pool,
-        const render::TextureCreateArgs& args
+        const assets::TextureCreateArgs& args
     );
     bool texture_exists(const TextureId texture_id) const;
     void update_textures();

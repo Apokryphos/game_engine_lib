@@ -1,7 +1,7 @@
 #include "assets/spine_asset_promise.hpp"
+#include "assets/texture_create_args.hpp"
 #include "common/log.hpp"
 #include "common/stopwatch.hpp"
-#include "render/texture_create_args.hpp"
 #include "render_vk/command_buffer.hpp"
 #include "render_vk/command_pool.hpp"
 #include "render_vk/debug_utils.hpp"
@@ -17,7 +17,6 @@
 
 using namespace assets;
 using namespace common;
-using namespace render;
 
 namespace render_vk
 {
@@ -126,7 +125,7 @@ void VulkanAssetTaskManager::load_model(uint32_t id, const std::string& path) {
 void VulkanAssetTaskManager::load_spine(
     AssetId id,
     SpineLoadArgs& load_args,
-    const render::TextureCreateArgs& create_args
+    const TextureCreateArgs& create_args
 ) {
     auto job = std::make_unique<SpineJob>();
     job->task_id = TaskId::LoadSpine;

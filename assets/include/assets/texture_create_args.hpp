@@ -1,8 +1,8 @@
 #pragma once
 
-#include "render/texture_filter.hpp"
+#include "assets/texture_filter.hpp"
 
-namespace render
+namespace assets
 {
 struct TextureCreateArgs
 {
