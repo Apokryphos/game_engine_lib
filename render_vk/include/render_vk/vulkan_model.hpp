@@ -1,11 +1,20 @@
 #pragma once
 
 #include "assets/asset_id.hpp"
+#include "render_vk/vulkan.hpp"
+#include <vector>
 
 namespace render_vk
 {
 struct Mesh;
 class VulkanQueue;
+
+struct ModelMesh
+{
+    uint32_t index_count;
+    uint32_t index_offset;
+    uint32_t vertex_offset;
+};
 
 class VulkanModel
 {
@@ -18,6 +27,7 @@ class VulkanModel
     VkDeviceMemory m_vertex_buffer_memory;
     VkBuffer m_index_buffer;
     VkDeviceMemory m_index_buffer_memory;
+    std::vector<ModelMesh> m_meshes;
 
 public:
     VulkanModel(const assets::AssetId id = 0)
@@ -41,6 +51,10 @@ public:
         return m_index_count;
     }
 
+    inline const std::vector<ModelMesh>& get_meshes() const {
+        return m_meshes;
+    }
+
     inline VkBuffer get_vertex_buffer() const {
         return m_vertex_buffer;
     }
@@ -51,6 +65,14 @@ public:
         VulkanQueue& graphics_queue,
         VkCommandPool command_pool,
         Mesh& mesh
+    );
+
+    void load(
+        VkPhysicalDevice physical_device,
+        VkDevice device,
+        VulkanQueue& graphics_queue,
+        VkCommandPool command_pool,
+        std::vector<Mesh>& meshes
     );
 
     void unload();

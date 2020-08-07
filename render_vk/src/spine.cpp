@@ -42,7 +42,7 @@ public:
 static void populate_mesh(
     spine::SkeletonData* skeleton_data,
     spine::Skeleton* skeleton,
-    Mesh& mesh,
+    std::vector<Mesh>& meshes,
     std::vector<AttachmentInfo>& attachment_infos
 ) {
     assert(skeleton_data != nullptr);
@@ -54,13 +54,11 @@ static void populate_mesh(
     auto& slots = skeleton->getSlots();
     const auto slot_count = slots.size();
 
-    uint32_t vrt = 0;
-    uint32_t idx = 0;
-    uint32_t index_offset = 0;
-    AttachmentInfo attachment_info {};
-
     for (size_t n = 0; n < skin_count; ++n) {
+        AttachmentInfo attachment_info {};
         for (int s = 0; s < slot_count; ++s) {
+            Mesh mesh {};
+
             Skin* skin = skins[n];
             attachment_info.skin = n;
 
@@ -85,7 +83,6 @@ static void populate_mesh(
             );
 
             Vector<float> vertices;
-            unsigned short quadIndices[] = {0, 1, 2, 2, 3, 0};
 
             if (attachment->getRTTI().isExactly(RegionAttachment::rtti)) {
                 RegionAttachment* regionAttachment = (RegionAttachment*)attachment;
@@ -102,7 +99,7 @@ static void populate_mesh(
                 // the rectangular region attachment. This assumes the world transform of the
                 // bone to which the slot (and hence attachment) is attached has been calculated
                 // before rendering via Skeleton::updateWorldTransform(). The vertex positions
-                // will be written directoy into the vertices array, with a stride of sizeof(Vertex)
+                // will be written directly into the vertices array, with a stride of sizeof(Vertex)
                 regionAttachment->computeWorldVertices(
                     slot->getBone(),
                     &vertices.buffer()[0],
@@ -110,32 +107,33 @@ static void populate_mesh(
                     2
                 );
 
-                // copy color and UVs to the vertices
-                for (size_t j = 0, l = 0; j < 4; j++, l+=2) {
+                Vector<float>& uv = regionAttachment->getUVs();
 
-                    mesh.vertices[vrt].position = glm::vec3(vertices[l+0], vertices[l+1], 0.0f);
-                    mesh.vertices[vrt].color = glm::vec3(tint.r, tint.g, tint.b);
-                    mesh.vertices[vrt].tex_coord = glm::vec2(
-                        regionAttachment->getUVs()[l],
-                        regionAttachment->getUVs()[l + 1]
-                    );
-                    ++vrt;
+                // copy color and UVs to the vertices
+                mesh.vertices.resize(4);
+                for (size_t j = 0, l = 0; j < 4; j++, l+=2) {
+                    mesh.vertices[j].position = glm::vec3(vertices[l+0], vertices[l+1], 0.0f);
+                    mesh.vertices[j].color = glm::vec3(tint.r, tint.g, tint.b);
+                    mesh.vertices[j].tex_coord = glm::vec2(uv[l+0], uv[l+1]);
                 }
 
                 //  Counter-clockwise order
                 //  set the indices, 2 triangles forming a quad
+                static unsigned short quadIndices[] = {0, 1, 2, 2, 3, 0};
+                mesh.indices.resize(6);
                 for (int n = 0; n < 6; ++n) {
-                    mesh.indices[idx++] = index_offset + quadIndices[n];
+                    mesh.indices[n] = quadIndices[n];
                 }
-                index_offset += 4;
             } else if (attachment->getRTTI().isExactly(MeshAttachment::rtti)) {
                 MeshAttachment* meshAttachment = (MeshAttachment*)attachment;
 
-                Vector<float>& vertices = meshAttachment->getVertices();
-                meshAttachment->computeWorldVertices(*slot, vertices);
+                // Vector<float>& vertices = meshAttachment->getVertices();
+                vertices.setSize(meshAttachment->getVertices().size(), 0);
 
+                meshAttachment->computeWorldVertices(*slot, vertices);
                 const auto vertex_count = vertices.size() / 2;
 
+                meshAttachment->updateUVs();
                 Vector<float>& uv = meshAttachment->getUVs();
                 const auto uv_count = uv.size() / 2;
 
@@ -146,21 +144,19 @@ static void populate_mesh(
                 }
 
                 // copy color and UVs to the vertices
+                mesh.vertices.resize(vertex_count);
                 for (size_t j = 0, l = 0; j < vertex_count; j++, l+=2) {
-                    mesh.vertices[vrt].position = glm::vec3(vertices[l+0], vertices[l+1], 0.0f);
-                    mesh.vertices[vrt].color = glm::vec3(tint.r, tint.g, tint.b);
-                    mesh.vertices[vrt].tex_coord = glm::vec2(uv[l], uv[l + 1]);
-                    ++vrt;
+                    mesh.vertices[j].position = glm::vec3(vertices[l+0], vertices[l+1], 0.0f);
+                    mesh.vertices[j].color = glm::vec3(tint.r, tint.g, tint.b);
+                    mesh.vertices[j].tex_coord = glm::vec2(uv[l+0], uv[l+1]);
                 }
 
                 //  Counter-clockwise order
                 auto& triangles = meshAttachment->getTriangles();
-                for (int t = 0; t < triangles.size(); ++t) {
-                    mesh.indices[idx++] = index_offset + triangles[t];
+                mesh.indices.resize(triangles.size());
+                for (size_t t = 0; t < triangles.size(); ++t) {
+                    mesh.indices[t] = triangles[t];
                 }
-                index_offset += triangles.size();
-
-
             } else {
                 //  Skip adding attachment info
                 continue;
@@ -168,50 +164,10 @@ static void populate_mesh(
 
             attachment_infos.push_back(attachment_info);
             ++attachment_info.index;
+
+            meshes.push_back(mesh);
         }
     }
-
-    mesh.vertices.resize(vrt);
-    mesh.indices.resize(idx);
-}
-
-//  ----------------------------------------------------------------------------
-static void reserve_mesh(Mesh& mesh, SkeletonData& skeleton_data) {
-    const Vector<SlotData*>& slots = skeleton_data.getSlots();
-    const auto slot_count = slots.size();
-
-    Vector<Skin*>& skins = skeleton_data.getSkins();
-    const auto skin_count = skins.size();
-
-    uint64_t vertex_count = 0;
-    uint64_t index_count = 0;
-
-    for (uint32_t skin_index = 0; skin_index < skin_count; ++skin_index) {
-        for (uint32_t slot_index = 0; slot_index < slot_count; ++slot_index) {
-            Vector<Attachment*> attachments;
-            skins[skin_index]->findAttachmentsForSlot(slot_index, attachments);
-
-            const auto attachment_count = attachments.size();
-            for (auto attachment_index = 0; attachment_index < attachment_count; ++ attachment_index) {
-                Attachment* attachment = attachments[attachment_index];
-                if (attachment == nullptr) {
-                    continue;
-                }
-
-                if (attachment->getRTTI().isExactly(RegionAttachment::rtti)) {
-                    vertex_count += 4;
-                    index_count += 6;
-                } else if (attachment->getRTTI().isExactly(MeshAttachment::rtti)) {
-                    MeshAttachment* mesh_attach = static_cast<MeshAttachment*>(attachment);
-                    vertex_count += mesh_attach->getWorldVerticesLength() / 2;
-                    index_count += mesh_attach->getTriangles().size();
-                }
-            }
-        }
-    }
-
-    mesh.vertices.resize(vertex_count);
-    mesh.indices.resize(index_count);
 }
 
 //  ----------------------------------------------------------------------------
@@ -257,11 +213,10 @@ std::unique_ptr<SpineModel> load_spine(
     spine_model->texture_loader = std::move(texture_loader);
 
     //  Estimate mesh vertex and index count
-    reserve_mesh(spine_model->mesh, *skeleton_data);
     populate_mesh(
         spine_model->skeleton_data,
         spine_model->skeleton.get(),
-        spine_model->mesh,
+        spine_model->meshes,
         spine_model->attachment_infos
     );
 

@@ -256,7 +256,7 @@ void VulkanAssetTaskManager::thread_main(uint8_t thread_id) {
                     m_device,
                     m_queue,
                     state.command_pool,
-                    spine_model->mesh
+                    spine_model->meshes
                 );
 
                 //  Fulfill optional promise

@@ -149,8 +149,15 @@ void SpineSpriteRenderer::draw_sprites(
 
         //  Bind vertex buffer
         VkBuffer vertex_buffers[] = { model.get_vertex_buffer() };
-        VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+        VkDeviceSize vertex_offsets[] = { 0 };
+
+        vkCmdBindVertexBuffers(
+            command_buffer,
+            0,
+            1,
+            vertex_buffers,
+            vertex_offsets
+        );
 
         //  Bind index buffer
         vkCmdBindIndexBuffer(
@@ -159,8 +166,6 @@ void SpineSpriteRenderer::draw_sprites(
             0,
             VK_INDEX_TYPE_UINT32
         );
-
-        const uint32_t index_count = model.get_index_count();
 
         //  Texture ID
         vkCmdPushConstants(
@@ -174,7 +179,7 @@ void SpineSpriteRenderer::draw_sprites(
 
         //  Draw each object
         for (uint32_t n = 0; n < batch.positions.size(); ++n) {
-            glm::mat4 model =
+            glm::mat4 model_matrix =
                 glm::translate(glm::mat4(1.0f), batch.positions[n]) *
                 glm::scale(glm::mat4(1.0f), batch.sizes[n]);
 
@@ -184,31 +189,39 @@ void SpineSpriteRenderer::draw_sprites(
                 VK_SHADER_STAGE_VERTEX_BIT,
                 0,
                 sizeof(glm::mat4),
-                &model
+                &model_matrix
             );
 
-            const uint32_t dynamic_align = static_cast<uint32_t>(m_spine_uniform.get_align());
+            uint32_t dynamic_object = n;
+            for (const AttachmentInfo& attachment_info : spine_model->attachment_infos){
+                const ModelMesh& mesh = model.get_meshes()[attachment_info.index];
 
-            vkCmdBindDescriptorSets(
-                command_buffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                m_pipeline_layout,
-                2,
-                1,
-                &descriptors.spine_set,
-                1,
-                &dynamic_align
-            );
+                const uint32_t dynamic_align =
+                    static_cast<uint32_t>(n * m_spine_uniform.get_align());
 
-            //  Draw
-            vkCmdDrawIndexed(
-                command_buffer,
-                index_count,
-                1,
-                0,
-                0,
-                1
-            );
+                vkCmdBindDescriptorSets(
+                    command_buffer,
+                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    m_pipeline_layout,
+                    2,
+                    1,
+                    &descriptors.spine_set,
+                    1,
+                    &dynamic_align
+                );
+
+                //  Draw
+                vkCmdDrawIndexed(
+                    command_buffer,
+                    mesh.index_count,
+                    1,
+                    mesh.index_offset,
+                    mesh.vertex_offset,
+                    1
+                );
+
+                ++n;
+            }
         }
     }
 

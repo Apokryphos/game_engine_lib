@@ -25,7 +25,8 @@ struct SpineModel
     std::unique_ptr<spine::Skeleton> skeleton;
     std::unique_ptr<spine::TextureLoader> texture_loader       {nullptr};
     std::vector<AttachmentInfo> attachment_infos;
-    Mesh mesh;
+    //  TODO: Meshes to load. Can discard after loading.
+    std::vector<Mesh> meshes;
     VulkanModel model;
 };
 }
