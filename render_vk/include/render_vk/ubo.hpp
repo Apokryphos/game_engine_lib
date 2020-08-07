@@ -21,4 +21,10 @@ struct ObjectUbo
     glm::mat4 model;
     uint32_t texture_index;
 };
+
+struct SpineUbo
+{
+    //  Transform matrix from parent bone
+    glm::mat4 transform;
+};
 }

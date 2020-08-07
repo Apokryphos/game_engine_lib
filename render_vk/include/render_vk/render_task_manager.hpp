@@ -194,6 +194,7 @@ class RenderTaskManager
     DescriptorSetLayouts& m_descriptor_set_layouts;
     //  Per-frame uniform buffer
     UniformBuffer<FrameUbo>& m_frame_uniform;
+    DynamicUniformBuffer<SpineUbo>& m_spine_uniform;
     //  Per-object dynamic uniform buffer
     DynamicUniformBuffer<ObjectUbo>& m_object_uniform;
     DescriptorSetManager& m_descriptor_set_mgr;
@@ -216,6 +217,7 @@ public:
         VkDevice device,
         DescriptorSetLayouts& descriptor_set_layouts,
         UniformBuffer<FrameUbo>& frame_uniform,
+        DynamicUniformBuffer<SpineUbo>& spine_uniform,
         DynamicUniformBuffer<ObjectUbo>& object_uniform,
         DescriptorSetManager& descriptor_set_mgr,
         ModelManager& model_mgr,

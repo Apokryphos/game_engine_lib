@@ -99,6 +99,7 @@ private:
     UniformBuffer<FrameUbo> m_frame_uniform;
     //  Per-object dynamic uniform buffer
     DynamicUniformBuffer<ObjectUbo> m_object_uniform;
+    DynamicUniformBuffer<SpineUbo> m_spine_uniform;
 
     //  Main thread frame objects
     std::vector<Frame> m_frames;

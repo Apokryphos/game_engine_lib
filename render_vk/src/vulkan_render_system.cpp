@@ -111,6 +111,7 @@ VulkanRenderSystem::VulkanRenderSystem()
 : Renderer(RenderApi::Vulkan),
   m_frames(m_frame_count),
   m_glfw_window(nullptr),
+  m_spine_uniform(MAX_OBJECTS),
   m_object_uniform(MAX_OBJECTS) {
     assert(m_frames.size() > 0);
 }
@@ -273,6 +274,7 @@ void VulkanRenderSystem::create_swapchain_dependents() {
     );
 
     m_spine_sprite_renderer->create_objects(
+        m_physical_device,
         m_device,
         m_swapchain,
         m_render_pass,
@@ -620,6 +622,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
 
     m_frame_uniform.create(m_physical_device, m_device);
     m_object_uniform.create(m_physical_device, m_device);
+    m_spine_uniform.create(m_physical_device, m_device);
 
     create_descriptor_set_layouts(m_device, MAX_TEXTURES, m_descriptor_set_layouts);
 
@@ -634,7 +637,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
 
     m_billboard_renderer = std::make_unique<BillboardRenderer>(*m_model_mgr);
     m_model_renderer = std::make_unique<ModelRenderer>(*m_model_mgr);
-    m_spine_sprite_renderer = std::make_unique<SpineSpriteRenderer>(*m_spine_mgr);
+    m_spine_sprite_renderer = std::make_unique<SpineSpriteRenderer>(m_spine_uniform, *m_spine_mgr);
     m_sprite_renderer = std::make_unique<SpriteRenderer>(*m_model_mgr);
 
     create_swapchain_objects();
@@ -666,6 +669,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         m_device,
         m_descriptor_set_layouts,
         m_frame_uniform,
+        m_spine_uniform,
         m_object_uniform,
         *m_descriptor_set_mgr,
         *m_model_mgr,
@@ -727,10 +731,14 @@ void VulkanRenderSystem::shutdown() {
 
     vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.frame, nullptr);
     // vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.object, nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.spine, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.texture_sampler, nullptr);
 
     m_frame_uniform.destroy();
     m_object_uniform.destroy();
+    m_spine_uniform.destroy();
+
+    m_spine_sprite_renderer->destroy_objects();
 
     //  Unload models
     m_model_mgr->unload(m_device);

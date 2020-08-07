@@ -12,6 +12,8 @@ struct FrameDescriptorObjects
     VkDescriptorSet frame_set  = VK_NULL_HANDLE;
     //  The per-object descriptor set for this frame.
     // VkDescriptorSet object_set = VK_NULL_HANDLE;
+    //  The per-object descriptor set for Spine models.
+    VkDescriptorSet spine_set = VK_NULL_HANDLE;
     //  The texture array descriptor set for this frame.
     VkDescriptorSet texture_set = VK_NULL_HANDLE;
 };

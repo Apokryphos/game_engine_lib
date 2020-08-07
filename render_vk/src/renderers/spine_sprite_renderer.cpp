@@ -19,6 +19,8 @@ using namespace spine;
 
 namespace render_vk
 {
+static const uint32_t MAX_OBJECTS = 10000;
+
 //  ----------------------------------------------------------------------------
 static void create_sprite_pipeline(
     VkDevice device,
@@ -31,12 +33,17 @@ static void create_sprite_pipeline(
 );
 
 //  ----------------------------------------------------------------------------
-SpineSpriteRenderer::SpineSpriteRenderer(VulkanSpineManager& spine_mgr)
-: m_spine_mgr(spine_mgr) {
+SpineSpriteRenderer::SpineSpriteRenderer(
+    DynamicUniformBuffer<SpineUbo>& spine_uniform,
+    VulkanSpineManager& spine_mgr
+)
+: m_spine_mgr(spine_mgr),
+  m_spine_uniform(spine_uniform) {
 }
 
 //  ----------------------------------------------------------------------------
 void SpineSpriteRenderer::create_objects(
+    VkPhysicalDevice physical_device,
     VkDevice device,
     const VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
@@ -180,6 +187,19 @@ void SpineSpriteRenderer::draw_sprites(
                 &model
             );
 
+            const uint32_t dynamic_align = static_cast<uint32_t>(m_spine_uniform.get_align());
+
+            vkCmdBindDescriptorSets(
+                command_buffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                m_pipeline_layout,
+                2,
+                1,
+                &descriptors.spine_set,
+                1,
+                &dynamic_align
+            );
+
             //  Draw
             vkCmdDrawIndexed(
                 command_buffer,
@@ -200,6 +220,69 @@ void SpineSpriteRenderer::draw_sprites(
 }
 
 //  ----------------------------------------------------------------------------
+void calculate_transform(
+    SpineModel& model,
+    std::vector<SpineUbo>& ubos,
+    size_t& offset
+) {
+    auto skeleton_data = model.skeleton_data;
+    auto& skins = skeleton_data->getSkins();
+    const auto skin_count = skins.size();
+
+    auto skeleton = model.skeleton.get();
+    auto& slots = skeleton->getSlots();
+    const auto slot_count = slots.size();
+
+    for (size_t n = 0; n < model.attachment_infos.size(); ++n) {
+        AttachmentInfo& info = model.attachment_infos[n];
+
+        Skin* skin = skins[info.skin];
+        Slot* slot = slots[info.slot];
+        Bone& bone = slot->getBone();
+
+        bone.updateWorldTransform();
+
+        glm::mat4 transform(1.0f);
+        transform[0][0] = bone.getA();
+        transform[1][0] = bone.getB();
+        transform[0][1] = bone.getC();
+        transform[1][1] = bone.getD();
+
+        ubos[offset + n].transform = transform;
+    }
+
+    offset += model.attachment_infos.size();
+}
+
+//  ----------------------------------------------------------------------------
+void SpineSpriteRenderer::update_object_uniforms(
+    const std::vector<SpineSpriteBatch>& batches
+) {
+    //   Build vectors for uniform buffers
+    size_t object_count = 0;
+    for (const SpineSpriteBatch& batch : batches) {
+        SpineModel* model = m_spine_mgr.get_spine_model(batch.spine_id);
+        assert(model != nullptr);
+        object_count += (model->attachment_infos.size()) * batch.positions.size();
+    }
+    assert(object_count > 0);
+    assert(object_count < MAX_OBJECTS);
+
+    size_t offset = 0;
+    std::vector<SpineUbo> data(object_count);
+    for (const SpineSpriteBatch& batch : batches) {
+        for (const auto& pos : batch.positions)  {
+            SpineModel* model = m_spine_mgr.get_spine_model(batch.spine_id);
+            assert(model != nullptr);
+            calculate_transform(*model, data, offset);
+        }
+    }
+
+    //  Copy object UBO structs to dynamic uniform buffer
+    m_spine_uniform.copy(data);
+}
+
+//  ----------------------------------------------------------------------------
 static void create_sprite_pipeline(
     VkDevice device,
     const VulkanSwapchain& swapchain,
@@ -210,8 +293,8 @@ static void create_sprite_pipeline(
     VkPipeline& pipeline
 ) {
     //  Shaders
-    auto vert_shader_code = read_file("assets/shaders/vk/sprite_vert.spv");
-    auto frag_shader_code = read_file("assets/shaders/vk/sprite_frag.spv");
+    auto vert_shader_code = read_file("assets/shaders/vk/spine_sprite_vert.spv");
+    auto frag_shader_code = read_file("assets/shaders/vk/spine_sprite_frag.spv");
 
     VkShaderModule vert_shader_module = create_shader_module(device, vert_shader_code);
     VkShaderModule frag_shader_module = create_shader_module(device, frag_shader_code);
@@ -338,9 +421,10 @@ static void create_sprite_pipeline(
     dynamic_state.dynamicStateCount = 2;
     dynamic_state.pDynamicStates = dynamic_states;
 
-    std::array<VkDescriptorSetLayout, 2> set_layouts = {
+    std::array<VkDescriptorSetLayout, 3> set_layouts = {
         descriptor_set_layouts.frame,
         descriptor_set_layouts.texture_sampler,
+        descriptor_set_layouts.spine,
     };
 
     //  Push constants

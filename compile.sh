@@ -13,5 +13,8 @@ $VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/billboard.frag -o $OUTPUT_PATH/billboard_
 $VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/model.vert -o $OUTPUT_PATH/model_vert.spv
 $VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/model.frag -o $OUTPUT_PATH/model_frag.spv
 
+$VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/spine_sprite.vert -o $OUTPUT_PATH/spine_sprite_vert.spv
+$VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/spine_sprite.frag -o $OUTPUT_PATH/spine_sprite_frag.spv
+
 $VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/sprite.vert -o $OUTPUT_PATH/sprite_vert.spv
 $VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/sprite.frag -o $OUTPUT_PATH/sprite_frag.spv

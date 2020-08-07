@@ -8,6 +8,15 @@
 
 namespace render_vk
 {
+//  Stores attachment order for use with UBO data
+struct AttachmentInfo
+{
+    uint16_t index;
+    uint16_t slot;
+    uint16_t skin;
+    // uint16_t attachment;
+};
+
 struct SpineModel
 {
     spine::SkeletonData* skeleton_data                         {nullptr};
@@ -15,6 +24,7 @@ struct SpineModel
     std::unique_ptr<spine::Atlas> atlas                        {nullptr};
     std::unique_ptr<spine::Skeleton> skeleton;
     std::unique_ptr<spine::TextureLoader> texture_loader       {nullptr};
+    std::vector<AttachmentInfo> attachment_infos;
     Mesh mesh;
     VulkanModel model;
 };

@@ -50,6 +50,14 @@ void create_descriptor_sets(
         swapchain_image_count,
         descriptor_set_layouts.frame,
         descriptor_pool,
+        descriptor_sets.frame_sets
+    );
+
+    create_descriptor_sets(
+        device,
+        swapchain_image_count,
+        descriptor_set_layouts.frame,
+        descriptor_pool,
         descriptor_sets.texture_sets
     );
 

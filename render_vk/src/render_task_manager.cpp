@@ -125,6 +125,40 @@ void update_frame_descriptor_sets(
     );
 }
 
+
+//  ----------------------------------------------------------------------------
+void update_spine_descriptor_sets(
+    VkDevice device,
+    VkBuffer object_uniform_buffer,
+    VkDescriptorSet& descriptor_set
+) {
+    VkDescriptorBufferInfo object_buffer_info{};
+    object_buffer_info.buffer = object_uniform_buffer;
+    object_buffer_info.offset = 0;
+    object_buffer_info.range = VK_WHOLE_SIZE;
+
+    std::array<VkWriteDescriptorSet, 1> descriptor_writes{};
+
+    //  Per-object dynamic uniform buffer
+    descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[0].dstSet = descriptor_set;
+    descriptor_writes[0].dstBinding = 0;
+    descriptor_writes[0].dstArrayElement = 0;
+    descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    descriptor_writes[0].descriptorCount = 1;
+    descriptor_writes[0].pBufferInfo = &object_buffer_info;
+    descriptor_writes[0].pImageInfo = nullptr;
+    descriptor_writes[0].pTexelBufferView = nullptr;
+
+    vkUpdateDescriptorSets(
+        device,
+        static_cast<uint32_t>(descriptor_writes.size()),
+        descriptor_writes.data(),
+        0,
+        nullptr
+    );
+}
+
 //  ----------------------------------------------------------------------------
 void update_object_descriptor_sets(
     VkDevice device,
@@ -187,13 +221,13 @@ void create_descriptor_pool(
     const uint32_t sampler_count = MAX_TEXTURES;
     const uint32_t max_sets = 2 + (sampler_count);
 
-    std::array<VkDescriptorPoolSize, 2> pool_sizes{};
+    std::array<VkDescriptorPoolSize, 3> pool_sizes{};
     pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     pool_sizes[0].descriptorCount = 1;
-    // pool_sizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    // pool_sizes[1].descriptorCount = 1;
-    pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    pool_sizes[1].descriptorCount = sampler_count;
+    pool_sizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    pool_sizes[1].descriptorCount = 1;
+    pool_sizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    pool_sizes[2].descriptorCount = sampler_count;
 
     VkDescriptorPoolCreateInfo pool_info{};
     pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -211,6 +245,7 @@ static void create_descriptor_objects(
     VkDevice device,
     DescriptorSetLayouts descriptor_set_layouts,
     const UniformBuffer<FrameUbo>& frame_uniform,
+    const DynamicUniformBuffer<SpineUbo>& spine_uniform,
     const DynamicUniformBuffer<ObjectUbo>& object_uniform,
     const std::string& name_prefix,
     FrameDescriptorObjects& descriptor
@@ -223,6 +258,14 @@ static void create_descriptor_objects(
         descriptor.pool,
         name_prefix + "_frame_descriptor_set",
         descriptor.frame_set
+    );
+
+    create_descriptor_set(
+        device,
+        descriptor_set_layouts.spine,
+        descriptor.pool,
+        name_prefix + "_spine_descriptor_set",
+        descriptor.spine_set
     );
 
     create_descriptor_set(
@@ -246,6 +289,12 @@ static void create_descriptor_objects(
         frame_uniform.get_buffer(),
         frame_uniform.get_ubo_size(),
         descriptor.frame_set
+    );
+
+    update_spine_descriptor_sets(
+        device,
+        spine_uniform.get_buffer(),
+        descriptor.spine_set
     );
 
     // update_object_descriptor_sets(
@@ -317,6 +366,7 @@ RenderTaskManager::RenderTaskManager(
     VkDevice device,
     DescriptorSetLayouts& descriptor_set_layouts,
     UniformBuffer<FrameUbo>& frame_uniform,
+    DynamicUniformBuffer<SpineUbo>& spine_uniform,
     DynamicUniformBuffer<ObjectUbo>& object_uniform,
     DescriptorSetManager& descriptor_set_mgr,
     ModelManager& model_mgr,
@@ -326,6 +376,7 @@ RenderTaskManager::RenderTaskManager(
   m_device(device),
   m_descriptor_set_layouts(descriptor_set_layouts),
   m_frame_uniform(frame_uniform),
+  m_spine_uniform(spine_uniform),
   m_object_uniform(object_uniform),
   m_descriptor_set_mgr(descriptor_set_mgr),
   m_model_mgr(model_mgr),
@@ -556,6 +607,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             m_device,
             m_descriptor_set_layouts,
             m_frame_uniform,
+            m_spine_uniform,
             m_object_uniform,
             frame.name,
             frame.descriptor
@@ -703,6 +755,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             case TaskId::DrawSpines: {
                 stopwatch.start(thread_name+"_draw_spines");
                 SpineSpriteRenderer* spine_renderer = static_cast<SpineSpriteRenderer*>(job.renderer);
+                spine_renderer->update_object_uniforms(job.spine_batches);
                 spine_renderer->draw_sprites(
                     job.spine_batches,
                     frame.descriptor,
