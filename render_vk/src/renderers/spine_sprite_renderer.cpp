@@ -238,9 +238,9 @@ void calculate_transform(
     std::vector<SpineUbo>& ubos,
     size_t& offset
 ) {
-    auto skeleton_data = model.skeleton_data;
-    auto& skins = skeleton_data->getSkins();
-    const auto skin_count = skins.size();
+    // auto skeleton_data = model.skeleton_data;
+    // auto& skins = skeleton_data->getSkins();
+    // const auto skin_count = skins.size();
 
     auto skeleton = model.skeleton.get();
     auto& slots = skeleton->getSlots();
@@ -249,7 +249,7 @@ void calculate_transform(
     for (size_t n = 0; n < model.attachment_infos.size(); ++n) {
         AttachmentInfo& info = model.attachment_infos[n];
 
-        Skin* skin = skins[info.skin];
+        // Skin* skin = skins[info.skin];
         Slot* slot = slots[info.slot];
         Bone& bone = slot->getBone();
 
