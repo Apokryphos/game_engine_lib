@@ -52,13 +52,13 @@ void VulkanModel::load(
     uint32_t index_offset = 0;
     for (const Mesh& m : meshes) {
         mesh.vertices.insert(
-            mesh.vertices.begin(),
+            mesh.vertices.end(),
             m.vertices.begin(),
             m.vertices.end()
         );
 
         mesh.indices.insert(
-            mesh.indices.begin(),
+            mesh.indices.end(),
             m.indices.begin(),
             m.indices.end()
         );
