@@ -139,6 +139,8 @@ void SpineSpriteRenderer::draw_sprites(
         nullptr
     );
 
+    uint32_t dynamic_object = 0;
+
     for (const SpineSpriteBatch& batch : batches) {
         //  Get model
         const SpineModel* spine_model = m_spine_mgr.get_spine_model(batch.spine_id);
@@ -192,12 +194,13 @@ void SpineSpriteRenderer::draw_sprites(
                 &model_matrix
             );
 
-            uint32_t dynamic_object = n;
             for (const AttachmentInfo& attachment_info : spine_model->attachment_infos){
+                begin_debug_marker(command_buffer, attachment_info.attachment_name.c_str(), DEBUG_MARKER_COLOR_PURPLE);
+
                 const ModelMesh& mesh = model.get_meshes()[attachment_info.index];
 
                 const uint32_t dynamic_align =
-                    static_cast<uint32_t>(n * m_spine_uniform.get_align());
+                    static_cast<uint32_t>(dynamic_object * m_spine_uniform.get_align());
 
                 vkCmdBindDescriptorSets(
                     command_buffer,
@@ -220,7 +223,9 @@ void SpineSpriteRenderer::draw_sprites(
                     1
                 );
 
-                ++n;
+                end_debug_marker(command_buffer);
+
+                ++dynamic_object;
             }
         }
     }

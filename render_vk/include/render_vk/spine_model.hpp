@@ -14,6 +14,7 @@ struct AttachmentInfo
     uint16_t index;
     uint16_t slot;
     uint16_t skin;
+    std::string attachment_name;
     // uint16_t attachment;
 };
 

@@ -70,8 +70,7 @@ static void populate_mesh(
                 continue;
             }
 
-            // Texture* texture = NULL;
-            unsigned short* indices = NULL;
+            attachment_info.attachment_name = std::string(attachment->getName().buffer());
 
             Color skeleton_color = skeleton->getColor();
             Color slot_solor = slot->getColor();
