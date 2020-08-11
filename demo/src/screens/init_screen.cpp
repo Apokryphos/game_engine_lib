@@ -56,7 +56,7 @@ namespace demo
 {
 const int BILLBOARD_COUNT = 0;
 const int MODEL_COUNT     = 0;
-const int SPINE_COUNT     = 5;
+const int SPINE_COUNT     = 1;
 const int SPRITE_COUNT    = 0;
 
 //  ----------------------------------------------------------------------------
@@ -316,8 +316,8 @@ static void init_spines(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
 
-    std::uniform_int_distribution<int> x_dist(0, 1400);
-    std::uniform_int_distribution<int> y_dist(0, 1400);
+    std::uniform_int_distribution<int> x_dist(800, 800);
+    std::uniform_int_distribution<int> y_dist(800, 800);
 
     Random& random = game.get_random();
 
