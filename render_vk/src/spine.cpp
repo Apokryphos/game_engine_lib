@@ -192,6 +192,7 @@ static void populate_mesh(
             //  Rotate vertices
             for (Vertex& vertex : mesh.vertices) {
                 vertex.position = glm::rotateX(vertex.position, glm::radians(180.0f));
+                vertex.position.z = 0;
             }
 
             //  Reverse index order
