@@ -33,6 +33,26 @@ static void create_sprite_pipeline(
 );
 
 //  ----------------------------------------------------------------------------
+static void build_draw_order(
+    const SpineModel& model,
+    std::vector<uint32_t>& draw_order
+) {
+    auto& slots = model.skeleton->getDrawOrder();
+    for (uint32_t n = 0; n < slots.size(); ++n) {
+        Slot* slot = slots[n];
+        SlotData& slot_data = slot->getData();
+        uint32_t index = slot_data.getIndex();
+
+        for (const AttachmentInfo& info : model.attachment_infos) {
+            if (info.slot == index) {
+                draw_order.push_back(info.index);
+                break;
+            }
+        }
+    }
+}
+
+//  ----------------------------------------------------------------------------
 SpineSpriteRenderer::SpineSpriteRenderer(
     DynamicUniformBuffer<SpineUbo>& spine_uniform,
     VulkanSpineManager& spine_mgr
@@ -181,21 +201,34 @@ void SpineSpriteRenderer::draw_sprites(
 
         //  Draw each object
         for (uint32_t n = 0; n < batch.positions.size(); ++n) {
-            glm::mat4 model_matrix =
-                glm::translate(glm::mat4(1.0f), batch.positions[n]) *
-                glm::scale(glm::mat4(1.0f), batch.sizes[n]);
+            std::vector<uint32_t> draw_order;
+            build_draw_order(*spine_model, draw_order);
 
-            vkCmdPushConstants(
-                command_buffer,
-                m_pipeline_layout,
-                VK_SHADER_STAGE_VERTEX_BIT,
-                0,
-                sizeof(glm::mat4),
-                &model_matrix
-            );
+            for (const uint32_t attachment_index : draw_order){
+                const AttachmentInfo& attachment_info = spine_model->attachment_infos[attachment_index];
 
-            for (const AttachmentInfo& attachment_info : spine_model->attachment_infos){
                 begin_debug_marker(command_buffer, attachment_info.attachment_name.c_str(), DEBUG_MARKER_COLOR_PURPLE);
+
+                float layer = dynamic_object / static_cast<float>(MAX_OBJECTS);
+
+                glm::vec3 position(
+                    batch.positions[n].x,
+                    batch.positions[n].y,
+                    layer
+                );
+
+                glm::mat4 model_matrix =
+                    glm::translate(glm::mat4(1.0f), position) *
+                    glm::scale(glm::mat4(1.0f), batch.sizes[n]);
+
+                vkCmdPushConstants(
+                    command_buffer,
+                    m_pipeline_layout,
+                    VK_SHADER_STAGE_VERTEX_BIT,
+                    0,
+                    sizeof(glm::mat4),
+                    &model_matrix
+                );
 
                 const ModelMesh& mesh = model.get_meshes()[attachment_info.index];
 
@@ -261,10 +294,10 @@ void calculate_transform(
         bone.updateWorldTransform();
 
         glm::mat4 transform(1.0f);
-        transform[0][0] = bone.getA();
-        transform[1][0] = bone.getB();
-        transform[0][1] = bone.getC();
-        transform[1][1] = bone.getD();
+        // transform[0][0] = bone.getA();
+        // transform[1][0] = bone.getB();
+        // transform[0][1] = bone.getC();
+        // transform[1][1] = bone.getD();
 
         ubos[offset + n].transform = transform;
     }
