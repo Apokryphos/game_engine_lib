@@ -7,7 +7,9 @@
 #include "render_vk/texture.hpp"
 #include "render_vk/texture_id.hpp"
 #include <glm/mat4x4.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #include <spine/spine.h>
+#include <algorithm>
 #include <future>
 
 using namespace assets;
@@ -39,6 +41,97 @@ public:
 };
 
 //  ----------------------------------------------------------------------------
+template <typename T>
+static void copy_vertex_position(
+    T& positions,
+    std::vector<Vertex>& vertices
+) {
+    for (size_t n = 0, m = 0; m < positions.size(); n++, m+=2) {
+        vertices[n].position = glm::vec3(positions[m+0], positions[m+1], 0.0f);
+    }
+}
+
+//  ----------------------------------------------------------------------------
+static void copy_quad_indices(std::vector<uint32_t>& indices) {
+    static unsigned short quad_indices[] = { 0, 1, 2, 2, 3, 0 };
+    indices.resize(6);
+    for (int n = 0; n < 6; ++n) {
+        indices[n] = quad_indices[n];
+    }
+}
+
+//  ----------------------------------------------------------------------------
+static void copy_vertex_color(
+    const Color& color,
+    std::vector<Vertex>& vertices
+) {
+    for (size_t n = 0; n < vertices.size(); ++n) {
+        vertices[n].color = glm::vec3(color.r, color.g, color.b);
+    }
+}
+
+//  ----------------------------------------------------------------------------
+template <typename T>
+static void copy_vertex_uv(
+    T* attachment,
+    std::vector<Vertex>& vertices
+) {
+    Vector<float>& uv = attachment->getUVs();
+    for (size_t n = 0, m = 0; m < uv.size(); n++, m +=2 ) {
+        vertices[n].tex_coord = glm::vec2(uv[m+0], uv[m+1]);
+    }
+}
+
+//  ----------------------------------------------------------------------------
+static void load_mesh_attachment(
+    Slot* slot,
+    MeshAttachment* attachment,
+    const Color& tint,
+    Mesh& mesh
+) {
+    Vector<float> positions;
+    positions.setSize(attachment->getWorldVerticesLength(), 0);
+    attachment->computeWorldVertices(*slot, positions);
+    const auto vertex_count = positions.size() / 2;
+    mesh.vertices.resize(vertex_count);
+    copy_vertex_position(positions, mesh.vertices);
+
+    copy_vertex_color(tint, mesh.vertices);
+    copy_vertex_uv(attachment, mesh.vertices);
+
+    auto& triangles = attachment->getTriangles();
+    mesh.indices.resize(triangles.size());
+    for (size_t t = 0; t < triangles.size(); ++t) {
+        mesh.indices[t] = triangles[t];
+    }
+}
+
+//  ----------------------------------------------------------------------------
+static void load_region_attachment(
+    Slot* slot,
+    RegionAttachment* attachment,
+    const Color& tint,
+    Mesh& mesh
+) {
+    //  Position data
+    Vector<float> positions;
+    positions.setSize(8, 0);
+
+    attachment->computeWorldVertices(
+        slot->getBone(),
+        &positions.buffer()[0],
+        0,
+        2
+    );
+
+    mesh.vertices.resize(4);
+    copy_vertex_position(positions, mesh.vertices);
+    copy_vertex_color(tint, mesh.vertices);
+    copy_vertex_uv(attachment, mesh.vertices);
+    copy_quad_indices(mesh.indices);
+}
+
+//  ----------------------------------------------------------------------------
 static void populate_mesh(
     spine::SkeletonData* skeleton_data,
     spine::Skeleton* skeleton,
@@ -57,8 +150,6 @@ static void populate_mesh(
     for (size_t n = 0; n < skin_count; ++n) {
         AttachmentInfo attachment_info {};
         for (int s = 0; s < slot_count; ++s) {
-            Mesh mesh {};
-
             Skin* skin = skins[n];
             attachment_info.skin = n;
 
@@ -81,85 +172,30 @@ static void populate_mesh(
                 skeleton_color.a * slot_solor.a
             );
 
-            Vector<float> vertices;
+            Mesh mesh {};
 
             if (attachment->getRTTI().isExactly(RegionAttachment::rtti)) {
-                RegionAttachment* regionAttachment = (RegionAttachment*)attachment;
-
-                // Our engine specific Texture is stored in the AtlasRegion which was
-                // assigned to the attachment on load. It represents the texture atlas
-                // page that contains the image the region attachment is mapped to.
-                // texture = (Texture*)((AtlasRegion*)regionAttachment->getRendererObject())->page->getRendererObject();
-
-                // Ensure there is enough room for vertices
-                vertices.setSize(8, 0);
-
-                // Computed the world vertices positions for the 4 vertices that make up
-                // the rectangular region attachment. This assumes the world transform of the
-                // bone to which the slot (and hence attachment) is attached has been calculated
-                // before rendering via Skeleton::updateWorldTransform(). The vertex positions
-                // will be written directly into the vertices array, with a stride of sizeof(Vertex)
-                regionAttachment->computeWorldVertices(
-                    slot->getBone(),
-                    &vertices.buffer()[0],
-                    0,
-                    2
-                );
-
-                Vector<float>& uv = regionAttachment->getUVs();
-
-                // copy color and UVs to the vertices
-                mesh.vertices.resize(4);
-                for (size_t j = 0, l = 0; j < 4; j++, l+=2) {
-                    mesh.vertices[j].position = glm::vec3(vertices[l+0], vertices[l+1], 0.0f);
-                    mesh.vertices[j].color = glm::vec3(tint.r, tint.g, tint.b);
-                    mesh.vertices[j].tex_coord = glm::vec2(uv[l+0], uv[l+1]);
-                }
-
-                //  Counter-clockwise order
-                //  set the indices, 2 triangles forming a quad
-                static unsigned short quadIndices[] = {0, 1, 2, 2, 3, 0};
-                mesh.indices.resize(6);
-                for (int n = 0; n < 6; ++n) {
-                    mesh.indices[n] = quadIndices[n];
-                }
+                RegionAttachment* region_attachment = (RegionAttachment*)attachment;
+                load_region_attachment(slot, region_attachment, tint, mesh);
             } else if (attachment->getRTTI().isExactly(MeshAttachment::rtti)) {
-                MeshAttachment* meshAttachment = (MeshAttachment*)attachment;
-
-                // Vector<float>& vertices = meshAttachment->getVertices();
-                vertices.setSize(meshAttachment->getVertices().size(), 0);
-
-                meshAttachment->computeWorldVertices(*slot, vertices);
-                const auto vertex_count = vertices.size() / 2;
-
-                meshAttachment->updateUVs();
-                Vector<float>& uv = meshAttachment->getUVs();
-                const auto uv_count = uv.size() / 2;
-
-                if (vertex_count != uv_count) {
-                    //  Mesh has weighted vertices
-                    //  Vertex buffer contains more data than Vector2 floats
-                    continue;
-                }
-
-                // copy color and UVs to the vertices
-                mesh.vertices.resize(vertex_count);
-                for (size_t j = 0, l = 0; j < vertex_count; j++, l+=2) {
-                    mesh.vertices[j].position = glm::vec3(vertices[l+0], vertices[l+1], 0.0f);
-                    mesh.vertices[j].color = glm::vec3(tint.r, tint.g, tint.b);
-                    mesh.vertices[j].tex_coord = glm::vec2(uv[l+0], uv[l+1]);
-                }
-
-                //  Counter-clockwise order
-                auto& triangles = meshAttachment->getTriangles();
-                mesh.indices.resize(triangles.size());
-                for (size_t t = 0; t < triangles.size(); ++t) {
-                    mesh.indices[t] = triangles[t];
-                }
+                MeshAttachment* mesh_attachment = (MeshAttachment*)attachment;
+                load_mesh_attachment(slot, mesh_attachment, tint, mesh);
             } else {
                 //  Skip adding attachment info
                 continue;
             }
+
+            if (mesh.vertices.empty()) {
+                continue;
+            }
+
+            //  Rotate vertices
+            for (Vertex& vertex : mesh.vertices) {
+                vertex.position = glm::rotateX(vertex.position, glm::radians(180.0f));
+            }
+
+            //  Reverse index order
+            std::reverse(mesh.indices.begin(), mesh.indices.end());
 
             attachment_infos.push_back(attachment_info);
             ++attachment_info.index;
