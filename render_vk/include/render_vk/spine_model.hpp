@@ -20,6 +20,7 @@ struct AttachmentInfo
 struct SpineModel
 {
     spine::SkeletonData* skeleton_data                         {nullptr};
+    std::unique_ptr<spine::AnimationState> anim_state          {nullptr};
     std::unique_ptr<spine::AnimationStateData> anim_state_data {nullptr};
     std::unique_ptr<spine::Atlas> atlas                        {nullptr};
     std::unique_ptr<spine::Skeleton> skeleton;

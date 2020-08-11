@@ -205,9 +205,17 @@ std::unique_ptr<SpineModel> load_spine(
     //  Create skeleton
     auto skeleton = std::make_unique<Skeleton>(skeleton_data);
 
+    //  Create animation state
+    auto anim_state = std::make_unique<AnimationState>(anim_state_data.get());
+    anim_state->setAnimation(0, "idle", true);
+    anim_state->apply(*skeleton.get());
+
+    skeleton->updateWorldTransform();
+
     auto spine_model = std::make_unique<SpineModel>();
     spine_model->atlas = std::move(atlas);
     spine_model->anim_state_data = std::move(anim_state_data);
+    spine_model->anim_state = std::move(anim_state);
     spine_model->skeleton_data = skeleton_data;
     spine_model->skeleton = std::move(skeleton);
     spine_model->texture_loader = std::move(texture_loader);
