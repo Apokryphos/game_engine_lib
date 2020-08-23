@@ -756,8 +756,6 @@ void VulkanRenderSystem::shutdown() {
     m_object_uniform.destroy();
     m_spine_uniform.destroy();
 
-    m_spine_sprite_renderer->destroy_objects();
-
     //  Unload models
     m_model_mgr->unload(m_device);
 
