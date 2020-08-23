@@ -55,10 +55,10 @@ bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
 
 namespace demo
 {
-const int BILLBOARD_COUNT = 0;
-const int MODEL_COUNT     = 0;
+const int BILLBOARD_COUNT = 50;
+const int MODEL_COUNT     = 50;
 const int SPINE_COUNT     = 0;
-const int SPRITE_COUNT    = 0;
+const int SPRITE_COUNT    = 50;
 
 //  ----------------------------------------------------------------------------
 static void init_input_actions(InputManager& input_mgr) {
@@ -492,6 +492,9 @@ void InitScreen::on_load(Game& game) {
 
     //  Load Spine assets
     asset_mgr.load_spine("assets/spine/spineboy/spineboy", tex_args);
+
+    //  Load glyph textures
+    asset_mgr.load_texture("assets/textures/cp437_20x20.png", tex_args);
 
     //  Next screen
     load_demo_screen(game);
