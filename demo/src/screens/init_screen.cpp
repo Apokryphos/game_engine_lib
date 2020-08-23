@@ -24,6 +24,7 @@
 #include "systems/editor/move_system_editor_panel.hpp"
 #include "systems/editor/position_system_editor_panel.hpp"
 #include "systems/billboard_system.hpp"
+#include "systems/glyph_system.hpp"
 #include "systems/model_system.hpp"
 #include "systems/move_system.hpp"
 #include "systems/position_system.hpp"
@@ -56,7 +57,7 @@ namespace demo
 {
 const int BILLBOARD_COUNT = 0;
 const int MODEL_COUNT     = 0;
-const int SPINE_COUNT     = 1;
+const int SPINE_COUNT     = 0;
 const int SPRITE_COUNT    = 0;
 
 //  ----------------------------------------------------------------------------
@@ -187,6 +188,7 @@ static void init_ecs_systems(Game& game) {
 
     sys_mgr.add_system(std::make_unique<BillboardSystem>(ecs, 10000));
     sys_mgr.add_system(std::make_unique<CameraSystem>(ecs, 10000));
+    sys_mgr.add_system(std::make_unique<GlyphSystem>(ecs, 10000));
     sys_mgr.add_system(std::make_unique<ModelSystem>(ecs, 10000));
     sys_mgr.add_system(std::make_unique<MoveSystem>(ecs, 10000));
     sys_mgr.add_system(std::make_unique<SpineSystem>(ecs, 10000));
