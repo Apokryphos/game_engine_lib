@@ -246,7 +246,7 @@ std::unique_ptr<SpineModel> load_spine(
     anim_state->setAnimation(0, "idle", true);
     anim_state->apply(*skeleton.get());
 
-    skeleton->updateWorldTransform();
+    // skeleton->updateWorldTransform();
 
     auto spine_model = std::make_unique<SpineModel>();
     spine_model->atlas = std::move(atlas);

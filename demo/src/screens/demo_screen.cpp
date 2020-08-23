@@ -82,7 +82,7 @@ void DemoScreen::on_render(Game& game) {
         size.x,
         0.0f,
         size.y,
-        0.0f,
+        -1.0f,
         1.0f
     );
 

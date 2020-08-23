@@ -317,7 +317,7 @@ static void init_spines(Game& game) {
     SystemManager& sys_mgr = game.get_system_manager();
 
     std::uniform_int_distribution<int> x_dist(800, 800);
-    std::uniform_int_distribution<int> y_dist(800, 800);
+    std::uniform_int_distribution<int> y_dist(1200, 1200);
 
     Random& random = game.get_random();
 
@@ -489,7 +489,7 @@ void InitScreen::on_load(Game& game) {
     asset_mgr.load_texture("assets/textures/billboard.png", tex_args);
 
     //  Load Spine assets
-    asset_mgr.load_spine("assets/spine/spineboy/spineboy");
+    asset_mgr.load_spine("assets/spine/spineboy/spineboy", tex_args);
 
     //  Next screen
     load_demo_screen(game);

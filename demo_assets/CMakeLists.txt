@@ -22,6 +22,7 @@ configure_file(spine/goblins/goblins.json ${OUTPUT_DIR}/spine/goblins/goblins.js
 
 # Textures
 configure_file(textures/billboard.png ${OUTPUT_DIR}/textures/billboard.png COPYONLY)
+configure_file(textures/cp437_20x20.png ${OUTPUT_DIR}/textures/cp437_20x20.png COPYONLY)
 configure_file(textures/missing.png ${OUTPUT_DIR}/textures/missing.png COPYONLY)
 configure_file(textures/model.png ${OUTPUT_DIR}/textures/model.png COPYONLY)
 configure_file(textures/model2.png ${OUTPUT_DIR}/textures/model2.png COPYONLY)

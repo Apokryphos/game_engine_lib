@@ -294,10 +294,10 @@ void calculate_transform(
         bone.updateWorldTransform();
 
         glm::mat4 transform(1.0f);
-        // transform[0][0] = bone.getA();
-        // transform[1][0] = bone.getB();
-        // transform[0][1] = bone.getC();
-        // transform[1][1] = bone.getD();
+        transform[0][0] = bone.getA();
+        transform[1][0] = bone.getB();
+        transform[0][1] = bone.getC();
+        transform[1][1] = bone.getD();
 
         ubos[offset + n].transform = transform;
     }
