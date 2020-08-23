@@ -55,11 +55,11 @@ bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
 
 namespace demo
 {
-const int BILLBOARD_COUNT = 0;
-const int GLYPH_COUNT     = 5000;
-const int MODEL_COUNT     = 0;
+const int BILLBOARD_COUNT = 50;
+const int GLYPH_COUNT     = 50;
+const int MODEL_COUNT     = 50;
 const int SPINE_COUNT     = 0;
-const int SPRITE_COUNT    = 0;
+const int SPRITE_COUNT    = 50;
 
 //  ----------------------------------------------------------------------------
 static void init_input_actions(InputManager& input_mgr) {
@@ -267,7 +267,7 @@ static void init_glyphs(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
 
-    std::uniform_int_distribution<int> glyph_dist(0, 2);
+    std::uniform_int_distribution<int> glyph_dist(0, 256);
     std::uniform_int_distribution<int> x_dist(0, 192);
     std::uniform_int_distribution<int> y_dist(0, 80);
 
