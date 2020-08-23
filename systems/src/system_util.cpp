@@ -1,6 +1,7 @@
 #include "engine/system_manager.hpp"
 #include "systems/billboard_system.hpp"
 #include "systems/camera_system.hpp"
+#include "systems/glyph_system.hpp"
 #include "systems/model_system.hpp"
 #include "systems/move_system.hpp"
 #include "systems/position_system.hpp"
@@ -49,6 +50,22 @@ void add_camera_component(
 
     const auto cam_cmpnt = cam_sys.get_component(entity);
     cam_sys.set_target(cam_cmpnt, target);
+}
+
+//  ----------------------------------------------------------------------------
+void add_glyph_component(
+    const Entity entity,
+    GlyphSystem& glyph_sys,
+    uint32_t glyph_set_id,
+    const char ch
+) {
+    if (!glyph_sys.has_component(entity)) {
+        glyph_sys.add_component(entity);
+    }
+
+    const auto glyph_cmpnt = glyph_sys.get_component(entity);
+    glyph_sys.set_glyph_set_id(glyph_cmpnt, glyph_set_id);
+    glyph_sys.set_glyph(glyph_cmpnt, ch);
 }
 
 //  ----------------------------------------------------------------------------
@@ -133,6 +150,11 @@ BillboardSystem& get_billboard_system(engine::SystemManager& sys_mgr) {
 //  ----------------------------------------------------------------------------
 CameraSystem& get_camera_system(SystemManager& sys_mgr) {
     return sys_mgr.get_system<CameraSystem>(SYSTEM_ID_CAMERA);
+}
+
+//  ----------------------------------------------------------------------------
+GlyphSystem& get_glyph_system(SystemManager& sys_mgr) {
+    return sys_mgr.get_system<GlyphSystem>(SYSTEM_ID_GLYPH);
 }
 
 //  ----------------------------------------------------------------------------

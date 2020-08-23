@@ -10,6 +10,7 @@
 #include "render/sprite_batch.hpp"
 #include "systems/billboard_system.hpp"
 #include "systems/model_system.hpp"
+#include "systems/glyph_system.hpp"
 #include "systems/position_system.hpp"
 #include "systems/spine_system.hpp"
 #include "systems/sprite_system.hpp"
@@ -128,6 +129,65 @@ void DemoSystem::batch_billboards(
 
     for (const auto& pair : batches) {
         billboard_batches.push_back(pair.second);
+    }
+}
+
+//  ----------------------------------------------------------------------------
+void DemoSystem::batch_glyphs(
+    Game& game,
+    glm::mat4 view,
+    glm::mat4 proj,
+    std::vector<GlyphBatch>& glyph_batches
+) {
+    SystemManager& sys_mgr = game.get_system_manager();
+
+    //  Get drawable entities
+    const GlyphSystem& glyph_sys = get_glyph_system(sys_mgr);
+    std::vector<Entity> entities;
+    glyph_sys.get_entities(entities);
+
+    const size_t entity_count = entities.size();
+
+    std::map<uint32_t, GlyphBatch> batches;
+
+    Frustum frustum(proj * view);
+
+    const PositionSystem& pos_sys = get_position_system(sys_mgr);
+    for (size_t n = 0; n < entity_count; ++n) {
+        //  Get positions
+        const auto pos_cmpnt = pos_sys.get_component(entities[n]);
+        glm::vec3 position = pos_sys.get_position(pos_cmpnt);
+
+        const auto glyph_cmpnt = glyph_sys.get_component(entities[n]);
+        const uint32_t texture_id = glyph_sys.get_texture_id(glyph_cmpnt);
+        const glm::vec2 size = glyph_sys.get_size(glyph_cmpnt);
+
+        //  Billboard bounding box
+        const glm::vec3 maxp(
+            position.x + size.x,
+            position.y + size.y,
+            1.0f
+        );
+
+        const glm::vec3 minp(
+            position.x - size.x,
+            position.y - size.y,
+            0.0f
+        );
+
+        //  Skip objects outside frustum
+        if (!frustum.is_box_visible(minp, maxp)) {
+            continue;
+        }
+
+        GlyphBatch& batch = batches[texture_id];
+        batch.texture_id = texture_id;
+        batch.positions.push_back(position);
+        batch.sizes.push_back({size.x, size.y, 1.0f});
+    }
+
+    for (const auto& pair : batches) {
+        glyph_batches.push_back(pair.second);
     }
 }
 

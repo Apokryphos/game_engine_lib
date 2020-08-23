@@ -109,6 +109,11 @@ void DemoScreen::on_render(Game& game) {
     std::vector<SpriteBatch> sprite_batches;
     demo_sys.batch_sprites(game, ortho_view, ortho_proj, sprite_batches);
     render_sys.draw_sprites(sprite_batches);
+
+    //  Batch glyphs
+    std::vector<GlyphBatch> glyph_batches;
+    demo_sys.batch_glyphs(game, ortho_view, ortho_proj, glyph_batches);
+    render_sys.draw_glyphs(glyph_batches);
 }
 
 //  ----------------------------------------------------------------------------

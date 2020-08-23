@@ -2,6 +2,7 @@
 
 #include "common/log.hpp"
 #include "common/job_queue.hpp"
+#include "render/glyph_batch.hpp"
 #include "render/model_batch.hpp"
 #include "render/sprite_batch.hpp"
 #include "render/spine_sprite_batch.hpp"
@@ -23,6 +24,7 @@ namespace render_vk
 {
 class DescriptorSetManager;
 class BillboardRenderer;
+class GlyphRenderer;
 class ModelManager;
 class ModelRenderer;
 class SpineSpriteRenderer;
@@ -43,6 +45,7 @@ class RenderTaskManager
     {
         None,
         DrawBillboards,
+        DrawGlyphs,
         DrawModels,
         DrawSpines,
         DrawSprites,
@@ -61,6 +64,7 @@ class RenderTaskManager
         void* renderer {nullptr};
 
         FrameUbo frame_ubo;
+        std::vector<render::GlyphBatch> glyph_batches;
         std::vector<render::ModelBatch> batches;
         std::vector<render::SpriteBatch> sprite_batches;
         std::vector<render::SpineSpriteBatch> spine_batches;
@@ -124,6 +128,7 @@ class RenderTaskManager
 
                 //  Tasks that generate secondary command buffers
                 case TaskId::DrawBillboards:
+                case TaskId::DrawGlyphs:
                 case TaskId::DrawModels:
                 case TaskId::DrawSpines:
                 case TaskId::DrawSprites:
@@ -236,6 +241,10 @@ public:
     void draw_billboards(
         BillboardRenderer& renderer,
         const std::vector<render::SpriteBatch>& batches
+    );
+    void draw_glyphs(
+        GlyphRenderer& renderer,
+        const std::vector<render::GlyphBatch>& batches
     );
     void draw_models(
         ModelRenderer& renderer,

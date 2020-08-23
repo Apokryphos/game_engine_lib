@@ -55,10 +55,11 @@ bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
 
 namespace demo
 {
-const int BILLBOARD_COUNT = 50;
-const int MODEL_COUNT     = 50;
+const int BILLBOARD_COUNT = 0;
+const int GLYPH_COUNT     = 5000;
+const int MODEL_COUNT     = 0;
 const int SPINE_COUNT     = 0;
-const int SPRITE_COUNT    = 50;
+const int SPRITE_COUNT    = 0;
 
 //  ----------------------------------------------------------------------------
 static void init_input_actions(InputManager& input_mgr) {
@@ -262,6 +263,61 @@ static void init_billboards(Game& game) {
 }
 
 //  ----------------------------------------------------------------------------
+static void init_glyphs(Game& game) {
+    EcsRoot& ecs = game.get_ecs_root();
+    SystemManager& sys_mgr = game.get_system_manager();
+
+    std::uniform_int_distribution<int> glyph_dist(0, 2);
+    std::uniform_int_distribution<int> x_dist(0, 192);
+    std::uniform_int_distribution<int> y_dist(0, 80);
+
+    Random& random = game.get_random();
+
+    const int glyph_set_texture_id = 7;
+    const int glyph_set_width = 20;
+    const int glyph_set_height = 20;
+
+    std::set<glm::vec3> position_set;
+    while (position_set.size() < GLYPH_COUNT) {
+        const glm::vec3 position = {
+            glyph_set_width * x_dist(random.get_rng()),
+            glyph_set_height * y_dist(random.get_rng()),
+            0.0f
+        };
+
+        position_set.insert(position);
+    }
+
+    std::vector<glm::vec3> positions;
+    std::copy(position_set.begin(), position_set.end(), std::back_inserter(positions));
+
+    GlyphSystem& glyph_sys = get_glyph_system(sys_mgr);
+    glyph_sys.add_glyph_set(glyph_set_texture_id, glyph_set_width, glyph_set_height);
+
+    NameSystem& name_sys = get_name_system(sys_mgr);
+    PositionSystem& pos_sys = get_position_system(sys_mgr);
+
+    const int entity_count = positions.size();
+    for (int n = 0; n < entity_count; ++n) {
+        Entity entity = ecs.create_entity();
+
+        const std::string name = "entity_" + std::to_string(entity.id);
+
+        name_sys.add_component(entity);
+        const auto name_cmpnt = name_sys.get_component(entity);
+        name_sys.set_name(name_cmpnt, name);
+
+        const glm::vec3 position = positions[n];
+
+        add_position_component(entity, pos_sys, position);
+
+        const char glyph = glyph_dist(random.get_rng());
+
+        add_glyph_component(entity, glyph_sys, 0, glyph);
+    }
+}
+
+//  ----------------------------------------------------------------------------
 static void init_models(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
@@ -440,6 +496,7 @@ static void init_entities(Game& game) {
     activate_camera(camera, camera_sys);
 
     init_billboards(game);
+    init_glyphs(game);
     init_models(game);
     init_spines(game);
     init_sprites(game);
@@ -494,7 +551,13 @@ void InitScreen::on_load(Game& game) {
     asset_mgr.load_spine("assets/spine/spineboy/spineboy", tex_args);
 
     //  Load glyph textures
-    asset_mgr.load_texture("assets/textures/cp437_20x20.png", tex_args);
+    for (int n = 0; n < 256; ++n) {
+        const std::string filename =
+            "assets/textures/cp437_20x20/cp437_20x20_" +
+            std::to_string(n) +
+            ".png";
+        asset_mgr.load_texture(filename, tex_args);
+    }
 
     //  Next screen
     load_demo_screen(game);

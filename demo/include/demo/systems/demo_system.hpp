@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/system.hpp"
+#include "render/glyph_batch.hpp"
 #include "render/model_batch.hpp"
 #include "render/sprite_batch.hpp"
 #include "render/spine_sprite_batch.hpp"
@@ -28,6 +29,12 @@ public:
         glm::mat4 view,
         glm::mat4 proj,
         std::vector<render::SpriteBatch>& billboard_batches
+    );
+    void batch_glyphs(
+        engine::Game& game,
+        glm::mat4 view,
+        glm::mat4 proj,
+        std::vector<render::GlyphBatch>& glyph_batches
     );
     void batch_models(
         engine::Game& game,

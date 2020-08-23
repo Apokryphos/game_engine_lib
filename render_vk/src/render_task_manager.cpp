@@ -10,6 +10,7 @@
 #include "render_vk/render_task_manager.hpp"
 #include "render_vk/render_tasks/task_update_uniforms.hpp"
 #include "render_vk/renderers/billboard_renderer.hpp"
+#include "render_vk/renderers/glyph_renderer.hpp"
 #include "render_vk/renderers/model_renderer.hpp"
 #include "render_vk/renderers/spine_sprite_renderer.hpp"
 #include "render_vk/renderers/sprite_renderer.hpp"
@@ -23,6 +24,19 @@ using namespace render;
 
 namespace render_vk
 {
+//  ----------------------------------------------------------------------------
+inline void filter_pending_textures(
+    const std::vector<GlyphBatch>& batches,
+    const TextureManager& texture_mgr,
+    std::vector<GlyphBatch>& job_batches
+) {
+    for (const GlyphBatch& batch : batches) {
+        if (texture_mgr.texture_exists(batch.texture_id)) {
+            job_batches.push_back(batch);
+        }
+    }
+}
+
 //  ----------------------------------------------------------------------------
 inline void filter_pending_textures(
     const std::vector<SpriteBatch>& batches,
@@ -474,6 +488,30 @@ void RenderTaskManager::draw_billboards(
     add_job(job);
 }
 
+//  ----------------------------------------------------------------------------
+void RenderTaskManager::draw_glyphs(
+    GlyphRenderer& renderer,
+    const std::vector<GlyphBatch>& batches
+) {
+    if (batches.empty()) {
+        // log_debug("Discarded draw glyphs call with zero batches.");
+        return;
+    }
+
+    Job job{};
+    job.task_id = TaskId::DrawGlyphs;
+    job.renderer = &renderer;
+    job.glyph_batches.reserve(batches.size());
+
+    filter_pending_textures(batches, m_texture_mgr, job.glyph_batches);
+
+    if (job.glyph_batches.empty()) {
+        // log_debug("Discarded draw glyphs call with zero batches.");
+        return;
+    }
+
+    add_job(job);
+}
 
 //  ----------------------------------------------------------------------------
 void RenderTaskManager::draw_models(
@@ -725,6 +763,18 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
                     command_buffer
                 );
                 stopwatch.stop(thread_name+"_draw_billboards");
+                break;
+            }
+
+            case TaskId::DrawGlyphs: {
+                stopwatch.start(thread_name+"_draw_glyphs");
+                GlyphRenderer* glyph_renderer = static_cast<GlyphRenderer*>(job.renderer);
+                glyph_renderer->draw_glyphs(
+                    job.glyph_batches,
+                    frame.descriptor,
+                    command_buffer
+                );
+                stopwatch.stop(thread_name+"_draw_glyphs");
                 break;
             }
 

@@ -16,6 +16,7 @@ namespace systems
 {
 class BillboardSystem;
 class CameraSystem;
+class GlyphSystem;
 class PositionSystem;
 class ModelSystem;
 class MoveSystem;
@@ -35,6 +36,13 @@ void add_camera_component(
     const ecs::Entity entity,
     CameraSystem& cam_sys,
     const glm::vec3 target
+);
+
+void add_glyph_component(
+    const ecs::Entity entity,
+    GlyphSystem& glyph_sys,
+    uint32_t glyph_set_id,
+    const char ch
 );
 
 void add_model_component(
@@ -71,6 +79,7 @@ void add_sprite_component(
 
 BillboardSystem& get_billboard_system(engine::SystemManager& sys_mgr);
 CameraSystem& get_camera_system(engine::SystemManager& sys_mgr);
+GlyphSystem& get_glyph_system(engine::SystemManager& sys_mgr);
 ModelSystem& get_model_system(engine::SystemManager& sys_mgr);
 MoveSystem& get_move_system(engine::SystemManager& sys_mgr);
 PositionSystem& get_position_system(engine::SystemManager& sys_mgr);

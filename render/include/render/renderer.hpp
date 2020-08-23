@@ -1,5 +1,6 @@
 #pragma once
 
+#include "render/glyph_batch.hpp"
 #include "render/model_batch.hpp"
 #include "render/render_api.hpp"
 #include "render/sprite_batch.hpp"
@@ -30,6 +31,9 @@ public:
     virtual void begin_frame() = 0;
     virtual void draw_billboards(
         std::vector<SpriteBatch>& batches
+    ) = 0;
+    virtual void draw_glyphs(
+        std::vector<GlyphBatch>& batches
     ) = 0;
     virtual void draw_models(
         std::vector<ModelBatch>& batches

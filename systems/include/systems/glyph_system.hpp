@@ -11,7 +11,6 @@ struct GlyphComponentData
 {
     uint16_t ch;
     uint32_t glyph_set_id;
-    glm::ivec2 position;
     glm::vec4 fg;
     glm::vec4 bg;
 
@@ -20,7 +19,6 @@ struct GlyphComponentData
         ar(
             ch,
             glyph_set_id,
-            position,
             fg,
             bg
         );
@@ -63,10 +61,6 @@ public:
         get_component_data(cmpnt).ch = ch;
     }
 
-    void set_position(const Component cmpnt, const glm::ivec2 position) {
-        get_component_data(cmpnt).position = position;
-    }
-
     glm::vec2 get_size(const Component cmpnt) const {
         const uint32_t glyph_set_id = get_component_data(cmpnt).glyph_set_id;
         const GlyphSet& glyph_set = m_glyph_sets.at(glyph_set_id);
@@ -74,9 +68,11 @@ public:
     }
 
     uint32_t get_texture_id(const Component cmpnt) const {
-        const uint32_t glyph_set_id = get_component_data(cmpnt).glyph_set_id;
+        const auto& data = get_component_data(cmpnt);
+        const uint32_t glyph = data.ch;
+        const uint32_t glyph_set_id = data.glyph_set_id;
         const GlyphSet& glyph_set = m_glyph_sets.at(glyph_set_id);
-        return glyph_set.texture_id;
+        return glyph_set.texture_id + glyph;
     }
 
     static const common::SystemId Id = SYSTEM_ID_GLYPH;

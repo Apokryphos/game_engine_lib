@@ -21,6 +21,7 @@ namespace render_vk
 {
 class BillboardRenderer;
 class DescriptorSetManager;
+class GlyphRenderer;
 class ModelManager;
 class ModelRenderer;
 class RenderTaskManager;
@@ -115,6 +116,7 @@ private:
 
     //  Renderers
     std::unique_ptr<BillboardRenderer> m_billboard_renderer;
+    std::unique_ptr<GlyphRenderer> m_glyph_renderer;
     std::unique_ptr<ModelRenderer> m_model_renderer;
     std::unique_ptr<SpineSpriteRenderer> m_spine_sprite_renderer;
     std::unique_ptr<SpriteRenderer> m_sprite_renderer;
@@ -143,6 +145,9 @@ public:
     std::shared_ptr<VulkanSpineManager> get_spine_manager();
     virtual void draw_billboards(
         std::vector<render::SpriteBatch>& batches
+    ) override;
+    virtual void draw_glyphs(
+        std::vector<render::GlyphBatch>& batches
     ) override;
     virtual void draw_models(
         std::vector<render::ModelBatch>& batches

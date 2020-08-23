@@ -30,6 +30,7 @@ set(SOURCE_FILES
     src/render_task_manager.cpp
     src/render_tasks/task_update_uniforms.cpp
     src/renderers/billboard_renderer.cpp
+    src/renderers/glyph_renderer.cpp
     src/renderers/model_renderer.cpp
     src/renderers/spine_sprite_renderer.cpp
     src/renderers/sprite_renderer.cpp

@@ -28,3 +28,10 @@ configure_file(textures/model.png ${OUTPUT_DIR}/textures/model.png COPYONLY)
 configure_file(textures/model2.png ${OUTPUT_DIR}/textures/model2.png COPYONLY)
 configure_file(textures/model3.png ${OUTPUT_DIR}/textures/model3.png COPYONLY)
 configure_file(textures/sprite.png ${OUTPUT_DIR}/textures/sprite.png COPYONLY)
+
+# Glyphs
+file(GLOB files "textures/cp437_20x20/*.png")
+foreach(file ${files})
+    get_filename_component(filename ${file} NAME)
+    configure_file(${file} ${OUTPUT_DIR}/textures/cp437_20x20/${filename} COPYONLY)
+endforeach()
