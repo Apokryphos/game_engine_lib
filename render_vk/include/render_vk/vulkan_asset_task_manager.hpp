@@ -3,6 +3,7 @@
 #include "assets/asset_task_manager.hpp"
 #include "assets/texture_create_args.hpp"
 #include "common/job_queue.hpp"
+#include "render_vk/texture.hpp"
 #include "render_vk/vulkan.hpp"
 #include <future>
 #include <memory>
