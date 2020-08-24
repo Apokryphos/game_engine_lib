@@ -14,25 +14,19 @@ namespace render_vk
 template <typename T>
 class UniformBuffer
 {
-    VkDevice m_device;
+    VkDevice m_device {VK_NULL_HANDLE};
 
     //  Uniform buffer
-    VkBuffer m_buffer = VK_NULL_HANDLE;
+    VkBuffer m_buffer {VK_NULL_HANDLE};
 
     //  Uniform buffer memory
-    VkDeviceMemory m_memory = VK_NULL_HANDLE;
+    VkDeviceMemory m_memory {VK_NULL_HANDLE};
 
     //  Mapped memory for UBO data (CPU -> GPU)
-    void* m_mapped = nullptr;
+    void* m_mapped {nullptr};
 
 public:
-    UniformBuffer()
-    : m_device(VK_NULL_HANDLE),
-      m_buffer(VK_NULL_HANDLE),
-      m_memory(VK_NULL_HANDLE),
-      m_mapped(nullptr) {
-    }
-
+    UniformBuffer() = default;
     UniformBuffer(const UniformBuffer&) = delete;
     UniformBuffer& operator=(const UniformBuffer&) = delete;
 

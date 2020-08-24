@@ -76,7 +76,6 @@ class RenderTaskManager
         std::string name;
         ThreadFrameCommandObjects command;
         FrameDescriptorObjects descriptor;
-        FrameUniformObjects uniform;
     };
 
     class RenderTasks
@@ -173,7 +172,7 @@ class RenderTaskManager
     bool m_discard_frame  {false};
 
     //  The total number of frames (resources).
-    uint8_t m_frame_count  {3};
+    uint8_t m_frame_count  {0};
     //  Number of worker threads.
     uint8_t m_thread_count {4};
 
@@ -202,6 +201,8 @@ class RenderTaskManager
     ModelManager& m_model_mgr;
     TextureManager& m_texture_mgr;
 
+    std::vector<FrameUniformObjects> m_uniform_buffers;
+
     //  Adds a new job for a worker thread to process.
     void add_job(Job& job);
     //  Called by worker threads when work is completed.
@@ -220,6 +221,7 @@ public:
         DescriptorSetManager& descriptor_set_mgr,
         ModelManager& model_mgr,
         TextureManager& texture_mgr,
+        uint8_t frame_count,
         uint32_t max_objects
     );
     ~RenderTaskManager();
@@ -254,6 +256,7 @@ public:
     );
     void end_frame();
     void get_command_buffers(std::vector<VkCommandBuffer>& command_buffers);
+    void shutdown();
     void start_threads();
     void update_frame_uniforms(
         const glm::mat4& view,

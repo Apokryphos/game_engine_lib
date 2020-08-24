@@ -683,6 +683,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         *m_descriptor_set_mgr,
         *m_model_mgr,
         *m_texture_mgr,
+        m_frame_count,
         m_max_objects
     );
 
@@ -750,6 +751,8 @@ void VulkanRenderSystem::shutdown() {
     m_texture_mgr->destroy_textures();
 
     m_spine_mgr->unload();
+
+    m_render_task_mgr->shutdown();
 
     vkDestroyDevice(m_device, nullptr);
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);

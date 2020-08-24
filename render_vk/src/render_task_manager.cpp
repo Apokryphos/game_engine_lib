@@ -382,15 +382,27 @@ RenderTaskManager::RenderTaskManager(
     DescriptorSetManager& descriptor_set_mgr,
     ModelManager& model_mgr,
     TextureManager& texture_mgr,
+    uint8_t frame_count,
     uint32_t max_objects
 )
-: m_max_objects(max_objects),
+: m_frame_count(frame_count),
+  m_max_objects(max_objects),
   m_physical_device(physical_device),
   m_device(device),
   m_descriptor_set_layouts(descriptor_set_layouts),
   m_descriptor_set_mgr(descriptor_set_mgr),
   m_model_mgr(model_mgr),
-  m_texture_mgr(texture_mgr) {
+  m_texture_mgr(texture_mgr),
+  m_uniform_buffers(frame_count)
+{
+    assert(m_frame_count > 0);
+
+    //  Create uniform buffers for each frame
+    for (auto& uniform_buffers : m_uniform_buffers) {
+        uniform_buffers.frame.create(m_physical_device, m_device);
+        uniform_buffers.object.create(m_physical_device, m_device, m_max_objects);
+        uniform_buffers.spine.create(m_physical_device, m_device, m_max_objects);
+    }
 }
 
 //  ----------------------------------------------------------------------------
@@ -628,7 +640,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
     uint32_t frame_index = 0;
     std::vector<ThreadFrame> frames(m_frame_count);
     for (ThreadFrame& frame : frames) {
-        frame.name = thread_name + "_frame" + std::to_string(frame_index++);
+        frame.name = thread_name + "_frame" + std::to_string(frame_index);
 
         create_secondary_command_objects(
             m_device,
@@ -637,20 +649,17 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             frame.command
         );
 
-        //  Create uniform buffers
-        frame.uniform.frame.create(m_physical_device, m_device);
-        frame.uniform.object.create(m_physical_device, m_device, m_max_objects);
-        frame.uniform.spine.create(m_physical_device, m_device, m_max_objects);
-
         create_descriptor_objects(
             m_device,
             m_descriptor_set_layouts,
-            frame.uniform.frame,
-            frame.uniform.spine,
-            frame.uniform.object,
+            m_uniform_buffers[frame_index].frame,
+            m_uniform_buffers[frame_index].spine,
+            m_uniform_buffers[frame_index].object,
             frame.name,
             frame.descriptor
         );
+
+        ++frame_index;
     }
 
     bool frame_changed = false;
@@ -806,28 +815,33 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             case TaskId::DrawSpines: {
                 stopwatch.start(thread_name+"_draw_spines");
                 SpineSpriteRenderer* spine_renderer = static_cast<SpineSpriteRenderer*>(job.renderer);
-                spine_renderer->update_object_uniforms(job.spine_batches, frame.uniform.spine);
+                auto& spine_uniform_buffer = m_uniform_buffers[m_current_frame].spine;
+                spine_renderer->update_object_uniforms(job.spine_batches, spine_uniform_buffer);
                 spine_renderer->draw_sprites(
                     job.spine_batches,
                     frame.descriptor,
-                    frame.uniform.spine,
+                    spine_uniform_buffer,
                     command_buffer
                 );
                 stopwatch.stop(thread_name+"_draw_spines");
                 break;
             }
 
-            case TaskId::UpdateFrameUniforms:
+            case TaskId::UpdateFrameUniforms: {
                 stopwatch.start(thread_name+"_update_frame_uniforms");
-                task_update_frame_uniforms(job.frame_ubo, frame.uniform.frame);
+                auto& frame_uniform_buffer = m_uniform_buffers[m_current_frame].frame;
+                task_update_frame_uniforms(job.frame_ubo, frame_uniform_buffer);
                 stopwatch.stop(thread_name+"_update_frame_uniforms");
                 break;
+            }
 
-            case TaskId::UpdateObjectUniforms:
+            case TaskId::UpdateObjectUniforms: {
                 stopwatch.start(thread_name+"_update_object_uniforms");
-                task_update_object_uniforms(job.batches, frame.uniform.object);
+                auto& object_uniform_buffer = m_uniform_buffers[m_current_frame].object;
+                task_update_object_uniforms(job.batches, object_uniform_buffer);
                 stopwatch.stop(thread_name+"_update_object_uniforms");
                 break;
+            }
         }
 
         // log_debug(
@@ -846,13 +860,19 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         vkDestroyCommandPool(m_device, frame.command.pool, nullptr);
         //  Descriptors
         vkDestroyDescriptorPool(m_device, frame.descriptor.pool, nullptr);
-        //  Uniform buffers
-        frame.uniform.frame.destroy();
-        frame.uniform.object.destroy();
-        frame.uniform.spine.destroy();
     }
 
     log_debug("Thread %d exited.", thread_id);
+}
+
+//  ----------------------------------------------------------------------------
+void RenderTaskManager::shutdown() {
+    //  Uniform buffers
+    for (auto& uniform_buffer : m_uniform_buffers) {
+        uniform_buffer.frame.destroy();
+        uniform_buffer.object.destroy();
+        uniform_buffer.spine.destroy();
+    }
 }
 
 //  ----------------------------------------------------------------------------
