@@ -86,7 +86,8 @@ Window& Engine::get_window() {
 //  ----------------------------------------------------------------------------
 bool Engine::initialize(
     const std::string& base_name,
-    const WindowOptions& window_options
+    const WindowOptions& window_options,
+    const size_t max_entities
 ) {
     log_debug("Initializing engine...");
 
@@ -143,7 +144,7 @@ bool Engine::initialize(
         throw std::runtime_error("Not implemented.");
         // m_render_sys = std::make_unique<GlRenderer>();
     } else if (render_api == RenderApi::Vulkan) {
-        m_render_sys = std::make_unique<VulkanRenderSystem>();
+        m_render_sys = std::make_unique<VulkanRenderSystem>(max_entities);
     } else {
         throw std::runtime_error("Not implemented.");
     }

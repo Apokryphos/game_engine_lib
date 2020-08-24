@@ -32,7 +32,7 @@ namespace engine
 {
 //  ----------------------------------------------------------------------------
 Game::Game(const std::string& game_base_name, const size_t max_entities)
-: m_quit(false),
+: m_max_entities(max_entities),
   m_ecs_root(std::make_unique<EcsRoot>()),
   m_engine(std::make_unique<Engine>()),
   m_sys_mgr(nullptr) {
@@ -78,7 +78,7 @@ bool Game::initialize(
     config_sys.load_window_options(window_options);
 
     //  Initialize engine
-    if (!m_engine->initialize(title, window_options)) {
+    if (!m_engine->initialize(title, window_options, m_max_entities)) {
         return false;
     }
 

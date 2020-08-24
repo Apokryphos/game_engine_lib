@@ -137,7 +137,7 @@ private:
     void shutdown();
 
 public:
-    VulkanRenderSystem();
+    VulkanRenderSystem(const uint32_t max_objects);
     ~VulkanRenderSystem();
     //  Starts a new frame.
     virtual void begin_frame() override;

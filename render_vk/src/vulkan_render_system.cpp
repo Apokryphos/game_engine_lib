@@ -36,7 +36,6 @@ using namespace render;
 
 namespace render_vk
 {
-static const uint32_t MAX_OBJECTS = 10000;
 static Stopwatch STOPWATCH;
 
 //  ----------------------------------------------------------------------------
@@ -108,12 +107,12 @@ static void create_primary_command_objects(
 }
 
 //  ----------------------------------------------------------------------------
-VulkanRenderSystem::VulkanRenderSystem()
+VulkanRenderSystem::VulkanRenderSystem(const uint32_t max_objects)
 : Renderer(RenderApi::Vulkan),
   m_frames(m_frame_count),
   m_glfw_window(nullptr),
-  m_spine_uniform(MAX_OBJECTS),
-  m_object_uniform(MAX_OBJECTS) {
+  m_spine_uniform(max_objects),
+  m_object_uniform(max_objects) {
     assert(m_frames.size() > 0);
 }
 

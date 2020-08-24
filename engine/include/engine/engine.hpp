@@ -57,7 +57,8 @@ public:
     Window& get_window();
     bool initialize(
         const std::string& base_name,
-        const WindowOptions& window_options
+        const WindowOptions& window_options,
+        const size_t max_entities
     );
     void shutdown();
     void window_resized();

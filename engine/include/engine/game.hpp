@@ -25,7 +25,8 @@ class Game
     using Random = common::Random;
     using WindowOptions = platform::WindowOptions;
 
-    bool m_quit;
+    bool m_quit {false};
+    size_t m_max_entities {0};
     Random m_random;
     std::unique_ptr<EcsRoot> m_ecs_root;
     std::unique_ptr<Engine> m_engine;
