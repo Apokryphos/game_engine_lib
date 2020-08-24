@@ -6,10 +6,8 @@
 #include "render/model_batch.hpp"
 #include "render/sprite_batch.hpp"
 #include "render/spine_sprite_batch.hpp"
-#include "render_vk/dynamic_uniform_buffer.hpp"
 #include "render_vk/frame_objects.hpp"
 #include "render_vk/ubo.hpp"
-#include "render_vk/uniform_buffer.hpp"
 #include "render_vk/vulkan.hpp"
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -200,11 +198,6 @@ class RenderTaskManager
     RenderTasks m_tasks;
 
     DescriptorSetLayouts& m_descriptor_set_layouts;
-    //  Per-frame uniform buffer
-    UniformBuffer<FrameUbo>& m_frame_uniform;
-    DynamicUniformBuffer<SpineUbo>& m_spine_uniform;
-    //  Per-object dynamic uniform buffer
-    DynamicUniformBuffer<ObjectUbo>& m_object_uniform;
     DescriptorSetManager& m_descriptor_set_mgr;
     ModelManager& m_model_mgr;
     TextureManager& m_texture_mgr;
@@ -224,9 +217,6 @@ public:
         VkPhysicalDevice physical_device,
         VkDevice device,
         DescriptorSetLayouts& descriptor_set_layouts,
-        UniformBuffer<FrameUbo>& frame_uniform,
-        DynamicUniformBuffer<SpineUbo>& spine_uniform,
-        DynamicUniformBuffer<ObjectUbo>& object_uniform,
         DescriptorSetManager& descriptor_set_mgr,
         ModelManager& model_mgr,
         TextureManager& texture_mgr,

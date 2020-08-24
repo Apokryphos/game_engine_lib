@@ -379,9 +379,6 @@ RenderTaskManager::RenderTaskManager(
     VkPhysicalDevice physical_device,
     VkDevice device,
     DescriptorSetLayouts& descriptor_set_layouts,
-    UniformBuffer<FrameUbo>& frame_uniform,
-    DynamicUniformBuffer<SpineUbo>& spine_uniform,
-    DynamicUniformBuffer<ObjectUbo>& object_uniform,
     DescriptorSetManager& descriptor_set_mgr,
     ModelManager& model_mgr,
     TextureManager& texture_mgr,
@@ -391,9 +388,6 @@ RenderTaskManager::RenderTaskManager(
   m_physical_device(physical_device),
   m_device(device),
   m_descriptor_set_layouts(descriptor_set_layouts),
-  m_frame_uniform(frame_uniform),
-  m_spine_uniform(spine_uniform),
-  m_object_uniform(object_uniform),
   m_descriptor_set_mgr(descriptor_set_mgr),
   m_model_mgr(model_mgr),
   m_texture_mgr(texture_mgr) {
@@ -643,20 +637,20 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             frame.command
         );
 
-        create_descriptor_objects(
-            m_device,
-            m_descriptor_set_layouts,
-            m_frame_uniform,
-            m_spine_uniform,
-            m_object_uniform,
-            frame.name,
-            frame.descriptor
-        );
-
         //  Create uniform buffers
         frame.uniform.frame.create(m_physical_device, m_device);
         frame.uniform.object.create(m_physical_device, m_device, m_max_objects);
         frame.uniform.spine.create(m_physical_device, m_device, m_max_objects);
+
+        create_descriptor_objects(
+            m_device,
+            m_descriptor_set_layouts,
+            frame.uniform.frame,
+            frame.uniform.spine,
+            frame.uniform.object,
+            frame.name,
+            frame.descriptor
+        );
     }
 
     bool frame_changed = false;
@@ -812,10 +806,11 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             case TaskId::DrawSpines: {
                 stopwatch.start(thread_name+"_draw_spines");
                 SpineSpriteRenderer* spine_renderer = static_cast<SpineSpriteRenderer*>(job.renderer);
-                spine_renderer->update_object_uniforms(job.spine_batches);
+                spine_renderer->update_object_uniforms(job.spine_batches, frame.uniform.spine);
                 spine_renderer->draw_sprites(
                     job.spine_batches,
                     frame.descriptor,
+                    frame.uniform.spine,
                     command_buffer
                 );
                 stopwatch.stop(thread_name+"_draw_spines");
@@ -824,13 +819,13 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
 
             case TaskId::UpdateFrameUniforms:
                 stopwatch.start(thread_name+"_update_frame_uniforms");
-                task_update_frame_uniforms(job.frame_ubo, m_frame_uniform);
+                task_update_frame_uniforms(job.frame_ubo, frame.uniform.frame);
                 stopwatch.stop(thread_name+"_update_frame_uniforms");
                 break;
 
             case TaskId::UpdateObjectUniforms:
                 stopwatch.start(thread_name+"_update_object_uniforms");
-                task_update_object_uniforms(job.batches, m_object_uniform);
+                task_update_object_uniforms(job.batches, frame.uniform.object);
                 stopwatch.stop(thread_name+"_update_object_uniforms");
                 break;
         }

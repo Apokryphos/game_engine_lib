@@ -202,7 +202,7 @@ static void create_glyph_pipeline(
     VkPipeline& pipeline
 ) {
     //  Shaders
-    auto vert_shader_code = read_file("assets/shaders/vk/sprite_vert.spv");
+    auto vert_shader_code = read_file("assets/shaders/vk/glyph_vert.spv");
     auto frag_shader_code = read_file("assets/shaders/vk/glyph_frag.spv");
 
     VkShaderModule vert_shader_module = create_shader_module(device, vert_shader_code);

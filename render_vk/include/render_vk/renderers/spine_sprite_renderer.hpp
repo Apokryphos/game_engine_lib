@@ -21,16 +21,10 @@ class SpineSpriteRenderer
     VkPipelineLayout m_pipeline_layout  {VK_NULL_HANDLE};
     VkPipeline m_pipeline               {VK_NULL_HANDLE};
 
-    //  Per-object dynamic uniform buffer
-    DynamicUniformBuffer<SpineUbo>& m_spine_uniform;
-
     VulkanSpineManager& m_spine_mgr;
 
 public:
-    SpineSpriteRenderer(
-        DynamicUniformBuffer<SpineUbo>& spine_uniform,
-        VulkanSpineManager& model_mgr
-    );
+    SpineSpriteRenderer(VulkanSpineManager& model_mgr);
     SpineSpriteRenderer(const SpineSpriteRenderer&) = delete;
     SpineSpriteRenderer& operator=(const SpineSpriteRenderer&) = delete;
     //  Creates resources
@@ -48,10 +42,12 @@ public:
     void draw_sprites(
         const std::vector<render::SpineSpriteBatch>& batches,
         const FrameDescriptorObjects& descriptors,
+        const DynamicUniformBuffer<SpineUbo>& uniform_buffer,
         VkCommandBuffer command_buffer
     );
     void update_object_uniforms(
-        const std::vector<render::SpineSpriteBatch>& batches
+        const std::vector<render::SpineSpriteBatch>& batches,
+        DynamicUniformBuffer<SpineUbo>& spine_uniform
     );
 };
 }

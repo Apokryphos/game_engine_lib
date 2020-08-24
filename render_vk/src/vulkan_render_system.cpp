@@ -635,10 +635,6 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         );
     }
 
-    m_frame_uniform.create(m_physical_device, m_device);
-    m_object_uniform.create(m_physical_device, m_device, m_max_objects);
-    m_spine_uniform.create(m_physical_device, m_device, m_max_objects);
-
     create_descriptor_set_layouts(m_device, MAX_TEXTURES, m_descriptor_set_layouts);
 
     m_descriptor_set_mgr = std::make_unique<DescriptorSetManager>(
@@ -653,7 +649,7 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     m_billboard_renderer = std::make_unique<BillboardRenderer>(*m_model_mgr);
     m_glyph_renderer = std::make_unique<GlyphRenderer>(*m_model_mgr);
     m_model_renderer = std::make_unique<ModelRenderer>(*m_model_mgr);
-    m_spine_sprite_renderer = std::make_unique<SpineSpriteRenderer>(m_spine_uniform, *m_spine_mgr);
+    m_spine_sprite_renderer = std::make_unique<SpineSpriteRenderer>(*m_spine_mgr);
     m_sprite_renderer = std::make_unique<SpriteRenderer>(*m_model_mgr);
 
     create_swapchain_objects();
@@ -684,9 +680,6 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         m_physical_device,
         m_device,
         m_descriptor_set_layouts,
-        m_frame_uniform,
-        m_spine_uniform,
-        m_object_uniform,
         *m_descriptor_set_mgr,
         *m_model_mgr,
         *m_texture_mgr,
@@ -750,10 +743,6 @@ void VulkanRenderSystem::shutdown() {
     // vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.object, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.spine, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.texture_sampler, nullptr);
-
-    m_frame_uniform.destroy();
-    m_object_uniform.destroy();
-    m_spine_uniform.destroy();
 
     //  Unload models
     m_model_mgr->unload(m_device);

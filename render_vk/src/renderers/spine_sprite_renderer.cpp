@@ -53,12 +53,8 @@ static void build_draw_order(
 }
 
 //  ----------------------------------------------------------------------------
-SpineSpriteRenderer::SpineSpriteRenderer(
-    DynamicUniformBuffer<SpineUbo>& spine_uniform,
-    VulkanSpineManager& spine_mgr
-)
-: m_spine_mgr(spine_mgr),
-  m_spine_uniform(spine_uniform) {
+SpineSpriteRenderer::SpineSpriteRenderer(VulkanSpineManager& spine_mgr)
+: m_spine_mgr(spine_mgr) {
 }
 
 //  ----------------------------------------------------------------------------
@@ -100,6 +96,7 @@ void SpineSpriteRenderer::destroy_objects() {
 void SpineSpriteRenderer::draw_sprites(
     const std::vector<SpineSpriteBatch>& batches,
     const FrameDescriptorObjects& descriptors,
+    const DynamicUniformBuffer<SpineUbo>& uniform_buffer,
     VkCommandBuffer command_buffer
 ) {
     VkCommandBufferInheritanceInfo inherit_info{};
@@ -233,7 +230,7 @@ void SpineSpriteRenderer::draw_sprites(
                 const ModelMesh& mesh = model.get_meshes()[attachment_info.index];
 
                 const uint32_t dynamic_align =
-                    static_cast<uint32_t>(dynamic_object * m_spine_uniform.get_align());
+                    static_cast<uint32_t>(dynamic_object * uniform_buffer.get_align());
 
                 vkCmdBindDescriptorSets(
                     command_buffer,
@@ -307,7 +304,8 @@ void calculate_transform(
 
 //  ----------------------------------------------------------------------------
 void SpineSpriteRenderer::update_object_uniforms(
-    const std::vector<SpineSpriteBatch>& batches
+    const std::vector<SpineSpriteBatch>& batches,
+    DynamicUniformBuffer<SpineUbo>& spine_uniform
 ) {
     //   Build vectors for uniform buffers
     size_t object_count = 0;
@@ -330,7 +328,7 @@ void SpineSpriteRenderer::update_object_uniforms(
     }
 
     //  Copy object UBO structs to dynamic uniform buffer
-    m_spine_uniform.copy(data);
+    spine_uniform.copy(data);
 }
 
 //  ----------------------------------------------------------------------------

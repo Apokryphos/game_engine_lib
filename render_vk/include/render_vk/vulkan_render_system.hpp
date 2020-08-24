@@ -4,12 +4,9 @@
 #include "render/spine_sprite_batch.hpp"
 #include "render/renderer.hpp"
 #include "render_vk/color_image.hpp"
-// #include "render_vk/descriptor_sets.hpp"
 #include "render_vk/descriptor_set_layout.hpp"
 #include "render_vk/depth.hpp"
-#include "render_vk/dynamic_uniform_buffer.hpp"
 #include "render_vk/frame_objects.hpp"
-#include "render_vk/uniform_buffer.hpp"
 #include "render_vk/vulkan.hpp"
 #include "render_vk/vulkan_asset_task_manager.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
@@ -99,11 +96,6 @@ private:
     ColorImage m_color_image;
     //  Depth buffer image
     DepthImage m_depth_image;
-    //  Per-frame uniform buffer
-    UniformBuffer<FrameUbo> m_frame_uniform;
-    //  Per-object dynamic uniform buffer
-    DynamicUniformBuffer<ObjectUbo> m_object_uniform;
-    DynamicUniformBuffer<SpineUbo> m_spine_uniform;
 
     //  Main thread frame objects
     std::vector<Frame> m_frames;
