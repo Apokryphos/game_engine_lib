@@ -67,6 +67,8 @@ private:
     //  Swapchain image index
     uint32_t m_image_index              = 0;
 
+    uint32_t m_max_objects {0};
+
     VkSampleCountFlagBits m_msaa_samples {VK_SAMPLE_COUNT_1_BIT};
 
     VkInstance m_instance               = VK_NULL_HANDLE;

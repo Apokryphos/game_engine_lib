@@ -2,7 +2,6 @@
 
 #include "common/alloc.hpp"
 #include "render_vk/buffer.hpp"
-#include "render_vk/ubo.hpp"
 #include "render_vk/vulkan.hpp"
 #include <cassert>
 #include <string.h>

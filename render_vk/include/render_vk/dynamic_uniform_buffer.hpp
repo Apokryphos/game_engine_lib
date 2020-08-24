@@ -2,7 +2,6 @@
 
 #include "common/alloc.hpp"
 #include "render_vk/buffer.hpp"
-#include "render_vk/ubo.hpp"
 #include "render_vk/vulkan.hpp"
 #include <cassert>
 #include <string.h>
@@ -24,41 +23,30 @@ template <typename T>
 class DynamicUniformBuffer
 {
     //  Maximum number of object instances this buffer will support
-    uint32_t m_object_count;
+    uint32_t m_object_count {0};
 
     //  Dynamic buffer alignment (bytes)
-    size_t m_align;
+    size_t m_align {0};
 
     //  Dynamic buffer size (bytes)
-    size_t m_buffer_size;
+    size_t m_buffer_size {0};
 
-    VkDevice m_device;
+    VkDevice m_device {VK_NULL_HANDLE};
 
     //  Dynamic uniform buffer
-    VkBuffer m_buffer = VK_NULL_HANDLE;
+    VkBuffer m_buffer {VK_NULL_HANDLE};
 
     //  Dynamic uniform buffer memory
-    VkDeviceMemory m_memory = VK_NULL_HANDLE;
+    VkDeviceMemory m_memory {VK_NULL_HANDLE};
 
     //  Mapped memory for UBO data (CPU -> GPU)
-    void* m_mapped = nullptr;
+    void* m_mapped {nullptr};
 
     //  Storage for UBO structs
-    T* m_ubo_data;
+    T* m_ubo_data {nullptr};
 
 public:
-    DynamicUniformBuffer(uint32_t object_count)
-    : m_object_count(object_count),
-      m_align(0),
-      m_buffer_size(0),
-      m_device(VK_NULL_HANDLE),
-      m_buffer(VK_NULL_HANDLE),
-      m_memory(VK_NULL_HANDLE),
-      m_mapped(nullptr),
-      m_ubo_data(nullptr) {
-        assert(object_count > 0);
-    }
-
+    DynamicUniformBuffer() = default;
     DynamicUniformBuffer(const DynamicUniformBuffer&) = delete;
     DynamicUniformBuffer& operator=(const DynamicUniformBuffer&) = delete;
 
@@ -86,7 +74,14 @@ public:
         );
     }
 
-    void create(VkPhysicalDevice physical_device, VkDevice device) {
+    void create(
+        VkPhysicalDevice physical_device,
+        VkDevice device,
+        uint32_t object_count
+    ) {
+        m_object_count = object_count;
+        assert(m_object_count > 0);
+
         m_device = device;
 
         //  Determine alignment and calculate buffer size

@@ -109,10 +109,9 @@ static void create_primary_command_objects(
 //  ----------------------------------------------------------------------------
 VulkanRenderSystem::VulkanRenderSystem(const uint32_t max_objects)
 : Renderer(RenderApi::Vulkan),
+  m_max_objects(max_objects),
   m_frames(m_frame_count),
-  m_glfw_window(nullptr),
-  m_spine_uniform(max_objects),
-  m_object_uniform(max_objects) {
+  m_glfw_window(nullptr) {
     assert(m_frames.size() > 0);
 }
 
@@ -637,8 +636,8 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
     }
 
     m_frame_uniform.create(m_physical_device, m_device);
-    m_object_uniform.create(m_physical_device, m_device);
-    m_spine_uniform.create(m_physical_device, m_device);
+    m_object_uniform.create(m_physical_device, m_device, m_max_objects);
+    m_spine_uniform.create(m_physical_device, m_device, m_max_objects);
 
     create_descriptor_set_layouts(m_device, MAX_TEXTURES, m_descriptor_set_layouts);
 
