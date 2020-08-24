@@ -31,7 +31,7 @@ using namespace render_vk;
 namespace engine
 {
 //  ----------------------------------------------------------------------------
-Game::Game(const std::string& game_base_name)
+Game::Game(const std::string& game_base_name, const size_t max_entities)
 : m_quit(false),
   m_ecs_root(std::make_unique<EcsRoot>()),
   m_engine(std::make_unique<Engine>()),
@@ -41,7 +41,7 @@ Game::Game(const std::string& game_base_name)
 
     m_sys_mgr = std::make_unique<SystemManager>(*m_ecs_root);
 
-    initialize_base_systems(*this, game_base_name);
+    initialize_base_systems(*this, game_base_name, max_entities);
 }
 
 //  ----------------------------------------------------------------------------

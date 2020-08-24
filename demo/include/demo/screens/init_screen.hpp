@@ -18,5 +18,7 @@ public:
     InitScreen()
     : Screen("init_screen") {
     }
+
+    static const int MAX_ENTITIES = 20000;
 };
 }

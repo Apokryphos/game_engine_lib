@@ -35,7 +35,7 @@ class Game
     void update();
 
 public:
-    Game(const std::string& game_base_name);
+    Game(const std::string& game_base_name, const size_t max_entities);
     ~Game();
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;

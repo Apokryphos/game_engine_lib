@@ -55,8 +55,6 @@ bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
 
 namespace demo
 {
-const int MAX_ENTITIES = 20000;
-
 const int BILLBOARD_COUNT = 50;
 const int GLYPH_COUNT     = 15000;
 const int MODEL_COUNT     = 50;
@@ -183,6 +181,8 @@ static void init_ecs_systems(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
     DebugGuiSystem& debug_gui_system = get_debug_gui_system(sys_mgr);
+
+    const size_t MAX_ENTITIES = InitScreen::MAX_ENTITIES;
 
     sys_mgr.add_system(std::make_unique<PositionSystem>(ecs, MAX_ENTITIES));
     debug_gui_system.add_gui(

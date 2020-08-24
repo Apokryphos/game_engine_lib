@@ -36,7 +36,7 @@ static bool init_game(Game& game) {
 
 //  ----------------------------------------------------------------------------
 int main(int argc, const char** argv) {
-    Game game(GAME_BASE_NAME);
+    Game game(GAME_BASE_NAME, InitScreen::MAX_ENTITIES);
     if (!init_game(game)) {
         return -1;
     }
