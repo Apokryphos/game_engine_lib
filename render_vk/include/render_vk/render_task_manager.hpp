@@ -78,6 +78,7 @@ class RenderTaskManager
         std::string name;
         ThreadFrameCommandObjects command;
         FrameDescriptorObjects descriptor;
+        FrameUniformObjects uniform;
     };
 
     class RenderTasks
@@ -184,6 +185,8 @@ class RenderTaskManager
     //  The cumulative frame number (0...UINT32_MAX)
     uint32_t m_cumulative_frame {0};
 
+    uint32_t m_max_objects {0};
+
     VkPhysicalDevice m_physical_device {VK_NULL_HANDLE};
     VkDevice m_device                  {VK_NULL_HANDLE};
 
@@ -226,7 +229,8 @@ public:
         DynamicUniformBuffer<ObjectUbo>& object_uniform,
         DescriptorSetManager& descriptor_set_mgr,
         ModelManager& model_mgr,
-        TextureManager& texture_mgr
+        TextureManager& texture_mgr,
+        uint32_t max_objects
     );
     ~RenderTaskManager();
     RenderTaskManager(const RenderTaskManager&) = delete;

@@ -1,5 +1,8 @@
 #pragma once
 
+#include "render_vk/dynamic_uniform_buffer.hpp"
+#include "render_vk/ubo.hpp"
+#include "render_vk/uniform_buffer.hpp"
 #include "render_vk/vulkan.hpp"
 
 namespace render_vk
@@ -34,5 +37,12 @@ struct FrameSyncObjects
     VkSemaphore present_ready        = VK_NULL_HANDLE;
     //  This frame is complete and resources can be reused.
     VkFence frame_complete           = VK_NULL_HANDLE;
+};
+
+struct FrameUniformObjects
+{
+    UniformBuffer<FrameUbo> frame;
+    DynamicUniformBuffer<ObjectUbo> object;
+    DynamicUniformBuffer<SpineUbo> spine;
 };
 }

@@ -689,7 +689,8 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         m_object_uniform,
         *m_descriptor_set_mgr,
         *m_model_mgr,
-        *m_texture_mgr
+        *m_texture_mgr,
+        m_max_objects
     );
 
     return true;

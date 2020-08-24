@@ -384,9 +384,11 @@ RenderTaskManager::RenderTaskManager(
     DynamicUniformBuffer<ObjectUbo>& object_uniform,
     DescriptorSetManager& descriptor_set_mgr,
     ModelManager& model_mgr,
-    TextureManager& texture_mgr
+    TextureManager& texture_mgr,
+    uint32_t max_objects
 )
-: m_physical_device(physical_device),
+: m_max_objects(max_objects),
+  m_physical_device(physical_device),
   m_device(device),
   m_descriptor_set_layouts(descriptor_set_layouts),
   m_frame_uniform(frame_uniform),
@@ -650,6 +652,11 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             frame.name,
             frame.descriptor
         );
+
+        //  Create uniform buffers
+        frame.uniform.frame.create(m_physical_device, m_device);
+        frame.uniform.object.create(m_physical_device, m_device, m_max_objects);
+        frame.uniform.spine.create(m_physical_device, m_device, m_max_objects);
     }
 
     bool frame_changed = false;
@@ -844,6 +851,10 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         vkDestroyCommandPool(m_device, frame.command.pool, nullptr);
         //  Descriptors
         vkDestroyDescriptorPool(m_device, frame.descriptor.pool, nullptr);
+        //  Uniform buffers
+        frame.uniform.frame.destroy();
+        frame.uniform.object.destroy();
+        frame.uniform.spine.destroy();
     }
 
     log_debug("Thread %d exited.", thread_id);
