@@ -130,23 +130,23 @@ void BillboardRenderer::draw_billboards(
     //  Get sprite quad
     const VulkanModel& quad = m_model_mgr.get_billboard_quad();
 
-    //  Keep track of model index because of dynamic buffer alignment
+    //  Bind vertex buffer
+    VkBuffer vertex_buffers[] = { quad.get_vertex_buffer() };
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+
+    //  Bind index buffer
+    vkCmdBindIndexBuffer(
+        command_buffer,
+        quad.get_index_buffer(),
+        0,
+        VK_INDEX_TYPE_UINT32
+    );
+
+    const uint32_t index_count = quad.get_index_count();
+
+    //  Draw each batch
     for (const SpriteBatch& batch : batches) {
-        //  Bind vertex buffer
-        VkBuffer vertex_buffers[] = { quad.get_vertex_buffer() };
-        VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-
-        //  Bind index buffer
-        vkCmdBindIndexBuffer(
-            command_buffer,
-            quad.get_index_buffer(),
-            0,
-            VK_INDEX_TYPE_UINT32
-        );
-
-        const uint32_t index_count = quad.get_index_count();
-
         //  Texture ID
         vkCmdPushConstants(
             command_buffer,
