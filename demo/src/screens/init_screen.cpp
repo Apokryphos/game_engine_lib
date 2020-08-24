@@ -55,8 +55,10 @@ bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
 
 namespace demo
 {
+const int MAX_ENTITIES = 20000;
+
 const int BILLBOARD_COUNT = 50;
-const int GLYPH_COUNT     = 50;
+const int GLYPH_COUNT     = 15000;
 const int MODEL_COUNT     = 50;
 const int SPINE_COUNT     = 0;
 const int SPRITE_COUNT    = 50;
@@ -182,18 +184,18 @@ static void init_ecs_systems(Game& game) {
     SystemManager& sys_mgr = game.get_system_manager();
     DebugGuiSystem& debug_gui_system = get_debug_gui_system(sys_mgr);
 
-    sys_mgr.add_system(std::make_unique<PositionSystem>(ecs, 10000));
+    sys_mgr.add_system(std::make_unique<PositionSystem>(ecs, MAX_ENTITIES));
     debug_gui_system.add_gui(
         std::make_unique<PositionSystemDebugPanel>(get_position_system(sys_mgr))
     );
 
-    sys_mgr.add_system(std::make_unique<BillboardSystem>(ecs, 10000));
-    sys_mgr.add_system(std::make_unique<CameraSystem>(ecs, 10000));
-    sys_mgr.add_system(std::make_unique<GlyphSystem>(ecs, 10000));
-    sys_mgr.add_system(std::make_unique<ModelSystem>(ecs, 10000));
-    sys_mgr.add_system(std::make_unique<MoveSystem>(ecs, 10000));
-    sys_mgr.add_system(std::make_unique<SpineSystem>(ecs, 10000));
-    sys_mgr.add_system(std::make_unique<SpriteSystem>(ecs, 10000));
+    sys_mgr.add_system(std::make_unique<BillboardSystem>(ecs, MAX_ENTITIES));
+    sys_mgr.add_system(std::make_unique<CameraSystem>(ecs, MAX_ENTITIES));
+    sys_mgr.add_system(std::make_unique<GlyphSystem>(ecs, MAX_ENTITIES));
+    sys_mgr.add_system(std::make_unique<ModelSystem>(ecs, MAX_ENTITIES));
+    sys_mgr.add_system(std::make_unique<MoveSystem>(ecs, MAX_ENTITIES));
+    sys_mgr.add_system(std::make_unique<SpineSystem>(ecs, MAX_ENTITIES));
+    sys_mgr.add_system(std::make_unique<SpriteSystem>(ecs, MAX_ENTITIES));
 
     //  Editors
     EditorSystem& editor_sys = get_editor_system(sys_mgr);
