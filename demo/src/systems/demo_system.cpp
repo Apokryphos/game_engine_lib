@@ -153,7 +153,6 @@ void DemoSystem::batch_glyphs(
 
     struct Glyph
     {
-        Entity entity;
         uint32_t texture_id;
         glm::vec2 size;
         glm::vec3 position;
@@ -166,14 +165,13 @@ void DemoSystem::batch_glyphs(
     //  Get position component data
     const PositionSystem& pos_sys = get_position_system(sys_mgr);
     for (size_t n = 0; n < entity_count; ++n) {
-        glyphs[n].entity = entities[n];
         const auto pos_cmpnt = pos_sys.get_component(entities[n]);
         glyphs[n].position = pos_sys.get_position(pos_cmpnt);
     }
 
     //  Get glyph component data
     for (size_t n = 0; n < entity_count; ++n) {
-        const auto glyph_cmpnt = glyph_sys.get_component(glyphs[n].entity);
+        const auto glyph_cmpnt = glyph_sys.get_component(entities[n]);
         glyphs[n].texture_id = glyph_sys.get_texture_id(glyph_cmpnt);
         glyphs[n].size = glyph_sys.get_size(glyph_cmpnt);
         glyphs[n].bg_color = glyph_sys.get_bg_color(glyph_cmpnt);
