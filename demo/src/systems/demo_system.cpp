@@ -161,6 +161,8 @@ void DemoSystem::batch_glyphs(
         const auto glyph_cmpnt = glyph_sys.get_component(entities[n]);
         const uint32_t texture_id = glyph_sys.get_texture_id(glyph_cmpnt);
         const glm::vec2 size = glyph_sys.get_size(glyph_cmpnt);
+        const glm::vec4 bg_color = glyph_sys.get_bg_color(glyph_cmpnt);
+        const glm::vec4 fg_color = glyph_sys.get_fg_color(glyph_cmpnt);
 
         //  Billboard bounding box
         const glm::vec3 maxp(
@@ -184,6 +186,8 @@ void DemoSystem::batch_glyphs(
         batch.texture_id = texture_id;
         batch.positions.push_back(position);
         batch.sizes.push_back({size.x, size.y, 1.0f});
+        batch.bg_colors.push_back(bg_color);
+        batch.fg_colors.push_back(fg_color);
     }
 
     for (const auto& pair : batches) {

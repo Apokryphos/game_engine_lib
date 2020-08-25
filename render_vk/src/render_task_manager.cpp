@@ -139,6 +139,38 @@ void update_frame_descriptor_sets(
     );
 }
 
+//  ----------------------------------------------------------------------------
+void update_glyph_descriptor_sets(
+    VkDevice device,
+    VkBuffer object_uniform_buffer,
+    VkDescriptorSet& descriptor_set
+) {
+    VkDescriptorBufferInfo object_buffer_info{};
+    object_buffer_info.buffer = object_uniform_buffer;
+    object_buffer_info.offset = 0;
+    object_buffer_info.range = VK_WHOLE_SIZE;
+
+    std::array<VkWriteDescriptorSet, 1> descriptor_writes{};
+
+    //  Per-object dynamic uniform buffer
+    descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[0].dstSet = descriptor_set;
+    descriptor_writes[0].dstBinding = 0;
+    descriptor_writes[0].dstArrayElement = 0;
+    descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    descriptor_writes[0].descriptorCount = 1;
+    descriptor_writes[0].pBufferInfo = &object_buffer_info;
+    descriptor_writes[0].pImageInfo = nullptr;
+    descriptor_writes[0].pTexelBufferView = nullptr;
+
+    vkUpdateDescriptorSets(
+        device,
+        static_cast<uint32_t>(descriptor_writes.size()),
+        descriptor_writes.data(),
+        0,
+        nullptr
+    );
+}
 
 //  ----------------------------------------------------------------------------
 void update_spine_descriptor_sets(
@@ -239,7 +271,7 @@ void create_descriptor_pool(
     pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     pool_sizes[0].descriptorCount = 1;
     pool_sizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    pool_sizes[1].descriptorCount = 1;
+    pool_sizes[1].descriptorCount = 2;
     pool_sizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     pool_sizes[2].descriptorCount = sampler_count;
 
@@ -258,9 +290,7 @@ void create_descriptor_pool(
 static void create_descriptor_objects(
     VkDevice device,
     DescriptorSetLayouts descriptor_set_layouts,
-    const UniformBuffer<FrameUbo>& frame_uniform,
-    const DynamicUniformBuffer<SpineUbo>& spine_uniform,
-    const DynamicUniformBuffer<ObjectUbo>& object_uniform,
+    const FrameUniformObjects& uniform_buffers,
     const std::string& name_prefix,
     FrameDescriptorObjects& descriptor
 ) {
@@ -272,6 +302,14 @@ static void create_descriptor_objects(
         descriptor.pool,
         name_prefix + "_frame_descriptor_set",
         descriptor.frame_set
+    );
+
+    create_descriptor_set(
+        device,
+        descriptor_set_layouts.glyph,
+        descriptor.pool,
+        name_prefix + "_glyph_descriptor_set",
+        descriptor.glyph_set
     );
 
     create_descriptor_set(
@@ -300,14 +338,20 @@ static void create_descriptor_objects(
 
     update_frame_descriptor_sets(
         device,
-        frame_uniform.get_buffer(),
-        frame_uniform.get_ubo_size(),
+        uniform_buffers.frame.get_buffer(),
+        uniform_buffers.frame.get_ubo_size(),
         descriptor.frame_set
+    );
+
+    update_glyph_descriptor_sets(
+        device,
+        uniform_buffers.glyph.get_buffer(),
+        descriptor.glyph_set
     );
 
     update_spine_descriptor_sets(
         device,
-        spine_uniform.get_buffer(),
+        uniform_buffers.spine.get_buffer(),
         descriptor.spine_set
     );
 
@@ -400,6 +444,7 @@ RenderTaskManager::RenderTaskManager(
     //  Create uniform buffers for each frame
     for (auto& uniform_buffers : m_uniform_buffers) {
         uniform_buffers.frame.create(m_physical_device, m_device);
+        uniform_buffers.glyph.create(m_physical_device, m_device, m_max_objects);
         uniform_buffers.object.create(m_physical_device, m_device, m_max_objects);
         uniform_buffers.spine.create(m_physical_device, m_device, m_max_objects);
     }
@@ -652,9 +697,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
         create_descriptor_objects(
             m_device,
             m_descriptor_set_layouts,
-            m_uniform_buffers[frame_index].frame,
-            m_uniform_buffers[frame_index].spine,
-            m_uniform_buffers[frame_index].object,
+            m_uniform_buffers[frame_index],
             frame.name,
             frame.descriptor
         );
@@ -778,10 +821,12 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
 
             case TaskId::DrawGlyphs: {
                 stopwatch.start(thread_name+"_draw_glyphs");
+                task_update_glyph_uniforms(job.glyph_batches, m_uniform_buffers[m_current_frame].glyph);
                 GlyphRenderer* glyph_renderer = static_cast<GlyphRenderer*>(job.renderer);
                 glyph_renderer->draw_glyphs(
                     job.glyph_batches,
                     frame.descriptor,
+                    m_uniform_buffers[m_current_frame],
                     command_buffer
                 );
                 stopwatch.stop(thread_name+"_draw_glyphs");
@@ -870,6 +915,7 @@ void RenderTaskManager::shutdown() {
     //  Uniform buffers
     for (auto& uniform_buffer : m_uniform_buffers) {
         uniform_buffer.frame.destroy();
+        uniform_buffer.glyph.destroy();
         uniform_buffer.object.destroy();
         uniform_buffer.spine.destroy();
     }

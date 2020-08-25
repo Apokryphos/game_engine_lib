@@ -57,7 +57,9 @@ void add_glyph_component(
     const Entity entity,
     GlyphSystem& glyph_sys,
     uint32_t glyph_set_id,
-    const char ch
+    const char ch,
+    const glm::vec4& bg_color,
+    const glm::vec4& fg_color
 ) {
     if (!glyph_sys.has_component(entity)) {
         glyph_sys.add_component(entity);
@@ -66,6 +68,8 @@ void add_glyph_component(
     const auto glyph_cmpnt = glyph_sys.get_component(entity);
     glyph_sys.set_glyph_set_id(glyph_cmpnt, glyph_set_id);
     glyph_sys.set_glyph(glyph_cmpnt, ch);
+    glyph_sys.set_bg(glyph_cmpnt, bg_color);
+    glyph_sys.set_fg(glyph_cmpnt, fg_color);
 }
 
 //  ----------------------------------------------------------------------------

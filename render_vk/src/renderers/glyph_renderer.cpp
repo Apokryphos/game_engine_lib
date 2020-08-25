@@ -68,6 +68,7 @@ void GlyphRenderer::destroy_objects() {
 void GlyphRenderer::draw_glyphs(
     const std::vector<GlyphBatch>& batches,
     const FrameDescriptorObjects& descriptors,
+    const FrameUniformObjects& uniform_buffers,
     VkCommandBuffer command_buffer
 ) {
     VkCommandBufferInheritanceInfo inherit_info{};
@@ -103,32 +104,27 @@ void GlyphRenderer::draw_glyphs(
         m_pipeline
     );
 
-    //  Bind per-frame descriptors
+    //  Bind descriptors
+    std::array<VkDescriptorSet, 3> descriptor_sets {
+        descriptors.frame_set,
+        descriptors.texture_set,
+        descriptors.glyph_set,
+    };
+    std::array<uint32_t, 1> dynamic_offsets {0};
     vkCmdBindDescriptorSets(
         command_buffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         m_pipeline_layout,
         0,
-        1,
-        &descriptors.frame_set,
-        0,
-        nullptr
-    );
-
-    //  Bind texture descriptors
-    vkCmdBindDescriptorSets(
-        command_buffer,
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        m_pipeline_layout,
-        1,
-        1,
-        &descriptors.texture_set,
-        0,
-        nullptr
+        static_cast<uint32_t>(descriptor_sets.size()),
+        descriptor_sets.data(),
+        dynamic_offsets.size(),
+        dynamic_offsets.data()
     );
 
     //  Get sprite quad
     const VulkanModel& quad = m_model_mgr.get_sprite_quad();
+    const uint32_t index_count = quad.get_index_count();
 
     //  Bind vertex buffer
     VkBuffer vertex_buffers[] = { quad.get_vertex_buffer() };
@@ -143,46 +139,14 @@ void GlyphRenderer::draw_glyphs(
         VK_INDEX_TYPE_UINT32
     );
 
-    const uint32_t index_count = quad.get_index_count();
-
-    //  Draw each batch
+    //  Count instances
+    uint32_t instance_count = 0;
     for (const GlyphBatch& batch : batches) {
-        //  Texture ID
-        vkCmdPushConstants(
-            command_buffer,
-            m_pipeline_layout,
-            VK_SHADER_STAGE_FRAGMENT_BIT,
-            sizeof(glm::mat4),
-            sizeof(uint32_t),
-            &batch.texture_id
-        );
-
-        //  Draw each object
-        for (uint32_t n = 0; n < batch.positions.size(); ++n) {
-            glm::mat4 model =
-                glm::translate(glm::mat4(1.0f), batch.positions[n]) *
-                glm::scale(glm::mat4(1.0f), batch.sizes[n] * glm::vec3(0.5f, 0.5f, 1.0f));
-
-            vkCmdPushConstants(
-                command_buffer,
-                m_pipeline_layout,
-                VK_SHADER_STAGE_VERTEX_BIT,
-                0,
-                sizeof(glm::mat4),
-                &model
-            );
-
-            //  Draw
-            vkCmdDrawIndexed(
-                command_buffer,
-                index_count,
-                1,
-                0,
-                0,
-                1
-            );
-        }
+        instance_count += batch.positions.size();
     }
+
+    //  Draw instances
+    vkCmdDrawIndexed(command_buffer, index_count, instance_count, 0, 0, 0);
 
     if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record secondary command buffer.");
@@ -330,28 +294,19 @@ static void create_glyph_pipeline(
     dynamic_state.dynamicStateCount = 2;
     dynamic_state.pDynamicStates = dynamic_states;
 
-    std::array<VkDescriptorSetLayout, 2> set_layouts = {
+    std::array<VkDescriptorSetLayout, 3> set_layouts = {
         descriptor_set_layouts.frame,
         descriptor_set_layouts.texture_sampler,
+        descriptor_set_layouts.glyph,
     };
-
-    //  Push constants
-    std::array<VkPushConstantRange, 2> push_constant_range;
-    push_constant_range[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    push_constant_range[0].offset = 0;
-    push_constant_range[0].size = sizeof(glm::mat4);
-
-    push_constant_range[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-    push_constant_range[1].offset = sizeof(glm::mat4);
-    push_constant_range[1].size = sizeof(uint32_t);
 
     //  Pipeline layout
     VkPipelineLayoutCreateInfo pipeline_layout_info{};
     pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipeline_layout_info.setLayoutCount = static_cast<uint32_t>(set_layouts.size());
     pipeline_layout_info.pSetLayouts = set_layouts.data();
-    pipeline_layout_info.pushConstantRangeCount = static_cast<uint32_t>(push_constant_range.size());
-    pipeline_layout_info.pPushConstantRanges = push_constant_range.data();
+    pipeline_layout_info.pushConstantRangeCount = 0;
+    pipeline_layout_info.pPushConstantRanges = nullptr;
 
     if (vkCreatePipelineLayout(
         device,

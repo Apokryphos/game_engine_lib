@@ -6,6 +6,7 @@
 #include "engine/base_systems/base_system_util.hpp"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 namespace engine
 {
@@ -42,7 +43,9 @@ void add_glyph_component(
     const ecs::Entity entity,
     GlyphSystem& glyph_sys,
     uint32_t glyph_set_id,
-    const char ch
+    const char ch,
+    const glm::vec4& bg_color,
+    const glm::vec4& fg_color
 );
 
 void add_model_component(

@@ -1,4 +1,5 @@
 #include "common/log.hpp"
+#include "render/glyph_batch.hpp"
 #include "render/model_batch.hpp"
 #include "render_vk/debug_utils.hpp"
 #include "render_vk/dynamic_uniform_buffer.hpp"
@@ -20,6 +21,47 @@ void task_update_frame_uniforms(
 
     //  Copy frame UBO struct to uniform buffer
     frame_uniform.copy(frame_ubo);
+}
+
+//  ----------------------------------------------------------------------------
+void task_update_glyph_uniforms(
+    const std::vector<GlyphBatch>& batches,
+    DynamicUniformBuffer<GlyphUbo>& glyph_uniform
+) {
+    size_t object_count = 0;
+    for (const GlyphBatch& batch : batches) {
+        object_count += batch.positions.size();
+    }
+
+    assert(object_count > 0);
+
+    std::vector<GlyphUbo> data(object_count);
+
+    size_t offset = 0;
+    for (const GlyphBatch& batch : batches) {
+        const size_t batch_object_count = batch.positions.size();
+
+        assert(batch.sizes.size() == batch_object_count);
+        assert(batch.bg_colors.size() == batch_object_count);
+        assert(batch.fg_colors.size() == batch_object_count);
+
+        for (size_t n = 0; n < batch_object_count; ++n) {
+            const size_t m = n + offset;
+
+            data[m].model =
+                glm::translate(glm::mat4(1.0f), batch.positions[n]) *
+                glm::scale(glm::mat4(1.0f), batch.sizes[n] * glm::vec3(0.5f, 0.5f, 1.0f));
+
+            data[m].bg_color = batch.bg_colors[n];
+            data[m].fg_color = batch.fg_colors[n];
+            data[m].texture_index = batch.texture_id;
+        }
+
+        offset += batch_object_count;
+    }
+
+    //  Copy object UBO structs to dynamic uniform buffer
+    glyph_uniform.copy(data);
 }
 
 //  ----------------------------------------------------------------------------

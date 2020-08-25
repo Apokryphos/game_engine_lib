@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/alloc.hpp"
+#include "common/math.hpp"
 #include "render_vk/buffer.hpp"
 #include "render_vk/vulkan.hpp"
 #include <cassert>
@@ -94,10 +95,11 @@ public:
         );
 
         //  Allocate data buffer (where UBO data will be stored in RAM)
+        //  Size must be a power of two
         assert(m_ubo_data == nullptr);
         m_ubo_data = (T*)common::aligned_alloc(
             m_buffer_size,
-            m_align
+            common::next_power_of_two(m_align)
         );
         assert(m_ubo_data != nullptr);
 

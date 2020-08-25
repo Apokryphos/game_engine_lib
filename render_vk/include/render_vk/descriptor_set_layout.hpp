@@ -14,6 +14,8 @@ struct DescriptorSetLayouts
     //  Per-object (model, texture)
     // VkDescriptorSetLayout object = VK_NULL_HANDLE;
 
+    VkDescriptorSetLayout glyph = VK_NULL_HANDLE;
+
     //  Per-object (Spine models)
     VkDescriptorSetLayout spine = VK_NULL_HANDLE;
 

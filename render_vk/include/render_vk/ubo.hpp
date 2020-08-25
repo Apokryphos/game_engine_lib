@@ -15,6 +15,15 @@ struct FrameUbo
     glm::mat4 ortho_proj;
 };
 
+//  Per-instance UBO data (updated every frame)
+struct alignas(16) GlyphUbo
+{
+    alignas(16) glm::mat4 model;
+    alignas(16) glm::vec4 bg_color;
+    alignas(16) glm::vec4 fg_color;
+    alignas(4) uint32_t texture_index;
+};
+
 //  Per-object UBO data (updated every object, every frame)
 struct ObjectUbo
 {

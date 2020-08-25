@@ -40,6 +40,7 @@ public:
     void draw_glyphs(
         const std::vector<render::GlyphBatch>& batches,
         const FrameDescriptorObjects& descriptors,
+        const FrameUniformObjects& uniform_buffers,
         VkCommandBuffer command_buffer
     );
 };

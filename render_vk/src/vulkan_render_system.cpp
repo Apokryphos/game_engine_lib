@@ -741,6 +741,7 @@ void VulkanRenderSystem::shutdown() {
     destroy_swapchain();
 
     vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.frame, nullptr);
+    vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.glyph, nullptr);
     // vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.object, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.spine, nullptr);
     vkDestroyDescriptorSetLayout(m_device, m_descriptor_set_layouts.texture_sampler, nullptr);

@@ -35,6 +35,32 @@ void create_spine_descriptor_set_layout(
 }
 
 //  ----------------------------------------------------------------------------
+void create_glyph_descriptor_set_layout(
+    VkDevice device,
+    VkDescriptorSetLayout& layout
+) {
+    VkDescriptorSetLayoutBinding object_ubo_layout_binding{};
+    object_ubo_layout_binding.binding = 0;
+    object_ubo_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    object_ubo_layout_binding.descriptorCount = 1;
+    object_ubo_layout_binding.pImmutableSamplers = nullptr;
+    object_ubo_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    std::array<VkDescriptorSetLayoutBinding, 1> bindings = {
+        object_ubo_layout_binding,
+    };
+
+    VkDescriptorSetLayoutCreateInfo layout_info{};
+    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layout_info.bindingCount = static_cast<uint32_t>(bindings.size());
+    layout_info.pBindings = bindings.data();
+
+    if (vkCreateDescriptorSetLayout(device, &layout_info, nullptr, &layout) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create descriptor set layout.");
+    }
+}
+
+//  ----------------------------------------------------------------------------
 void create_object_descriptor_set_layout(
     VkDevice device,
     VkDescriptorSetLayout& layout
@@ -163,6 +189,7 @@ void create_descriptor_set_layouts(
 ) {
     create_frame_descriptor_set_layout(device, layouts.frame);
     // create_object_descriptor_set_layout(device, layouts.object);
+    create_glyph_descriptor_set_layout(device, layouts.glyph);
     create_spine_descriptor_set_layout(device, layouts.spine);
     create_sampler_descriptor_set_layout(device, sampler_count, layouts.texture_sampler);
 }

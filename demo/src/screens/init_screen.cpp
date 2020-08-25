@@ -55,11 +55,11 @@ bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
 
 namespace demo
 {
-const int BILLBOARD_COUNT = 50;
-const int GLYPH_COUNT     = 15000;
-const int MODEL_COUNT     = 50;
+const int BILLBOARD_COUNT = 0;
+const int GLYPH_COUNT     = 14516;
+const int MODEL_COUNT     = 0;
 const int SPINE_COUNT     = 0;
-const int SPRITE_COUNT    = 50;
+const int SPRITE_COUNT    = 0;
 
 //  ----------------------------------------------------------------------------
 static void init_input_actions(InputManager& input_mgr) {
@@ -270,8 +270,9 @@ static void init_glyphs(Game& game) {
     SystemManager& sys_mgr = game.get_system_manager();
 
     std::uniform_int_distribution<int> glyph_dist(0, 256);
-    std::uniform_int_distribution<int> x_dist(0, 192);
-    std::uniform_int_distribution<int> y_dist(0, 80);
+    std::uniform_int_distribution<int> x_dist(0, 191);
+    std::uniform_int_distribution<int> y_dist(0, 76);
+    std::uniform_real_distribution<float> color_dist(0, 1.0);
 
     Random& random = game.get_random();
 
@@ -315,7 +316,21 @@ static void init_glyphs(Game& game) {
 
         const char glyph = glyph_dist(random.get_rng());
 
-        add_glyph_component(entity, glyph_sys, 0, glyph);
+        const glm::vec4 bg_color {
+            color_dist(random.get_rng()),
+            color_dist(random.get_rng()),
+            color_dist(random.get_rng()),
+            1.0f
+        };
+
+        const glm::vec4 fg_color {
+            color_dist(random.get_rng()),
+            color_dist(random.get_rng()),
+            color_dist(random.get_rng()),
+            1.0f
+        };
+
+        add_glyph_component(entity, glyph_sys, 0, glyph, bg_color, fg_color);
     }
 }
 

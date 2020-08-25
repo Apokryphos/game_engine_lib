@@ -61,6 +61,14 @@ public:
         get_component_data(cmpnt).ch = ch;
     }
 
+    glm::vec4 get_bg_color(const Component cmpnt) const {
+        return get_component_data(cmpnt).bg;
+    }
+
+    glm::vec4 get_fg_color(const Component cmpnt) const {
+        return get_component_data(cmpnt).fg;
+    }
+
     glm::vec2 get_size(const Component cmpnt) const {
         const uint32_t glyph_set_id = get_component_data(cmpnt).glyph_set_id;
         const GlyphSet& glyph_set = m_glyph_sets.at(glyph_set_id);

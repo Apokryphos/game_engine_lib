@@ -1,5 +1,4 @@
 #include "common/alloc.hpp"
-#include "common/math.hpp"
 #include "render_vk/vulkan.hpp"
 
 using namespace common;
@@ -38,9 +37,6 @@ void get_dynamic_buffer_align_and_size(
 
     dynamic_align = gpu_dynamic_align(device_align, uniform_buffer_size);
 
-    //  aligned_alloc requires that alignment must be a power of two
-    dynamic_align = next_power_of_two(dynamic_align);
-
-    buffer_size = uniform_buffer_size * object_count * dynamic_align;
+    buffer_size = object_count * dynamic_align;
 }
 }

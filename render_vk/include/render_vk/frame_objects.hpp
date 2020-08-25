@@ -13,6 +13,7 @@ struct FrameDescriptorObjects
     VkDescriptorPool pool      = VK_NULL_HANDLE;
     //  The per-frame descriptor set for this frame.
     VkDescriptorSet frame_set  = VK_NULL_HANDLE;
+    VkDescriptorSet glyph_set  = VK_NULL_HANDLE;
     //  The per-object descriptor set for this frame.
     // VkDescriptorSet object_set = VK_NULL_HANDLE;
     //  The per-object descriptor set for Spine models.
@@ -42,6 +43,7 @@ struct FrameSyncObjects
 struct FrameUniformObjects
 {
     UniformBuffer<FrameUbo> frame;
+    DynamicUniformBuffer<GlyphUbo> glyph;
     DynamicUniformBuffer<ObjectUbo> object;
     DynamicUniformBuffer<SpineUbo> spine;
 };
