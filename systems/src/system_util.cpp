@@ -57,7 +57,7 @@ void add_glyph_component(
     const Entity entity,
     GlyphSystem& glyph_sys,
     uint32_t glyph_set_id,
-    const char ch,
+    const uint16_t ch,
     const glm::vec4& bg_color,
     const glm::vec4& fg_color
 ) {

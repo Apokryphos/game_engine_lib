@@ -314,7 +314,7 @@ static void init_glyphs(Game& game) {
 
         add_position_component(entity, pos_sys, position);
 
-        const char glyph = glyph_dist(random.get_rng());
+        const uint16_t glyph = glyph_dist(random.get_rng());
 
         const glm::vec4 bg_color {
             color_dist(random.get_rng()),

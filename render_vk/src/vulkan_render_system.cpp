@@ -121,7 +121,7 @@ VulkanRenderSystem::~VulkanRenderSystem() {
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::begin_frame() {
-    STOPWATCH.start("begin_frame");
+    STOPWATCH.start("VulkanRenderSystem::begin_frame()");
 
     static uint32_t cumulative_frame = 0;
 
@@ -184,7 +184,7 @@ void VulkanRenderSystem::begin_frame() {
 
     ++cumulative_frame;
 
-    STOPWATCH.stop("begin_frame");
+    STOPWATCH.stop("VulkanRenderSystem::begin_frame()");
 }
 
 //  ----------------------------------------------------------------------------
@@ -422,6 +422,8 @@ void VulkanRenderSystem::draw_sprites(
 
 //  ----------------------------------------------------------------------------
 void VulkanRenderSystem::end_frame() {
+    STOPWATCH.start("VulkanRenderSystem::end_frame()");
+
     // log_debug("end_frame: %d (waiting for render tasks)", m_current_frame);
 
     //  Wait for worker threads to complete
@@ -515,6 +517,8 @@ void VulkanRenderSystem::end_frame() {
     m_current_frame = (m_current_frame + 1) % m_frame_count;
 
     m_render_task_mgr->end_frame();
+
+    STOPWATCH.stop("VulkanRenderSystem::end_frame()");
 }
 
 //  ----------------------------------------------------------------------------

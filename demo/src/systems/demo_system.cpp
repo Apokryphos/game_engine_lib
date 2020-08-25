@@ -17,6 +17,7 @@
 #include "systems/system_util.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/norm.hpp>
+#include <algorithm>
 #include <map>
 
 using namespace assets;
@@ -144,52 +145,98 @@ void DemoSystem::batch_glyphs(
     //  Get drawable entities
     const GlyphSystem& glyph_sys = get_glyph_system(sys_mgr);
     std::vector<Entity> entities;
+    entities.reserve(glyph_sys.get_component_count());
     glyph_sys.get_entities(entities);
 
     const size_t entity_count = entities.size();
 
-    std::map<uint32_t, GlyphBatch> batches;
+    struct Glyph
+    {
+        Entity entity;
+        uint32_t texture_id;
+        glm::vec2 size;
+        glm::vec3 position;
+        glm::vec4 bg_color;
+        glm::vec4 fg_color;
+    };
 
-    Frustum frustum(proj * view);
+    std::vector<Glyph> glyphs(entity_count);
 
+    //  Get position component data
     const PositionSystem& pos_sys = get_position_system(sys_mgr);
     for (size_t n = 0; n < entity_count; ++n) {
-        //  Get positions
+        glyphs[n].entity = entities[n];
         const auto pos_cmpnt = pos_sys.get_component(entities[n]);
-        glm::vec3 position = pos_sys.get_position(pos_cmpnt);
-
-        const auto glyph_cmpnt = glyph_sys.get_component(entities[n]);
-        const uint32_t texture_id = glyph_sys.get_texture_id(glyph_cmpnt);
-        const glm::vec2 size = glyph_sys.get_size(glyph_cmpnt);
-        const glm::vec4 bg_color = glyph_sys.get_bg_color(glyph_cmpnt);
-        const glm::vec4 fg_color = glyph_sys.get_fg_color(glyph_cmpnt);
-
-        //  Billboard bounding box
-        const glm::vec3 maxp(
-            position.x + size.x,
-            position.y + size.y,
-            1.0f
-        );
-
-        const glm::vec3 minp(
-            position.x - size.x,
-            position.y - size.y,
-            0.0f
-        );
-
-        //  Skip objects outside frustum
-        if (!frustum.is_box_visible(minp, maxp)) {
-            continue;
-        }
-
-        GlyphBatch& batch = batches[texture_id];
-        batch.texture_id = texture_id;
-        batch.positions.push_back(position);
-        batch.sizes.push_back({size.x, size.y, 1.0f});
-        batch.bg_colors.push_back(bg_color);
-        batch.fg_colors.push_back(fg_color);
+        glyphs[n].position = pos_sys.get_position(pos_cmpnt);
     }
 
+    //  Get glyph component data
+    for (size_t n = 0; n < entity_count; ++n) {
+        const auto glyph_cmpnt = glyph_sys.get_component(glyphs[n].entity);
+        glyphs[n].texture_id = glyph_sys.get_texture_id(glyph_cmpnt);
+        glyphs[n].size = glyph_sys.get_size(glyph_cmpnt);
+        glyphs[n].bg_color = glyph_sys.get_bg_color(glyph_cmpnt);
+        glyphs[n].fg_color = glyph_sys.get_fg_color(glyph_cmpnt);
+    }
+
+    //  Cull glyphs outside of frustum
+    Frustum frustum(proj * view);
+    glyphs.erase(
+        std::remove_if(
+            glyphs.begin(),
+            glyphs.end(),
+            [&frustum](const Glyph& glyph) {
+                //  Billboard bounding box
+                const glm::vec3 maxp(
+                    glyph.position.x + glyph.size.x,
+                    glyph.position.y + glyph.size.y,
+                    1.0f
+                );
+
+                const glm::vec3 minp(
+                    glyph.position.x - glyph.size.x,
+                    glyph.position.y - glyph.size.y,
+                    0.0f
+                );
+
+                //  Skip objects outside frustum
+                return !frustum.is_box_visible(minp, maxp);
+            }
+        ),
+        glyphs.end()
+    );
+
+    //  Count objects in each batch
+    std::map<uint32_t, uint32_t> batch_counts;
+    for (const Glyph& glyph : glyphs) {
+        ++batch_counts[glyph.texture_id];
+    }
+
+    //  Create batches and reserve vectors
+    std::map<uint32_t, GlyphBatch> batches;
+    for (const auto& pair : batch_counts) {
+        const uint32_t texture_id = pair.first;
+        GlyphBatch& batch = batches[texture_id];
+
+        const uint32_t object_count = pair.second;
+        batch.positions.reserve(object_count);
+        batch.sizes.reserve(object_count);
+        batch.bg_colors.reserve(object_count);
+        batch.fg_colors.reserve(object_count);
+    }
+
+    //  Populate batches
+    for (const Glyph& glyph : glyphs) {
+        GlyphBatch& batch = batches[glyph.texture_id];
+        batch.texture_id = glyph.texture_id;
+        batch.positions.push_back(glyph.position);
+        batch.sizes.push_back({glyph.size.x, glyph.size.y, 1.0f});
+        batch.bg_colors.push_back(glyph.bg_color);
+        batch.fg_colors.push_back(glyph.fg_color);
+    }
+
+    //  Copy batches to output vector
+    glyph_batches.reserve(batches.size());
     for (const auto& pair : batches) {
         glyph_batches.push_back(pair.second);
     }

@@ -49,18 +49,6 @@ public:
         m_glyph_sets.push_back({ texture_id, width, height });
     }
 
-    void set_bg(const Component cmpnt, const glm::vec4 bg) {
-        get_component_data(cmpnt).bg = bg;
-    }
-
-    void set_fg(const Component cmpnt, const glm::vec4 fg) {
-        get_component_data(cmpnt).fg = fg;
-    }
-
-    void set_glyph(const Component cmpnt, const char ch) {
-        get_component_data(cmpnt).ch = ch;
-    }
-
     glm::vec4 get_bg_color(const Component cmpnt) const {
         return get_component_data(cmpnt).bg;
     }
@@ -84,6 +72,18 @@ public:
     }
 
     static const common::SystemId Id = SYSTEM_ID_GLYPH;
+
+    void set_bg(const Component cmpnt, const glm::vec4 bg) {
+        get_component_data(cmpnt).bg = bg;
+    }
+
+    void set_fg(const Component cmpnt, const glm::vec4 fg) {
+        get_component_data(cmpnt).fg = fg;
+    }
+
+    void set_glyph(const Component cmpnt, const uint16_t ch) {
+        get_component_data(cmpnt).ch = ch;
+    }
 
     void set_glyph_set_id(const Component cmpnt, const uint32_t glyph_set_id)  {
         get_component_data(cmpnt).glyph_set_id = glyph_set_id;

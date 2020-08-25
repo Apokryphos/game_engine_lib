@@ -1,4 +1,5 @@
 #include "common/log.hpp"
+#include "common/stopwatch.hpp"
 #include "ecs/ecs_root.hpp"
 #include "engine/engine.hpp"
 #include "engine/game.hpp"
@@ -30,6 +31,8 @@ using namespace render_vk;
 
 namespace engine
 {
+static Stopwatch STOPWATCH;
+
 //  ----------------------------------------------------------------------------
 Game::Game(const std::string& game_base_name, const size_t max_entities)
 : m_max_entities(max_entities),
@@ -103,6 +106,8 @@ void Game::quit() {
 
 //  ----------------------------------------------------------------------------
 void Game::render() {
+    STOPWATCH.start("Game::render()");
+
     Renderer& render_sys = m_engine->get_render_system();
     render_sys.begin_frame();
 
@@ -111,6 +116,8 @@ void Game::render() {
     screen_mgr.render(*this);
 
     render_sys.end_frame();
+
+    STOPWATCH.stop("Game::render()");
 }
 
 //  ----------------------------------------------------------------------------
@@ -144,6 +151,8 @@ void Game::shutdown() {
 
 //  ----------------------------------------------------------------------------
 void Game::update() {
+    STOPWATCH.start("Game::update()");
+
     //  Update UI
     InputManager& input_mgr = m_engine->get_input_manager();
     UiStateManager& ui_state_mgr = m_engine->get_ui_state_manager();
@@ -169,5 +178,7 @@ void Game::update() {
     //  Update editor GUI
     EditorSystem& editor_system = get_editor_system(*m_sys_mgr);
     editor_system.update(*this);
+
+    STOPWATCH.stop("Game::update()");
 }
 }
