@@ -37,6 +37,10 @@ public:
     void add_move(std::vector<Glyph>& glyphs) {
         m_glyphs = std::move(glyphs);
 
+        if (m_glyphs.empty()) {
+            return;
+        }
+
         //  Sort glyphs by texture ID
         std::sort(
             m_glyphs.begin(),

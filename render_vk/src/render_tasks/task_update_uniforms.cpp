@@ -44,8 +44,10 @@ void task_update_glyph_uniforms(
 
             data[ubo_index].texture_index = batch.texture_id;
 
-            data[ubo_index].model = glm::translate(identity, glyph.position);
-            data[ubo_index].model = glm::scale(data[ubo_index].model, glm::vec3(glyph.size, 1.0f));
+            data[ubo_index].model = glm::scale(
+                glm::translate(identity, glyph.position),
+                glm::vec3(glyph.size, 1.0f)
+            );
 
             data[ubo_index].bg_color = glyph.bg_color;
             data[ubo_index].fg_color = glyph.fg_color;
