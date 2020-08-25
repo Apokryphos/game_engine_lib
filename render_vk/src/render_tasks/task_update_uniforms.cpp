@@ -25,88 +25,33 @@ void task_update_frame_uniforms(
 
 //  ----------------------------------------------------------------------------
 void task_update_glyph_uniforms(
-    const std::vector<GlyphBatch>& batches,
+    const GlyphBatch& glyph_batch,
     DynamicUniformBuffer<GlyphUbo>& glyph_uniform
 ) {
-    size_t object_count = 0;
-    for (const GlyphBatch& batch : batches) {
-        const auto batch_object_count = batch.positions.size();
-
-        object_count += batch_object_count;
-
-        assert(batch.sizes.size() == batch_object_count);
-        assert(batch.bg_colors.size() == batch_object_count);
-        assert(batch.fg_colors.size() == batch_object_count);
-    }
-
+    size_t object_count = glyph_batch.get_instance_count();
     assert(object_count > 0);
 
     std::vector<GlyphUbo> data(object_count);
 
-    //  Copy texture IDs
-    size_t offset = 0;
-    for (const GlyphBatch& batch : batches) {
-        const auto batch_object_count = batch.positions.size();
+    const auto& batches = glyph_batch.get_batches();
+    const std::vector<GlyphBatch::Glyph>& glyphs = glyph_batch.get_glyphs();
 
-        for (auto n = 0; n < batch_object_count; ++n) {
-            const auto m = n + offset;
-            data[m].texture_index = batch.texture_id;
+    size_t ubo_index = 0;
+    const glm::mat4 identity(1.0f);
+    for (const auto& batch : batches) {
+        for (size_t n = batch.start; n < batch.end; ++n) {
+            const GlyphBatch::Glyph& glyph = glyphs[n];
+
+            data[ubo_index].texture_index = batch.texture_id;
+
+            data[ubo_index].model = glm::translate(identity, glyph.position);
+            data[ubo_index].model = glm::scale(data[ubo_index].model, glm::vec3(glyph.size, 1.0f));
+
+            data[ubo_index].bg_color = glyph.bg_color;
+            data[ubo_index].fg_color = glyph.fg_color;
+
+            ++ubo_index;
         }
-
-        offset += batch_object_count;
-    }
-
-    //  Create model transform from position
-    offset = 0;
-    for (const GlyphBatch& batch : batches) {
-        const auto batch_object_count = batch.positions.size();
-
-        const glm::mat4 identity(1.0f);
-        for (auto n = 0; n < batch_object_count; ++n) {
-            const auto m = n + offset;
-            data[m].model = glm::translate(identity, batch.positions[n]);
-        }
-
-        offset += batch_object_count;
-    }
-
-    //  Scale model transform by size
-    offset = 0;
-    for (const GlyphBatch& batch : batches) {
-        const auto batch_object_count = batch.sizes.size();
-
-        for (auto n = 0; n < batch_object_count; ++n) {
-            const auto m = n + offset;
-            data[m].model = glm::scale(data[m].model, batch.sizes[n]);
-        }
-
-        offset += batch_object_count;
-    }
-
-    //  Copy background colors
-    offset = 0;
-    for (const GlyphBatch& batch : batches) {
-        const auto batch_object_count = batch.bg_colors.size();
-
-        for (auto n = 0; n < batch_object_count; ++n) {
-            const auto m = n + offset;
-            data[m].bg_color = batch.bg_colors[n];
-        }
-
-        offset += batch_object_count;
-    }
-
-    //  Copy foreground colors
-    offset = 0;
-    for (const GlyphBatch& batch : batches) {
-        const auto batch_object_count = batch.fg_colors.size();
-
-        for (auto n = 0; n < batch_object_count; ++n) {
-            const auto m = n + offset;
-            data[m].fg_color = batch.fg_colors[n];
-        }
-
-        offset += batch_object_count;
     }
 
     //  Copy object UBO structs to dynamic uniform buffer

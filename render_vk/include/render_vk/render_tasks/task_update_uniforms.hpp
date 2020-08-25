@@ -15,7 +15,7 @@ void task_update_frame_uniforms(
 );
 
 void task_update_glyph_uniforms(
-    const std::vector<render::GlyphBatch>& batches,
+    const render::GlyphBatch& glyph_batch,
     DynamicUniformBuffer<GlyphUbo>& object_uniform
 );
 

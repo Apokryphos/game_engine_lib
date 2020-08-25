@@ -67,6 +67,10 @@ class RenderTaskManager
         std::vector<render::ModelBatch> batches;
         std::vector<render::SpriteBatch> sprite_batches;
         std::vector<render::SpineSpriteBatch> spine_batches;
+
+        uint32_t instance_count {0};
+
+        render::GlyphBatch glyph_batch;
     };
 
     //  Frame objects for worker threads
@@ -214,7 +218,7 @@ class RenderTaskManager
         VkCommandBuffer comand_buffer
     );
     void thread_main(uint8_t thread_id);
-    void update_glyph_uniforms(const std::vector<render::GlyphBatch>& batches);
+    void update_glyph_uniforms(render::GlyphBatch&& glyph_batch);
 
 public:
     RenderTaskManager(
@@ -243,7 +247,7 @@ public:
     );
     void draw_glyphs(
         GlyphRenderer& renderer,
-        const std::vector<render::GlyphBatch>& batches
+        render::GlyphBatch& glyph_batch
     );
     void draw_models(
         ModelRenderer& renderer,

@@ -34,7 +34,7 @@ public:
         engine::Game& game,
         glm::mat4 view,
         glm::mat4 proj,
-        std::vector<render::GlyphBatch>& glyph_batches
+        render::GlyphBatch& glyph_batch
     );
     void batch_models(
         engine::Game& game,

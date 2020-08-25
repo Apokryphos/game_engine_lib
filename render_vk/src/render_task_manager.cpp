@@ -25,17 +25,17 @@ using namespace render;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
-inline void filter_pending_textures(
-    const std::vector<GlyphBatch>& batches,
-    const TextureManager& texture_mgr,
-    std::vector<GlyphBatch>& job_batches
-) {
-    for (const GlyphBatch& batch : batches) {
-        if (texture_mgr.texture_exists(batch.texture_id)) {
-            job_batches.push_back(batch);
-        }
-    }
-}
+// inline void filter_pending_textures(
+//     const std::vector<GlyphBatch>& batches,
+//     const TextureManager& texture_mgr,
+//     std::vector<GlyphBatch>& job_batches
+// ) {
+//     for (const GlyphBatch& batch : batches) {
+//         if (texture_mgr.texture_exists(batch.texture_id)) {
+//             job_batches.push_back(batch);
+//         }
+//     }
+// }
 
 //  ----------------------------------------------------------------------------
 inline void filter_pending_textures(
@@ -544,9 +544,18 @@ void RenderTaskManager::draw_billboards(
 //  ----------------------------------------------------------------------------
 void RenderTaskManager::draw_glyphs(
     GlyphRenderer& renderer,
-    const std::vector<GlyphBatch>& batches
+    GlyphBatch& glyph_batch
 ) {
-    if (batches.empty()) {
+    //  Remove batches with pending textures
+    TextureManager& texture_mgr = m_texture_mgr;
+    glyph_batch.remove_batches(
+        [&texture_mgr](const GlyphBatch::Batch& batch) {
+            return !texture_mgr.texture_exists(batch.texture_id);
+        }
+    );
+
+    //  Skip empty batches
+    if (glyph_batch.empty()) {
         // log_debug("Discarded draw glyphs call with zero batches.");
         return;
     }
@@ -554,16 +563,9 @@ void RenderTaskManager::draw_glyphs(
     Job job{};
     job.task_id = TaskId::DrawGlyphs;
     job.renderer = &renderer;
-    job.glyph_batches.reserve(batches.size());
+    job.instance_count = glyph_batch.get_instance_count();
 
-    filter_pending_textures(batches, m_texture_mgr, job.glyph_batches);
-
-    if (job.glyph_batches.empty()) {
-        // log_debug("Discarded draw glyphs call with zero batches.");
-        return;
-    }
-
-    update_glyph_uniforms(job.glyph_batches);
+    update_glyph_uniforms(std::move(glyph_batch));
 
     add_job(job);
 }
@@ -825,7 +827,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
                 stopwatch.start(thread_name+"_draw_glyphs");
                 GlyphRenderer* glyph_renderer = static_cast<GlyphRenderer*>(job.renderer);
                 glyph_renderer->draw_glyphs(
-                    job.glyph_batches,
+                    job.instance_count,
                     frame.descriptor,
                     m_uniform_buffers[m_current_frame],
                     command_buffer
@@ -884,7 +886,7 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
             case TaskId::UpdateGlyphUniforms: {
                 stopwatch.start(thread_name+"_update_glyph_uniforms");
                 auto& glyph_uniform_buffer = m_uniform_buffers[m_current_frame].glyph;
-                task_update_glyph_uniforms(job.glyph_batches, glyph_uniform_buffer);
+                task_update_glyph_uniforms(job.glyph_batch, glyph_uniform_buffer);
                 stopwatch.stop(thread_name+"_update_glyph_uniforms");
                 break;
             }
@@ -948,13 +950,11 @@ void RenderTaskManager::update_frame_uniforms(
 }
 
 //  ----------------------------------------------------------------------------
-void RenderTaskManager::update_glyph_uniforms(
-    const std::vector<GlyphBatch>& batches
-) {
+void RenderTaskManager::update_glyph_uniforms(GlyphBatch&& glyph_batch) {
     //  Update uniform data
     Job job{};
     job.task_id = TaskId::UpdateGlyphUniforms;
-    job.glyph_batches = batches;
+    job.glyph_batch = std::move(glyph_batch);
     add_job(job);
 }
 }

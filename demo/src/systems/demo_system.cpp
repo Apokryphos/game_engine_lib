@@ -139,7 +139,7 @@ void DemoSystem::batch_glyphs(
     Game& game,
     glm::mat4 view,
     glm::mat4 proj,
-    std::vector<GlyphBatch>& glyph_batches
+    GlyphBatch& glyph_batch
 ) {
     SystemManager& sys_mgr = game.get_system_manager();
 
@@ -151,14 +151,7 @@ void DemoSystem::batch_glyphs(
 
     const size_t entity_count = entities.size();
 
-    struct Glyph
-    {
-        uint32_t texture_id;
-        glm::vec2 size;
-        glm::vec3 position;
-        glm::vec4 bg_color;
-        glm::vec4 fg_color;
-    };
+    using Glyph = GlyphBatch::Glyph;
 
     std::vector<Glyph> glyphs(entity_count);
 
@@ -205,40 +198,7 @@ void DemoSystem::batch_glyphs(
         glyphs.end()
     );
 
-    //  Count objects in each batch
-    std::unordered_map<uint32_t, uint32_t> batch_counts;
-    for (const Glyph& glyph : glyphs) {
-        ++batch_counts[glyph.texture_id];
-    }
-
-    //  Create batches and reserve vectors
-    std::unordered_map<uint32_t, GlyphBatch> batches;
-    for (const auto& pair : batch_counts) {
-        const uint32_t texture_id = pair.first;
-        GlyphBatch& batch = batches[texture_id];
-
-        const uint32_t object_count = pair.second;
-        batch.positions.reserve(object_count);
-        batch.sizes.reserve(object_count);
-        batch.bg_colors.reserve(object_count);
-        batch.fg_colors.reserve(object_count);
-    }
-
-    //  Populate batches
-    for (const Glyph& glyph : glyphs) {
-        GlyphBatch& batch = batches[glyph.texture_id];
-        batch.texture_id = glyph.texture_id;
-        batch.positions.push_back(glyph.position);
-        batch.sizes.push_back({glyph.size.x, glyph.size.y, 1.0f});
-        batch.bg_colors.push_back(glyph.bg_color);
-        batch.fg_colors.push_back(glyph.fg_color);
-    }
-
-    //  Move batches to output vector
-    glyph_batches.reserve(batches.size());
-    for (const auto& pair : batches) {
-        glyph_batches.push_back(std::move(pair.second));
-    }
+    glyph_batch.add_move(glyphs);
 }
 
 //  ----------------------------------------------------------------------------

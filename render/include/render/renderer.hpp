@@ -32,9 +32,7 @@ public:
     virtual void draw_billboards(
         std::vector<SpriteBatch>& batches
     ) = 0;
-    virtual void draw_glyphs(
-        std::vector<GlyphBatch>& batches
-    ) = 0;
+    virtual void draw_glyphs(GlyphBatch& glyph_batch) = 0;
     virtual void draw_models(
         std::vector<ModelBatch>& batches
     ) = 0;

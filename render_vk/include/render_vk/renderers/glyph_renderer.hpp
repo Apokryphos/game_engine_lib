@@ -38,7 +38,7 @@ public:
     void destroy_objects();
     //  Draws 2D glyphs
     void draw_glyphs(
-        const std::vector<render::GlyphBatch>& batches,
+        const uint32_t instance_count,
         const FrameDescriptorObjects& descriptors,
         const FrameUniformObjects& uniform_buffers,
         VkCommandBuffer command_buffer

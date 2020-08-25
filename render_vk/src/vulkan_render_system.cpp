@@ -393,10 +393,8 @@ void VulkanRenderSystem::draw_billboards(
 }
 
 //  ----------------------------------------------------------------------------
-void VulkanRenderSystem::draw_glyphs(
-    std::vector<render::GlyphBatch>& batches
-) {
-    m_render_task_mgr->draw_glyphs(*m_glyph_renderer, batches);
+void VulkanRenderSystem::draw_glyphs(GlyphBatch& glyph_batch) {
+    m_render_task_mgr->draw_glyphs(*m_glyph_renderer, glyph_batch);
 }
 
 //  ----------------------------------------------------------------------------

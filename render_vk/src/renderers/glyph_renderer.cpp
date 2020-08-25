@@ -66,7 +66,7 @@ void GlyphRenderer::destroy_objects() {
 
 //  ----------------------------------------------------------------------------
 void GlyphRenderer::draw_glyphs(
-    const std::vector<GlyphBatch>& batches,
+    const uint32_t instance_count,
     const FrameDescriptorObjects& descriptors,
     const FrameUniformObjects& uniform_buffers,
     VkCommandBuffer command_buffer
@@ -89,7 +89,7 @@ void GlyphRenderer::draw_glyphs(
     }
 
     //  Check if batches are empty
-    if (batches.empty()) {
+    if (instance_count == 0) {
         if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
             throw std::runtime_error("Failed to record secondary command buffer.");
         }
@@ -138,12 +138,6 @@ void GlyphRenderer::draw_glyphs(
         0,
         VK_INDEX_TYPE_UINT32
     );
-
-    //  Count instances
-    uint32_t instance_count = 0;
-    for (const GlyphBatch& batch : batches) {
-        instance_count += batch.positions.size();
-    }
 
     //  Draw instances
     vkCmdDrawIndexed(command_buffer, index_count, instance_count, 0, 0, 0);
