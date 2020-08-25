@@ -19,6 +19,7 @@
 #include <glm/gtx/norm.hpp>
 #include <algorithm>
 #include <map>
+#include <unordered_map>
 
 using namespace assets;
 using namespace ecs;
@@ -186,7 +187,7 @@ void DemoSystem::batch_glyphs(
             glyphs.begin(),
             glyphs.end(),
             [&frustum](const Glyph& glyph) {
-                //  Billboard bounding box
+                //  Glyph bounding box
                 const glm::vec3 maxp(
                     glyph.position.x + glyph.size.x,
                     glyph.position.y + glyph.size.y,
@@ -207,13 +208,13 @@ void DemoSystem::batch_glyphs(
     );
 
     //  Count objects in each batch
-    std::map<uint32_t, uint32_t> batch_counts;
+    std::unordered_map<uint32_t, uint32_t> batch_counts;
     for (const Glyph& glyph : glyphs) {
         ++batch_counts[glyph.texture_id];
     }
 
     //  Create batches and reserve vectors
-    std::map<uint32_t, GlyphBatch> batches;
+    std::unordered_map<uint32_t, GlyphBatch> batches;
     for (const auto& pair : batch_counts) {
         const uint32_t texture_id = pair.first;
         GlyphBatch& batch = batches[texture_id];
@@ -235,10 +236,10 @@ void DemoSystem::batch_glyphs(
         batch.fg_colors.push_back(glyph.fg_color);
     }
 
-    //  Copy batches to output vector
+    //  Move batches to output vector
     glyph_batches.reserve(batches.size());
     for (const auto& pair : batches) {
-        glyph_batches.push_back(pair.second);
+        glyph_batches.push_back(std::move(pair.second));
     }
 }
 
