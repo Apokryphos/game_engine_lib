@@ -48,6 +48,7 @@ class RenderTaskManager
         DrawSpines,
         DrawSprites,
         UpdateFrameUniforms,
+        UpdateGlyphUniforms,
         UpdateObjectUniforms,
     };
 
@@ -120,8 +121,9 @@ class RenderTaskManager
                     throw std::runtime_error("Not implemented.");
 
                 //  Tasks that do not generate secondary command buffers
-                case TaskId::UpdateObjectUniforms:
                 case TaskId::UpdateFrameUniforms:
+                case TaskId::UpdateGlyphUniforms:
+                case TaskId::UpdateObjectUniforms:
                     break;
 
                 //  Tasks that generate secondary command buffers
@@ -212,6 +214,7 @@ class RenderTaskManager
         VkCommandBuffer comand_buffer
     );
     void thread_main(uint8_t thread_id);
+    void update_glyph_uniforms(const std::vector<render::GlyphBatch>& batches);
 
 public:
     RenderTaskManager(

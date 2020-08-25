@@ -30,31 +30,80 @@ void task_update_glyph_uniforms(
 ) {
     size_t object_count = 0;
     for (const GlyphBatch& batch : batches) {
-        object_count += batch.positions.size();
+        const auto batch_object_count = batch.positions.size();
+
+        object_count += batch_object_count;
+
+        assert(batch.sizes.size() == batch_object_count);
+        assert(batch.bg_colors.size() == batch_object_count);
+        assert(batch.fg_colors.size() == batch_object_count);
     }
 
     assert(object_count > 0);
 
     std::vector<GlyphUbo> data(object_count);
 
+    //  Copy texture IDs
     size_t offset = 0;
     for (const GlyphBatch& batch : batches) {
-        const size_t batch_object_count = batch.positions.size();
+        const auto batch_object_count = batch.positions.size();
 
-        assert(batch.sizes.size() == batch_object_count);
-        assert(batch.bg_colors.size() == batch_object_count);
-        assert(batch.fg_colors.size() == batch_object_count);
-
-        for (size_t n = 0; n < batch_object_count; ++n) {
-            const size_t m = n + offset;
-
-            data[m].model =
-                glm::translate(glm::mat4(1.0f), batch.positions[n]) *
-                glm::scale(glm::mat4(1.0f), batch.sizes[n] * glm::vec3(0.5f, 0.5f, 1.0f));
-
-            data[m].bg_color = batch.bg_colors[n];
-            data[m].fg_color = batch.fg_colors[n];
+        for (auto n = 0; n < batch_object_count; ++n) {
+            const auto m = n + offset;
             data[m].texture_index = batch.texture_id;
+        }
+
+        offset += batch_object_count;
+    }
+
+    //  Create model transform from position
+    offset = 0;
+    for (const GlyphBatch& batch : batches) {
+        const auto batch_object_count = batch.positions.size();
+
+        const glm::mat4 identity(1.0f);
+        for (auto n = 0; n < batch_object_count; ++n) {
+            const auto m = n + offset;
+            data[m].model = glm::translate(identity, batch.positions[n]);
+        }
+
+        offset += batch_object_count;
+    }
+
+    //  Scale model transform by size
+    offset = 0;
+    for (const GlyphBatch& batch : batches) {
+        const auto batch_object_count = batch.sizes.size();
+
+        for (auto n = 0; n < batch_object_count; ++n) {
+            const auto m = n + offset;
+            data[m].model = glm::scale(data[m].model, batch.sizes[n]);
+        }
+
+        offset += batch_object_count;
+    }
+
+    //  Copy background colors
+    offset = 0;
+    for (const GlyphBatch& batch : batches) {
+        const auto batch_object_count = batch.bg_colors.size();
+
+        for (auto n = 0; n < batch_object_count; ++n) {
+            const auto m = n + offset;
+            data[m].bg_color = batch.bg_colors[n];
+        }
+
+        offset += batch_object_count;
+    }
+
+    //  Copy foreground colors
+    offset = 0;
+    for (const GlyphBatch& batch : batches) {
+        const auto batch_object_count = batch.fg_colors.size();
+
+        for (auto n = 0; n < batch_object_count; ++n) {
+            const auto m = n + offset;
+            data[m].fg_color = batch.fg_colors[n];
         }
 
         offset += batch_object_count;

@@ -563,6 +563,8 @@ void RenderTaskManager::draw_glyphs(
         return;
     }
 
+    update_glyph_uniforms(job.glyph_batches);
+
     add_job(job);
 }
 
@@ -821,7 +823,6 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
 
             case TaskId::DrawGlyphs: {
                 stopwatch.start(thread_name+"_draw_glyphs");
-                task_update_glyph_uniforms(job.glyph_batches, m_uniform_buffers[m_current_frame].glyph);
                 GlyphRenderer* glyph_renderer = static_cast<GlyphRenderer*>(job.renderer);
                 glyph_renderer->draw_glyphs(
                     job.glyph_batches,
@@ -880,6 +881,14 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
                 break;
             }
 
+            case TaskId::UpdateGlyphUniforms: {
+                stopwatch.start(thread_name+"_update_glyph_uniforms");
+                auto& glyph_uniform_buffer = m_uniform_buffers[m_current_frame].glyph;
+                task_update_glyph_uniforms(job.glyph_batches, glyph_uniform_buffer);
+                stopwatch.stop(thread_name+"_update_glyph_uniforms");
+                break;
+            }
+
             case TaskId::UpdateObjectUniforms: {
                 stopwatch.start(thread_name+"_update_object_uniforms");
                 auto& object_uniform_buffer = m_uniform_buffers[m_current_frame].object;
@@ -935,6 +944,17 @@ void RenderTaskManager::update_frame_uniforms(
     job.frame_ubo.proj = proj;
     job.frame_ubo.ortho_view = ortho_view;
     job.frame_ubo.ortho_proj = ortho_proj;
+    add_job(job);
+}
+
+//  ----------------------------------------------------------------------------
+void RenderTaskManager::update_glyph_uniforms(
+    const std::vector<GlyphBatch>& batches
+) {
+    //  Update uniform data
+    Job job{};
+    job.task_id = TaskId::UpdateGlyphUniforms;
+    job.glyph_batches = batches;
     add_job(job);
 }
 }
