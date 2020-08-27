@@ -48,7 +48,7 @@ private:
     };
 
     //  Number of worker threads.
-    uint8_t m_thread_count {2};
+    uint8_t m_thread_count {4};
 
     VkPhysicalDevice m_physical_device {VK_NULL_HANDLE};
     VkDevice m_device                  {VK_NULL_HANDLE};
