@@ -25,7 +25,8 @@ public:
 
     AssetId m_unique_model_id   {0};
     AssetId m_unique_spine_id   {0};
-    AssetId m_unique_texture_id {0};
+    //  Unique texture ID. Zero is for a missing texture.
+    AssetId m_unique_texture_id {1};
 
     std::vector<Entry> m_models;
     std::vector<Entry> m_spines;

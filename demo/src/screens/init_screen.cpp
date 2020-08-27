@@ -55,11 +55,11 @@ bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
 
 namespace demo
 {
-const int BILLBOARD_COUNT = 0;
-const int GLYPH_COUNT     = 1000;//14516;
+const int BILLBOARD_COUNT = 100;
+const int GLYPH_COUNT     = 100;//14516;
 const int MODEL_COUNT     = 0;
 const int SPINE_COUNT     = 0;
-const int SPRITE_COUNT    = 0;
+const int SPRITE_COUNT    = 100;
 
 //  ----------------------------------------------------------------------------
 static void init_input_actions(InputManager& input_mgr) {
@@ -223,7 +223,7 @@ static void init_assets(Game& game) {
     asset_mgr.load_model("assets/models/model.obj");
 
     //  Load textures
-    asset_mgr.load_texture("assets/textures/missing.png");
+    // asset_mgr.load_texture("assets/textures/missing.png");
     asset_mgr.load_texture("assets/textures/model.png");
     asset_mgr.load_texture("assets/textures/model2.png");
     asset_mgr.load_texture("assets/textures/model3.png");

@@ -55,8 +55,8 @@ void DemoScreen::on_load(Game& game) {
 
     AssetId texture_id = asset_mgr.get_texture_id("assets/textures/cp437_20x20.png");
 
-    for (float y = 0; y < 80; ++y) {
-        for (float x = 0; x < 192; ++x) {
+    for (float y = 0; y < 10; ++y) {
+        for (float x = 0; x < 10; ++x) {
             GlyphMeshCreateArgs::Glyph glyph;
             glyph.position = glm::vec3(x, y, 0.0f) * size;
             glyph.size = size;
