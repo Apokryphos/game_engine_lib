@@ -12,39 +12,6 @@ void VulkanModel::load(
     VkDevice device,
     VulkanQueue& graphics_queue,
     VkCommandPool command_pool,
-    Mesh& mesh
-) {
-    m_device = device;
-
-    m_index_count = static_cast<uint32_t>(mesh.indices.size());
-
-    create_vertex_buffer(
-        physical_device,
-        device,
-        graphics_queue,
-        command_pool,
-        mesh.vertices,
-        m_vertex_buffer,
-        m_vertex_buffer_memory
-    );
-
-    create_index_buffer(
-        physical_device,
-        device,
-        graphics_queue,
-        command_pool,
-        mesh.indices,
-        m_index_buffer,
-        m_index_buffer_memory
-    );
-}
-
-//  ----------------------------------------------------------------------------
-void VulkanModel::load(
-    VkPhysicalDevice physical_device,
-    VkDevice device,
-    VulkanQueue& graphics_queue,
-    VkCommandPool command_pool,
     std::vector<Mesh>& meshes
 ) {
     Mesh mesh;

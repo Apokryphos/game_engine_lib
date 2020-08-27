@@ -38,7 +38,6 @@ set(SOURCE_FILES
     src/spine.cpp
     src/texture.cpp
     src/texture_manager.cpp
-    src/vertex_buffer.cpp
     src/vulkan_asset_task_manager.cpp
     src/vulkan_model.cpp
     src/vulkan_queue.cpp

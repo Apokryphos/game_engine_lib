@@ -28,6 +28,8 @@ class TextureManager
     std::vector<Texture> m_textures;
     std::vector<Texture> m_added;
 
+    Texture m_empty_texture;
+
 public:
     TextureManager(
         VkPhysicalDevice physical_device,
@@ -46,6 +48,7 @@ public:
         return m_timestamp;
     }
 
+    void initialize(VulkanQueue& queue, VkCommandPool command_pool);
     Texture load_texture(
         const TextureId texture_id,
         const std::string& path,

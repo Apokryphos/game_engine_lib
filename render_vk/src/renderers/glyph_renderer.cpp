@@ -10,12 +10,24 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 
+using namespace assets;
 using namespace render;
 
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
 static void create_glyph_pipeline(
+    VkDevice device,
+    const VulkanSwapchain& swapchain,
+    VkRenderPass render_pass,
+    const VkSampleCountFlagBits msaa_sample_count,
+    const DescriptorSetLayouts& descriptor_set_layouts,
+    VkPipelineLayout& pipeline_layout,
+    VkPipeline& pipeline
+);
+
+//  ----------------------------------------------------------------------------
+static void create_glyph_mesh_pipeline(
     VkDevice device,
     const VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
@@ -50,6 +62,16 @@ void GlyphRenderer::create_objects(
         m_pipeline_layout,
         m_pipeline
     );
+
+    create_glyph_mesh_pipeline(
+        device,
+        swapchain,
+        render_pass,
+        msaa_sample_count,
+        descriptor_set_layouts,
+        m_mesh_pipeline_layout,
+        m_mesh_pipeline
+    );
 }
 
 //  ----------------------------------------------------------------------------
@@ -60,8 +82,98 @@ void GlyphRenderer::destroy_objects() {
     vkDestroyPipelineLayout(m_device, m_pipeline_layout, nullptr);
     m_pipeline_layout = VK_NULL_HANDLE;
 
+    vkDestroyPipeline(m_device, m_mesh_pipeline, nullptr);
+    m_mesh_pipeline = VK_NULL_HANDLE;
+
+    vkDestroyPipelineLayout(m_device, m_mesh_pipeline_layout, nullptr);
+    m_mesh_pipeline_layout = VK_NULL_HANDLE;
+
     m_render_pass = VK_NULL_HANDLE;
     m_device = VK_NULL_HANDLE;
+}
+
+//  ----------------------------------------------------------------------------
+void GlyphRenderer::draw_glyph_mesh(
+    const AssetId glyph_mesh_id,
+    const FrameDescriptorObjects& descriptors,
+    const FrameUniformObjects& uniform_buffers,
+    VkCommandBuffer command_buffer
+) {
+    VkCommandBufferInheritanceInfo inherit_info{};
+    inherit_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+    inherit_info.renderPass = m_render_pass;
+
+    //  Record secondary command buffer
+    VkCommandBufferBeginInfo begin_info{};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.flags =
+        VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT |
+        VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+    begin_info.pInheritanceInfo = &inherit_info;
+
+    begin_debug_marker(command_buffer, "Draw Glyph Mesh", DEBUG_MARKER_COLOR_ORANGE);
+    if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to begin recording command buffer.");
+    }
+
+    //  Check if model is ready to use
+    if (!m_model_mgr.model_exists(glyph_mesh_id)) {
+        if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to record secondary command buffer.");
+        }
+        end_debug_marker(command_buffer);
+        return;
+    }
+
+    //  Bind pipeline
+    vkCmdBindPipeline(
+        command_buffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        m_mesh_pipeline
+    );
+
+    //  Bind descriptors
+    std::array<VkDescriptorSet, 2> descriptor_sets {
+        descriptors.frame_set,
+        descriptors.texture_set,
+    };
+    vkCmdBindDescriptorSets(
+        command_buffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        m_mesh_pipeline_layout,
+        0,
+        static_cast<uint32_t>(descriptor_sets.size()),
+        descriptor_sets.data(),
+        0,
+        nullptr
+    );
+
+    //  Get model
+    const VulkanModel* glyph_mesh = m_model_mgr.get_model(glyph_mesh_id);
+    assert(glyph_mesh != nullptr);
+    const uint32_t index_count = glyph_mesh->get_index_count();
+
+    //  Bind vertex buffer
+    VkBuffer vertex_buffers[] = { glyph_mesh->get_vertex_buffer() };
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+
+    //  Bind index buffer
+    vkCmdBindIndexBuffer(
+        command_buffer,
+        glyph_mesh->get_index_buffer(),
+        0,
+        VK_INDEX_TYPE_UINT32
+    );
+
+    //  Draw
+    vkCmdDrawIndexed(command_buffer, index_count, 1, 0, 0, 0);
+
+    if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to record secondary command buffer.");
+    }
+
+    end_debug_marker(command_buffer);
 }
 
 //  ----------------------------------------------------------------------------
@@ -150,18 +262,21 @@ void GlyphRenderer::draw_glyphs(
 }
 
 //  ----------------------------------------------------------------------------
+template <typename T>
 static void create_glyph_pipeline(
     VkDevice device,
     const VulkanSwapchain& swapchain,
     VkRenderPass render_pass,
     const VkSampleCountFlagBits msaa_sample_count,
     const DescriptorSetLayouts& descriptor_set_layouts,
+    const std::string& vertex_shader_path,
+    const std::string& frag_shader_path,
     VkPipelineLayout& pipeline_layout,
     VkPipeline& pipeline
 ) {
     //  Shaders
-    auto vert_shader_code = read_file("assets/shaders/vk/glyph_vert.spv");
-    auto frag_shader_code = read_file("assets/shaders/vk/glyph_frag.spv");
+    auto vert_shader_code = read_file(vertex_shader_path);
+    auto frag_shader_code = read_file(frag_shader_path);
 
     VkShaderModule vert_shader_module = create_shader_module(device, vert_shader_code);
     VkShaderModule frag_shader_module = create_shader_module(device, frag_shader_code);
@@ -184,8 +299,8 @@ static void create_glyph_pipeline(
     };
 
     //  Vertex input
-    auto attrib_descs = Vertex::get_attribute_descriptions();
-    auto binding_desc = Vertex::get_binding_description();
+    auto attrib_descs = T::get_attribute_descriptions();
+    auto binding_desc = T::get_binding_description();
     VkPipelineVertexInputStateCreateInfo vertex_input_info{};
     vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attrib_descs.size());
@@ -341,5 +456,51 @@ static void create_glyph_pipeline(
 
     vkDestroyShaderModule(device, frag_shader_module, nullptr);
     vkDestroyShaderModule(device, vert_shader_module, nullptr);
+}
+
+//  ----------------------------------------------------------------------------
+static void create_glyph_pipeline(
+    VkDevice device,
+    const VulkanSwapchain& swapchain,
+    VkRenderPass render_pass,
+    const VkSampleCountFlagBits msaa_sample_count,
+    const DescriptorSetLayouts& descriptor_set_layouts,
+    VkPipelineLayout& pipeline_layout,
+    VkPipeline& pipeline
+) {
+    create_glyph_pipeline<Vertex>(
+        device,
+        swapchain,
+        render_pass,
+        msaa_sample_count,
+        descriptor_set_layouts,
+        "assets/shaders/vk/glyph_vert.spv",
+        "assets/shaders/vk/glyph_frag.spv",
+        pipeline_layout,
+        pipeline
+    );
+}
+
+//  ----------------------------------------------------------------------------
+static void create_glyph_mesh_pipeline(
+    VkDevice device,
+    const VulkanSwapchain& swapchain,
+    VkRenderPass render_pass,
+    const VkSampleCountFlagBits msaa_sample_count,
+    const DescriptorSetLayouts& descriptor_set_layouts,
+    VkPipelineLayout& pipeline_layout,
+    VkPipeline& pipeline
+) {
+    create_glyph_pipeline<GlyphVertex>(
+        device,
+        swapchain,
+        render_pass,
+        msaa_sample_count,
+        descriptor_set_layouts,
+        "assets/shaders/vk/glyph_mesh_vert.spv",
+        "assets/shaders/vk/glyph_mesh_frag.spv",
+        pipeline_layout,
+        pipeline
+    );
 }
 }

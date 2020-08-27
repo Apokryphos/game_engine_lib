@@ -13,6 +13,9 @@ $VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/billboard.frag -o $OUTPUT_PATH/billboard_
 $VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/glyph.frag -o $OUTPUT_PATH/glyph_frag.spv
 $VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/glyph.vert -o $OUTPUT_PATH/glyph_vert.spv
 
+$VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/glyph_mesh.frag -o $OUTPUT_PATH/glyph_mesh_frag.spv
+$VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/glyph_mesh.vert -o $OUTPUT_PATH/glyph_mesh_vert.spv
+
 $VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/model.vert -o $OUTPUT_PATH/model_vert.spv
 $VULKAN_SDK_BIN_PATH/glslc $INPUT_PATH/model.frag -o $OUTPUT_PATH/model_frag.spv
 

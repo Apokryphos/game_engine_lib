@@ -1,5 +1,6 @@
 #pragma once
 
+#include "assets/glyph_mesh_asset.hpp"
 #include "engine/screens/screen.hpp"
 
 namespace demo
@@ -7,6 +8,8 @@ namespace demo
 class DemoScreen : public engine::Screen
 {
     using Game = engine::Game;
+
+    assets::AssetId m_glyph_mesh;
 
 protected:
     virtual void on_activate(Game& game) override;

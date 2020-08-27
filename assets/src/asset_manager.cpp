@@ -22,6 +22,13 @@ AssetManager::~AssetManager() {
 }
 
 //  ----------------------------------------------------------------------------
+AssetId AssetManager::create_glyph_mesh(const GlyphMeshCreateArgs& args) {
+    const AssetId id = get_unique_model_id();
+    m_asset_task_mgr->create_glyph_mesh(id, args);
+    return id;
+}
+
+//  ----------------------------------------------------------------------------
 SpineManager& AssetManager::get_spine_manager() {
     return *m_spine_mgr;
 }

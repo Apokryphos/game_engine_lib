@@ -19,6 +19,7 @@
 #include "render_vk/vulkan_queue.hpp"
 #include "render_vk/vulkan_swapchain.hpp"
 
+using namespace assets;
 using namespace common;
 using namespace render;
 
@@ -407,12 +408,17 @@ const char* RenderTaskManager::task_id_to_string(TaskId task_id) {
 bool RenderTaskManager::task_requires_textures(TaskId task_id) {
     switch (task_id) {
         default:
+            throw std::runtime_error("Not implemented.");
+
         case TaskId::DrawBillboards:
+        case TaskId::DrawGlyphMesh:
+        case TaskId::DrawGlyphs:
         case TaskId::DrawModels:
         case TaskId::DrawSprites:
             return true;
 
         case TaskId::UpdateFrameUniforms:
+        case TaskId::UpdateGlyphUniforms:
         case TaskId::UpdateObjectUniforms:
             return false;
     }
@@ -537,6 +543,24 @@ void RenderTaskManager::draw_billboards(
         // log_debug("Discarded draw billboards call with zero batches.");
         return;
     }
+
+    add_job(job);
+}
+
+//  ----------------------------------------------------------------------------
+void RenderTaskManager::draw_glyph_mesh(
+    GlyphRenderer& renderer,
+    AssetId glyph_mesh_id
+) {
+    //  Ignore pending mesh
+    if (!m_model_mgr.model_exists(glyph_mesh_id)) {
+        return;
+    }
+
+    Job job{};
+    job.task_id = TaskId::DrawGlyphMesh;
+    job.renderer = &renderer;
+    job.asset_id = glyph_mesh_id;
 
     add_job(job);
 }
@@ -820,6 +844,19 @@ void RenderTaskManager::thread_main(uint8_t thread_id) {
                     command_buffer
                 );
                 stopwatch.stop(thread_name+"_draw_billboards");
+                break;
+            }
+
+            case TaskId::DrawGlyphMesh: {
+                stopwatch.start(thread_name+"_draw_glyph_mesh");
+                GlyphRenderer* glyph_renderer = static_cast<GlyphRenderer*>(job.renderer);
+                glyph_renderer->draw_glyph_mesh(
+                    job.asset_id,
+                    frame.descriptor,
+                    m_uniform_buffers[m_current_frame],
+                    command_buffer
+                );
+                stopwatch.stop(thread_name+"_draw_glyph_mesh");
                 break;
             }
 

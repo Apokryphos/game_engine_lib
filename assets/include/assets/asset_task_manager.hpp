@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assets/asset_id.hpp"
+#include "assets/glyph_mesh_create_args.hpp"
 #include "assets/spine_load_args.hpp"
 #include "assets/texture_asset.hpp"
 #include "assets/texture_create_args.hpp"
@@ -28,6 +29,10 @@ public:
     virtual ~AssetTaskManager();
     AssetTaskManager(const AssetTaskManager&) = delete;
     AssetTaskManager& operator=(const AssetTaskManager&) = delete;
+    virtual void create_glyph_mesh(
+        uint32_t id,
+        const GlyphMeshCreateArgs& args
+    ) = 0;
     //  Enqueues a load model job for worker threads to complete
     virtual void load_model(uint32_t id, const std::string& path) = 0;
     //  Enqueues a Spine skeleton for worker threads to complete

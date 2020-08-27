@@ -56,7 +56,7 @@ bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
 namespace demo
 {
 const int BILLBOARD_COUNT = 0;
-const int GLYPH_COUNT     = 14516;
+const int GLYPH_COUNT     = 1000;//14516;
 const int MODEL_COUNT     = 0;
 const int SPINE_COUNT     = 0;
 const int SPRITE_COUNT    = 0;

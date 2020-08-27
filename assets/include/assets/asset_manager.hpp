@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assets/asset_id.hpp"
+#include "assets/glyph_mesh_create_args.hpp"
 #include "assets/spine_load_args.hpp"
 #include "assets/texture_load_args.hpp"
 #include "assets/texture_create_args.hpp"
@@ -47,6 +48,7 @@ public:
     ~AssetManager();
     AssetManager(const AssetManager&) = delete;
     AssetManager& operator=(const AssetManager&) = delete;
+    AssetId create_glyph_mesh(const GlyphMeshCreateArgs& args);
     SpineManager& get_spine_manager();
     AssetId load_model(const std::string& path);
     AssetId load_spine(

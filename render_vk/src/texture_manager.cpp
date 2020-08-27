@@ -16,7 +16,7 @@ TextureManager::TextureManager(
 )
 : m_physical_device(physical_device),
   m_device(device) {
-    m_textures.reserve(MAX_TEXTURES);
+    m_textures.resize(MAX_TEXTURES);
 }
 
 //  ----------------------------------------------------------------------------
@@ -27,8 +27,12 @@ void TextureManager::add_texture(const Texture& texture) {
 
 //  ----------------------------------------------------------------------------
 void TextureManager::destroy_textures() {
+    destroy_texture(m_device, m_empty_texture);
+
     for (Texture& texture : m_textures) {
-        destroy_texture(m_device, texture);
+        if (texture.image != m_empty_texture.image) {
+            destroy_texture(m_device, texture);
+        }
     }
     m_textures.clear();
 
@@ -42,6 +46,25 @@ void TextureManager::destroy_textures() {
 void TextureManager::get_textures(std::vector<Texture>& textures) const {
     std::lock_guard<std::mutex> lock(m_mutex);
     textures = m_textures;
+}
+
+//  ----------------------------------------------------------------------------
+void TextureManager::initialize(VulkanQueue& queue, VkCommandPool command_pool) {
+    //  Load empty texture
+    TextureCreateArgs args {};
+    m_empty_texture = load_texture(
+        0,
+        "assets/textures/missing.png",
+        queue,
+        command_pool,
+        args
+    );
+
+    //  Fill slots with copy of empty texture
+    for (size_t n = 0; n < m_textures.size(); ++n) {
+        m_textures[n] = m_empty_texture;
+        m_textures[n].id = n;
+    }
 }
 
 //  ----------------------------------------------------------------------------

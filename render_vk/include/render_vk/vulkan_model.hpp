@@ -1,12 +1,15 @@
 #pragma once
 
 #include "assets/asset_id.hpp"
+#include "render_vk/index_buffer.hpp"
+#include "render_vk/mesh.hpp"
+#include "render_vk/vertex_buffer.hpp"
 #include "render_vk/vulkan.hpp"
 #include <vector>
 
 namespace render_vk
 {
-struct Mesh;
+struct GlyphMesh;
 class VulkanQueue;
 
 struct ModelMesh
@@ -59,13 +62,38 @@ public:
         return m_vertex_buffer;
     }
 
+    template <typename T>
     void load(
         VkPhysicalDevice physical_device,
         VkDevice device,
         VulkanQueue& graphics_queue,
         VkCommandPool command_pool,
-        Mesh& mesh
-    );
+        MeshBase<T>& mesh
+    ) {
+        m_device = device;
+
+        m_index_count = static_cast<uint32_t>(mesh.indices.size());
+
+        create_vertex_buffer(
+            physical_device,
+            device,
+            graphics_queue,
+            command_pool,
+            mesh.vertices,
+            m_vertex_buffer,
+            m_vertex_buffer_memory
+        );
+
+        create_index_buffer(
+            physical_device,
+            device,
+            graphics_queue,
+            command_pool,
+            mesh.indices,
+            m_index_buffer,
+            m_index_buffer_memory
+        );
+    }
 
     void load(
         VkPhysicalDevice physical_device,

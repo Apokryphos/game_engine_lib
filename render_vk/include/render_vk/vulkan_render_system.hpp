@@ -141,6 +141,7 @@ public:
     virtual void draw_billboards(
         std::vector<render::SpriteBatch>& batches
     ) override;
+    virtual void draw_glyph_mesh(assets::AssetId glyph_mesh_id) override;
     virtual void draw_glyphs(render::GlyphBatch& glyph_batch) override;
     virtual void draw_models(
         std::vector<render::ModelBatch>& batches

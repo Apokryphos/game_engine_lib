@@ -43,6 +43,7 @@ class RenderTaskManager
     {
         None,
         DrawBillboards,
+        DrawGlyphMesh,
         DrawGlyphs,
         DrawModels,
         DrawSpines,
@@ -59,6 +60,7 @@ class RenderTaskManager
     {
         TaskId task_id {TaskId::None};
         uint32_t order {0};
+        assets::AssetId asset_id {0};
         // void* args     {nullptr};
         void* renderer {nullptr};
 
@@ -132,6 +134,7 @@ class RenderTaskManager
 
                 //  Tasks that generate secondary command buffers
                 case TaskId::DrawBillboards:
+                case TaskId::DrawGlyphMesh:
                 case TaskId::DrawGlyphs:
                 case TaskId::DrawModels:
                 case TaskId::DrawSpines:
@@ -244,6 +247,10 @@ public:
     void draw_billboards(
         BillboardRenderer& renderer,
         const std::vector<render::SpriteBatch>& batches
+    );
+    void draw_glyph_mesh(
+        GlyphRenderer& renderer,
+        assets::AssetId glyph_mesh_id
     );
     void draw_glyphs(
         GlyphRenderer& renderer,

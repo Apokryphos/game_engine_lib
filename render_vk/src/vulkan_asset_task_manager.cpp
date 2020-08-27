@@ -12,6 +12,7 @@
 #include "render_vk/texture.hpp"
 #include "render_vk/texture_manager.hpp"
 #include "render_vk/vulkan_asset_task_manager.hpp"
+#include "render_vk/vulkan_model.hpp"
 #include "render_vk/vulkan_queue.hpp"
 #include "render_vk/vulkan_spine_manager.hpp"
 
@@ -25,6 +26,11 @@ struct VulkanAssetTaskManager::Job
     TaskId task_id {TaskId::None};
     uint32_t asset_id {0};
     std::string path;
+};
+
+struct CreateGlyphMeshJob : VulkanAssetTaskManager::Job
+{
+    GlyphMeshCreateArgs args {};
 };
 
 struct MeshJob : VulkanAssetTaskManager::Job
@@ -104,6 +110,18 @@ void VulkanAssetTaskManager::cancel_threads() {
 }
 
 //  ----------------------------------------------------------------------------
+void VulkanAssetTaskManager::create_glyph_mesh(
+    uint32_t id, const
+    GlyphMeshCreateArgs& args
+) {
+    auto job = std::make_unique<CreateGlyphMeshJob>();
+    job->task_id = TaskId::CreateGlyphMesh;
+    job->asset_id = id;
+    job->args = args;
+    add_job(std::move(job));
+}
+
+//  ----------------------------------------------------------------------------
 void VulkanAssetTaskManager::load_model(uint32_t id, const Mesh& mesh) {
     auto job = std::make_unique<MeshJob>();
     job->task_id = TaskId::LoadMesh;
@@ -162,6 +180,57 @@ void VulkanAssetTaskManager::start_threads() {
     for (auto n = 0; n < m_thread_count; ++n) {
         m_threads.emplace_back(&VulkanAssetTaskManager::thread_main, this, n);
     }
+}
+
+//  ----------------------------------------------------------------------------
+void VulkanAssetTaskManager::thread_create_glyph_mesh(ThreadState& state, Job* job) {
+    CreateGlyphMeshJob* create_job = static_cast<CreateGlyphMeshJob*>(job);
+
+    const glm::vec3 POSITIONS[] {
+        { 0.0f, 0.0f, 0.0f },
+        { 1.0f, 0.0f, 0.0f },
+        { 1.0f, 1.0f, 0.0f },
+        { 0.0f, 1.0f, 0.0f },
+    };
+
+    const glm::vec2 TEX_COORDS[] {
+        { 0.0f, 0.0f },
+        { 1.0f, 0.0f },
+        { 1.0f, 1.0f },
+        { 0.0f, 1.0f },
+    };
+
+    const glm::vec4 COLOR { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    const uint32_t INDICES[] = { 0, 3, 1, 1, 3, 2 };
+
+    GlyphMesh mesh;
+
+    uint32_t index_offset = 0;
+    for (auto& glyph : create_job->args.glyphs) {
+        const glm::vec3 size(glyph.size, 1.0f);
+        for (uint32_t n = 0; n < 4; ++n) {
+            GlyphVertex vertex;/*  */
+            vertex.position = glyph.position + POSITIONS[n] * size;
+            vertex.bg_color = glyph.bg_color;
+            vertex.fg_color = glyph.fg_color;
+            vertex.tex_coord = TEX_COORDS[n];
+            vertex.texture_id = glyph.texture_id;
+
+            mesh.vertices.push_back(vertex);
+        }
+
+        for (uint32_t n = 0; n < 6; ++n) {
+            mesh.indices.push_back(index_offset + INDICES[n]);
+        }
+
+        index_offset += 4;
+    }
+
+    auto model = std::make_unique<VulkanModel>(create_job->asset_id);
+    model->load(m_physical_device, m_device, m_queue, state.command_pool, mesh);
+
+    m_model_mgr.add_model(std::move(model));
 }
 
 //  ----------------------------------------------------------------------------
@@ -226,6 +295,13 @@ void VulkanAssetTaskManager::thread_main(uint8_t thread_id) {
 
         //  Process job
         switch (job->task_id) {
+            case TaskId::CreateGlyphMesh: {
+                stopwatch.start(thread_name+"_create_glyph_mesh");
+                thread_create_glyph_mesh(state, job.get());
+                stopwatch.stop(thread_name+"_create_glyph_mesh");
+                break;
+            }
+
             case TaskId::LoadModel: {
                 stopwatch.start(thread_name+"_load_model");
                 thread_load_model(state, job.get());

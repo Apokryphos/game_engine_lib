@@ -20,6 +20,9 @@ class GlyphRenderer
     VkPipelineLayout m_pipeline_layout  {VK_NULL_HANDLE};
     VkPipeline m_pipeline               {VK_NULL_HANDLE};
 
+    VkPipelineLayout m_mesh_pipeline_layout  {VK_NULL_HANDLE};
+    VkPipeline m_mesh_pipeline               {VK_NULL_HANDLE};
+
     ModelManager& m_model_mgr;
 
 public:
@@ -36,6 +39,12 @@ public:
     );
     //  Destroys resources
     void destroy_objects();
+    void draw_glyph_mesh(
+        const assets::AssetId glyph_mesh_id,
+        const FrameDescriptorObjects& descriptors,
+        const FrameUniformObjects& uniform_buffers,
+        VkCommandBuffer command_buffer
+    );
     //  Draws 2D glyphs
     void draw_glyphs(
         const uint32_t instance_count,

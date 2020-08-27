@@ -31,6 +31,7 @@ private:
     enum class TaskId
     {
         None,
+        CreateGlyphMesh,
         LoadMesh,
         LoadModel,
         LoadSpine,
@@ -65,6 +66,7 @@ private:
 
     //  Adds a new job for a worker thread to process.
     void add_job(std::unique_ptr<Job> job);
+    void thread_create_glyph_mesh(ThreadState& state, Job* job);
     void thread_load_model(ThreadState& state, Job* job);
     Texture thread_load_texture(
         const TextureId texture_id,
@@ -87,6 +89,10 @@ public:
     VulkanAssetTaskManager(const VulkanAssetTaskManager&) = delete;
     VulkanAssetTaskManager& operator=(const VulkanAssetTaskManager&) = delete;
     void cancel_threads();
+    virtual void create_glyph_mesh(
+        uint32_t id,
+        const assets::GlyphMeshCreateArgs& args
+    ) override;
         //  Enqueues a load model job for worker threads to complete
     void load_model(uint32_t id, const Mesh& mesh);
     //  Enqueues a load model job for worker threads to complete

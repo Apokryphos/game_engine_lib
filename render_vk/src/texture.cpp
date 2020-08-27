@@ -16,6 +16,20 @@ using namespace common;
 namespace render_vk
 {
 //  ----------------------------------------------------------------------------
+static VkSamplerAddressMode texture_address_mode_to_vk(
+    const TextureAddressMode address_mode
+) {
+    switch (address_mode) {
+        default:
+            throw std::runtime_error("Not implemented.");
+        case TextureAddressMode::Clamp:
+            return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        case TextureAddressMode::Repeat:
+            return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    }
+}
+
+//  ----------------------------------------------------------------------------
 static VkFilter texture_filter_to_vk(const TextureFilter filter) {
     switch (filter) {
         default:
@@ -322,6 +336,7 @@ static void create_texture_sampler(
     VkDevice device,
     uint32_t mipmap_levels,
     VkSampler& texture_sampler,
+    VkSamplerAddressMode address_mode,
     VkFilter mag_filter,
     VkFilter min_filter
 ) {
@@ -330,9 +345,9 @@ static void create_texture_sampler(
     sampler_info.magFilter = mag_filter;
     sampler_info.minFilter = min_filter;
 
-    sampler_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    sampler_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    sampler_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler_info.addressModeU = address_mode;
+    sampler_info.addressModeV = address_mode;
+    sampler_info.addressModeW = address_mode;
 
     sampler_info.anisotropyEnable = VK_TRUE;
     sampler_info.maxAnisotropy = 16.0f;
@@ -386,6 +401,7 @@ void create_texture(
         device,
         texture.mip_levels,
         texture.sampler,
+        texture_address_mode_to_vk(args.address_mode),
         texture_filter_to_vk(args.mag_filter),
         texture_filter_to_vk(args.min_filter)
     );

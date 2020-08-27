@@ -31,6 +31,7 @@
 #include <cassert>
 #include <thread>
 
+using namespace assets;
 using namespace common;
 using namespace render;
 
@@ -393,6 +394,11 @@ void VulkanRenderSystem::draw_billboards(
 }
 
 //  ----------------------------------------------------------------------------
+void VulkanRenderSystem::draw_glyph_mesh(AssetId glyph_mesh_id) {
+    m_render_task_mgr->draw_glyph_mesh(*m_glyph_renderer, glyph_mesh_id);
+}
+
+//  ----------------------------------------------------------------------------
 void VulkanRenderSystem::draw_glyphs(GlyphBatch& glyph_batch) {
     m_render_task_mgr->draw_glyphs(*m_glyph_renderer, glyph_batch);
 }
@@ -688,6 +694,8 @@ bool VulkanRenderSystem::initialize(GLFWwindow* glfw_window) {
         m_frame_count,
         m_max_objects
     );
+
+    m_texture_mgr->initialize(*m_graphics_queue, m_resource_command_pool);
 
     return true;
 }
