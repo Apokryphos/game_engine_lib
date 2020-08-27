@@ -20,6 +20,7 @@ class ModelManager
     std::map<assets::AssetId, std::unique_ptr<VulkanModel>> m_models;
     std::vector<std::unique_ptr<VulkanModel>> m_added;
     std::unique_ptr<VulkanModel> m_billboard_quad;
+    std::unique_ptr<VulkanModel> m_glyph_quad;
     std::unique_ptr<VulkanModel> m_sprite_quad;
 
 public:
@@ -29,6 +30,7 @@ public:
     ModelManager& operator=(const ModelManager&) = delete;
     void add_model(std::unique_ptr<VulkanModel> model);
     const VulkanModel& get_billboard_quad() const;
+    const VulkanModel& get_glyph_quad() const;
     VulkanModel* get_model(const AssetId id) const;
     const VulkanModel& get_sprite_quad() const;
     void initialize(

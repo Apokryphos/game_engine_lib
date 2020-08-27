@@ -26,6 +26,11 @@ void ModelManager::add_model(std::unique_ptr<VulkanModel> model) {
 }
 
 //  ----------------------------------------------------------------------------
+const VulkanModel& ModelManager::get_glyph_quad() const {
+    return *m_glyph_quad;
+}
+
+//  ----------------------------------------------------------------------------
 void ModelManager::initialize(
     VkPhysicalDevice physical_device,
     VkDevice device,
@@ -111,6 +116,45 @@ void ModelManager::initialize(
         command_pool,
         sprite_mesh
     );
+
+    //  Glyph quad
+    Mesh glyph_mesh;
+
+    glyph_mesh.vertices = {
+        {
+            { 0.0f, 0.0f, 0.0f },
+            { 1.0f, 1.0f, 1.0f },
+            { 0.0f, 0.0f, },
+        },
+        {
+            { 1.0f, 0.0f, 0.0f },
+            { 1.0f, 1.0f, 1.0f },
+            { 1.0f, 0.0f, },
+        },
+        {
+            { 1.0f, 1.0f, 0.0f },
+            { 1.0f, 1.0f, 1.0f },
+            { 1.0f, 1.0f, },
+        },
+        {
+            { 0.0f, 1.0f, 0.0f },
+            { 1.0f, 1.0f, 1.0f },
+            { 0.0f, 1.0f, },
+        }
+    };
+
+    //  Counter-clockwise order
+    glyph_mesh.indices = { 0, 3, 1, 1, 3, 2 };
+
+    m_glyph_quad = std::make_unique<VulkanModel>(0);
+
+    m_glyph_quad->load(
+        physical_device,
+        device,
+        graphics_queue,
+        command_pool,
+        glyph_mesh
+    );
 }
 
 //  ----------------------------------------------------------------------------
@@ -182,6 +226,9 @@ void ModelManager::update_models() {
 void ModelManager::unload(VkDevice device) {
     m_billboard_quad->unload();
     m_billboard_quad = nullptr;
+
+    m_glyph_quad->unload();
+    m_glyph_quad = nullptr;
 
     m_sprite_quad->unload();
     m_sprite_quad = nullptr;

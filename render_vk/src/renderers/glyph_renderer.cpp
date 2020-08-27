@@ -235,7 +235,7 @@ void GlyphRenderer::draw_glyphs(
     );
 
     //  Get sprite quad
-    const VulkanModel& quad = m_model_mgr.get_sprite_quad();
+    const VulkanModel& quad = m_model_mgr.get_glyph_quad();
     const uint32_t index_count = quad.get_index_count();
 
     //  Bind vertex buffer
