@@ -50,7 +50,7 @@ public:
     AssetManager& operator=(const AssetManager&) = delete;
     AssetId create_glyph_mesh(const GlyphMeshCreateArgs& args);
     SpineManager& get_spine_manager();
-    AssetId get_texture(const std::string& path);
+    AssetId get_texture_id(const std::string& path);
     AssetId load_model(const std::string& path);
     AssetId load_spine(
         SpineLoadArgs& load_args,

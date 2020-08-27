@@ -53,7 +53,7 @@ void DemoScreen::on_load(Game& game) {
     Random& random = game.get_random();
     std::uniform_int_distribution<int> glyph_dist(0, 255);
 
-    AssetId texture_id = asset_mgr.get_texture("assets/textures/cp437_20x20.png");
+    AssetId texture_id = asset_mgr.get_texture_id("assets/textures/cp437_20x20.png");
 
     for (float y = 0; y < 80; ++y) {
         for (float x = 0; x < 192; ++x) {

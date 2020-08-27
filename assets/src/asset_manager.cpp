@@ -47,7 +47,7 @@ SpineManager& AssetManager::get_spine_manager() {
 }
 
 //  ----------------------------------------------------------------------------
-AssetId AssetManager::get_texture(const std::string& path) {
+AssetId AssetManager::get_texture_id(const std::string& path) {
     const auto find = std::find_if(
         m_textures.begin(),
         m_textures.end(),

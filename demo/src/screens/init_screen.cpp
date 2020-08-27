@@ -316,7 +316,7 @@ static void init_glyphs(Game& game) {
 
     AssetManager& asset_mgr = game.get_engine().get_asset_manager();
 
-    const int glyph_set_texture_id = asset_mgr.get_texture("assets/textures/cp437_20x20.png");
+    const int glyph_set_texture_id = asset_mgr.get_texture_id("assets/textures/cp437_20x20.png");
     const int glyph_set_width = 20;
     const int glyph_set_height = 20;
 
