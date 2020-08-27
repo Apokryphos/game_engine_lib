@@ -53,6 +53,8 @@ void DemoScreen::on_load(Game& game) {
     Random& random = game.get_random();
     std::uniform_int_distribution<int> glyph_dist(0, 255);
 
+    AssetId texture_id = asset_mgr.get_texture("assets/textures/cp437_20x20.png");
+
     for (float y = 0; y < 80; ++y) {
         for (float x = 0; x < 192; ++x) {
             GlyphMeshCreateArgs::Glyph glyph;
@@ -60,7 +62,7 @@ void DemoScreen::on_load(Game& game) {
             glyph.size = size;
             glyph.bg_color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
             glyph.fg_color = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
-            glyph.texture_id = 7 +  glyph_dist(random.get_rng());
+            glyph.texture_id = texture_id + 1 +  glyph_dist(random.get_rng());
 
             args.glyphs.push_back(glyph);
         }

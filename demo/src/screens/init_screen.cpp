@@ -214,6 +214,44 @@ static void init_ecs_systems(Game& game) {
 }
 
 //  ----------------------------------------------------------------------------
+static void init_assets(Game& game) {
+    Engine& engine = game.get_engine();
+    AssetManager& asset_mgr = engine.get_asset_manager();
+
+    //  Load models
+    asset_mgr.load_model("assets/models/model2.glb");
+    asset_mgr.load_model("assets/models/model.obj");
+
+    //  Load textures
+    asset_mgr.load_texture("assets/textures/missing.png");
+    asset_mgr.load_texture("assets/textures/model.png");
+    asset_mgr.load_texture("assets/textures/model2.png");
+    asset_mgr.load_texture("assets/textures/model3.png");
+
+    //  Pixel sprites
+    TextureCreateArgs tex_args{};
+    tex_args.mag_filter = TextureFilter::Nearest;
+    tex_args.min_filter = TextureFilter::Nearest;
+    tex_args.mipmaps = false;
+
+    asset_mgr.load_texture("assets/textures/sprite.png", tex_args);
+    asset_mgr.load_texture("assets/textures/billboard.png", tex_args);
+
+    //  Load Spine assets
+    asset_mgr.load_spine("assets/spine/spineboy/spineboy", tex_args);
+
+    //  Load glyph textures
+    asset_mgr.load_texture("assets/textures/cp437_20x20.png", tex_args);
+    for (int n = 0; n < 256; ++n) {
+        const std::string filename =
+            "assets/textures/cp437_20x20/cp437_20x20_" +
+            std::to_string(n) +
+            ".png";
+        asset_mgr.load_texture(filename, tex_args);
+    }
+}
+
+//  ----------------------------------------------------------------------------
 static void init_billboards(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
@@ -276,7 +314,9 @@ static void init_glyphs(Game& game) {
 
     Random& random = game.get_random();
 
-    const int glyph_set_texture_id = 7;
+    AssetManager& asset_mgr = game.get_engine().get_asset_manager();
+
+    const int glyph_set_texture_id = asset_mgr.get_texture("assets/textures/cp437_20x20.png");
     const int glyph_set_width = 20;
     const int glyph_set_height = 20;
 
@@ -530,8 +570,6 @@ static void load_demo_screen(Game& game) {
 
 //  ----------------------------------------------------------------------------
 void InitScreen::on_load(Game& game) {
-    Engine& engine = game.get_engine();
-
     //  Initialize input
     init_input(game);
 
@@ -541,40 +579,10 @@ void InitScreen::on_load(Game& game) {
     //  Initialize ECS systems
     init_ecs_systems(game);
 
+    init_assets(game);
+
     //  Initialize entities
     init_entities(game);
-
-    //  Load assets
-    AssetManager& asset_mgr = engine.get_asset_manager();
-    asset_mgr.load_model("assets/models/model2.glb");
-    asset_mgr.load_model("assets/models/model.obj");
-
-    //  Load textures
-    asset_mgr.load_texture("assets/textures/missing.png");
-    asset_mgr.load_texture("assets/textures/model.png");
-    asset_mgr.load_texture("assets/textures/model2.png");
-    asset_mgr.load_texture("assets/textures/model3.png");
-
-    //  Pixel sprites
-    TextureCreateArgs tex_args{};
-    tex_args.mag_filter = TextureFilter::Nearest;
-    tex_args.min_filter = TextureFilter::Nearest;
-    tex_args.mipmaps = false;
-
-    asset_mgr.load_texture("assets/textures/sprite.png", tex_args);
-    asset_mgr.load_texture("assets/textures/billboard.png", tex_args);
-
-    //  Load Spine assets
-    asset_mgr.load_spine("assets/spine/spineboy/spineboy", tex_args);
-
-    //  Load glyph textures
-    for (int n = 0; n < 256; ++n) {
-        const std::string filename =
-            "assets/textures/cp437_20x20/cp437_20x20_" +
-            std::to_string(n) +
-            ".png";
-        asset_mgr.load_texture(filename, tex_args);
-    }
 
     //  Next screen
     load_demo_screen(game);

@@ -29,8 +29,38 @@ AssetId AssetManager::create_glyph_mesh(const GlyphMeshCreateArgs& args) {
 }
 
 //  ----------------------------------------------------------------------------
+std::vector<AssetManager::Entry>::const_iterator AssetManager::find_texture(
+    const TextureLoadArgs& args
+) const {
+    return std::find_if(
+        m_textures.begin(),
+        m_textures.end(),
+        [&args](const Entry& entry) {
+            return entry.path == args.path;
+        }
+    );
+}
+
+//  ----------------------------------------------------------------------------
 SpineManager& AssetManager::get_spine_manager() {
     return *m_spine_mgr;
+}
+
+//  ----------------------------------------------------------------------------
+AssetId AssetManager::get_texture(const std::string& path) {
+    const auto find = std::find_if(
+        m_textures.begin(),
+        m_textures.end(),
+        [&path](const Entry& entry) {
+            return entry.path == path;
+        }
+    );
+
+    if (find != m_textures.end()) {
+        return (*find).id;
+    }
+
+    return 0;
 }
 
 //  ----------------------------------------------------------------------------
@@ -167,19 +197,6 @@ AssetId AssetManager::load_texture(
     TextureLoadArgs load_args {};
     load_args.path = path;
     return load_texture(load_args, args);
-}
-
-//  ----------------------------------------------------------------------------
-std::vector<AssetManager::Entry>::const_iterator AssetManager::find_texture(
-    const TextureLoadArgs& args
-) const {
-    return std::find_if(
-        m_textures.begin(),
-        m_textures.end(),
-        [&args](const Entry& entry) {
-            return entry.path == args.path;
-        }
-    );
 }
 
 //  ----------------------------------------------------------------------------
