@@ -18,15 +18,15 @@ static const uint32_t MAX_TEXTURES = 4096;
 class Texture
 {
 public:
-    TextureId id;
-    uint32_t width;
-    uint32_t height;
-    uint32_t mip_levels;
-    VkImage image;
-    VkDeviceMemory image_memory;
-    VkImageLayout layout;
-    VkImageView view;
-    VkSampler sampler;
+    TextureId id {0};
+    uint32_t width {0};
+    uint32_t height {0};
+    uint32_t mip_levels {0};
+    VkImage image {VK_NULL_HANDLE};
+    VkDeviceMemory image_memory {VK_NULL_HANDLE};
+    VkImageLayout layout {VK_IMAGE_LAYOUT_UNDEFINED};
+    VkImageView view {VK_NULL_HANDLE};
+    VkSampler sampler {VK_NULL_HANDLE};
 };
 
 void create_texture(
