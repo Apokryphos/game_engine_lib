@@ -55,9 +55,9 @@ bool operator<(const glm::vec3& lhs, const glm::vec3& rhs) {
 
 namespace demo
 {
-const int BILLBOARD_COUNT = 100;
-const int GLYPH_COUNT     = 100;//14516;
-const int MODEL_COUNT     = 0;
+const int BILLBOARD_COUNT = 1000;
+const int GLYPH_COUNT     = 32;//14516;
+const int MODEL_COUNT     = 1000;
 const int SPINE_COUNT     = 0;
 const int SPRITE_COUNT    = 100;
 
@@ -379,7 +379,7 @@ static void init_models(Game& game) {
     EcsRoot& ecs = game.get_ecs_root();
     SystemManager& sys_mgr = game.get_system_manager();
 
-    std::uniform_int_distribution<int> model_id_dist(0, 2);
+    std::uniform_int_distribution<int> model_id_dist(0, 1);
     std::uniform_int_distribution<int> texture_id_dist(1, 3);
     std::uniform_int_distribution<int> position_dist(-100, 100);
 
